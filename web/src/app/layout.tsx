@@ -10,8 +10,29 @@ const outfit = Outfit({
 });
 
 export const metadata: Metadata = {
-  title: "VeganFood.es | Catálogo Vegano B2B",
-  description: "Plataforma de E-Commerce dinámica con integración Just-In-Time a Feliubadaló.",
+  title: "VeganFood.es | Tienda Vegana Online & Supermercado Express",
+  description: "Comprar comida vegana a domicilio. Miles de alternativas vegetales a la carne, quesos veganos y productos refrigerados express.",
+  keywords: [
+    "Tienda vegana online", 
+    "Comprar comida vegana a domicilio", 
+    "Productos veganos refrigerados", 
+    "Alternativas vegetales a la carne", 
+    "Quesos veganos y tofu fresco", 
+    "Supermercado vegano express"
+  ],
+  openGraph: {
+    title: "VeganFood.es | Tu Tienda Vegana Online",
+    description: "Comprar comida vegana a domicilio nunca fue tan fácil. Alternativas vegetales, quesos y tofu fresco enviado en modelo JIT.",
+    url: "https://veganfood.es",
+    siteName: "VeganFood",
+    locale: "es_ES",
+    type: "website",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    nocache: true,
+  }
 };
 
 export default function RootLayout({
