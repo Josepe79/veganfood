@@ -20,7 +20,9 @@ interface CartContextProps {
   addToCart: (product: CartProduct) => void;
   removeFromCart: (productId: string) => void;
   updateQuantity: (productId: string, quantity: number) => void;
+  cartSubtotalAmount: number;
   cartTotalAmount: number;
+  shippingFee: number;
   cartTotalItems: number;
   clearCart: () => void;
 }
@@ -78,12 +80,21 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const clearCart = () => setItems([]);
 
-  const cartTotalAmount = items.reduce((total, item) => total + (item.product.precioVenta * item.quantity), 0);
+  const cartSubtotalAmount = items.reduce((total, item) => total + (item.product.precioVenta * item.quantity), 0);
   const cartTotalItems = items.reduce((total, item) => total + item.quantity, 0);
+
+  // Business Logic: Free delivery from 50€
+  const FREE_SHIPPING_THRESHOLD = 50.00;
+  let shippingFee = 0;
+  if(cartSubtotalAmount > 0 && cartSubtotalAmount < FREE_SHIPPING_THRESHOLD) {
+      shippingFee = 4.99;
+  }
+  
+  const cartTotalAmount = cartSubtotalAmount + shippingFee;
 
   return (
     <CartContext.Provider value={{
-      items, addToCart, removeFromCart, updateQuantity, cartTotalAmount, cartTotalItems, clearCart
+      items, addToCart, removeFromCart, updateQuantity, cartSubtotalAmount, cartTotalAmount, shippingFee, cartTotalItems, clearCart
     }}>
       {children}
     </CartContext.Provider>

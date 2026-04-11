@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 export default function CheckoutPage() {
-  const { items, cartTotalAmount, cartTotalItems, clearCart } = useCart();
+  const { items, cartSubtotalAmount, cartTotalAmount, shippingFee, cartTotalItems, clearCart } = useCart();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -162,14 +162,25 @@ export default function CheckoutPage() {
               ))}
             </div>
             
+            {shippingFee > 0 && (
+                <div className="bg-orange-500/10 border border-orange-500/30 text-orange-400 p-3 rounded-lg text-sm mb-4 font-medium flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+                    <span>Añade {(50 - cartSubtotalAmount).toFixed(2)}€ más para disfrutar de <strong className="text-orange-300">Envío Gratis</strong>.</span>
+                </div>
+            )}
+            
             <div className="space-y-3 pt-6 border-t border-white/10 text-sm">
               <div className="flex justify-between text-slate-400">
                 <span>Subtotal ({cartTotalItems} uds)</span>
-                <span>{cartTotalAmount.toFixed(2)}€</span>
+                <span>{cartSubtotalAmount.toFixed(2)}€</span>
               </div>
               <div className="flex justify-between text-slate-400">
-                <span>Envío (Cold Delivery)</span>
-                <span>Gratis</span>
+                <span>Envío Rápid (JIT B2B)</span>
+                {shippingFee === 0 ? (
+                    <span className="text-emerald-400 font-bold uppercase tracking-wide">Gratis</span>
+                ) : (
+                    <span>{shippingFee.toFixed(2)}€</span>
+                )}
               </div>
               <div className="flex justify-between text-xl font-bold text-white pt-4">
                 <span>Total</span>

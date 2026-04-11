@@ -28,8 +28,14 @@ async function main() {
   const productos = JSON.parse(rawData)
   
   let parseados = 0
+  let descartados = 0
 
   for (const item of productos) {
+    if (!item.descripcion || item.descripcion.trim() === "") {
+        descartados++;
+        continue;
+    }
+
     // Parsear precio b2b
     // Feliubadalo devuelve algo como "4,30 €" o "4,30"
     let cleanB2b = item.precio_b2b.replace('€', '').replace(',', '.').trim()
@@ -85,7 +91,8 @@ async function main() {
     parseados++
   }
 
-  console.log(`¡Seeder completado! Se han insertado ${parseados} productos veganos al catálogo, con un margen dinámico aplicado del 10%.`)
+  console.log(`¡Seeder completado! Se han insertado ${parseados} productos veganos Premium completos al catálogo.`)
+  console.log(`Filtro de Calidad JIT descartó ${descartados} productos por no tener ficha descriptiva en el JSON.`);
 }
 
 main()
