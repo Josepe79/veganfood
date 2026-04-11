@@ -1,0 +1,26 @@
+[
+  {
+    "url": "https://consentcdn.cookiebot.com/consentconfig/4455f026-77e8-4944-923d-c6d703fcf514/settings.json",
+    "status": 200
+  },
+  {
+    "url": "https://cdn.doofinder.com/media/js/doofinder-classic.7.latest.min.js",
+    "status": 200
+  },
+  {
+    "url": "https://online.feliubadalo.com/static/version1775628379/frontend/Sinapsis/feliub2b/es_ES/js-translation.json",
+    "status": 200
+  },
+  {
+    "url": "https://eu1-search.doofinder.com/5/options/ccc0bc447aa8a5578b7b11e9a5e73cc8?online.feliubadalo.com",
+    "status": 200
+  },
+  {
+    "url": "https://war.salesmanago.com/war/war.json?s=5vv9kungesx5rh1ne&u=19d7bca6dce-fa0c6255ec67-3a08cc4c-c0831c2a-85d96a6c-c6b104a6cacc&c=null&d=online.feliubadalo.com%2Fcatalogsearch%2Fresult%2F",
+    "status": 200
+  },
+  {
+    "url": "https://app3.salesmanago.pl/api/push/notification/consent/displaySettings.json?id=d18ab3ab-daaf-4cc2-9bea-3095e33177a4",
+    "status": 200
+  }
+]
