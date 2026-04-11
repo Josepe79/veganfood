@@ -3,6 +3,7 @@ import Image from "next/image";
 import { AddToCartButton } from "@/components/AddToCartButton";
 
 export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export default async function Home() {
   const products = await prisma.product.findMany({
