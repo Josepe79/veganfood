@@ -39,8 +39,13 @@ export default function RootLayout({
 function Footer() {
   return (
     <footer className="border-t border-slate-800 bg-slate-900/50 mt-20">
-      <div className="container mx-auto px-4 py-8 text-center text-slate-500 text-sm">
-        <p>© 2026 VeganFood.es - Plataforma B2B Just-in-Time conectada a Feliubadaló.</p>
+      <div className="container mx-auto px-4 py-8 text-center text-slate-500 text-sm flex flex-col md:flex-row items-center justify-between gap-4">
+        <p>© {new Date().getFullYear()} VeganFood.es - Operado por Jepco Consutors SL.</p>
+        <div className="flex gap-6">
+          <a href="/aviso-legal" className="hover:text-primary transition-colors">Aviso Legal</a>
+          <a href="/politica-privacidad" className="hover:text-primary transition-colors">Política de Privacidad</a>
+          <a href="/condiciones-compra" className="hover:text-primary transition-colors">Condiciones de Compra</a>
+        </div>
       </div>
     </footer>
   )
