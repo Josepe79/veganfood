@@ -35,33 +35,35 @@ export default async function ProductDetail({ params }: { params: Promise<{ id: 
   const sanitizeDescription = (text: string | null) => {
     if (!text) return "Un producto 100% verificado y validado por la plataforma VeganFood, trayendo la mejor calidad directamente desde el obrador/distribuidor hasta tu hogar de forma sostenible.";
     
-    let cleaned = text.replace(/\\n/g, '\n').replace(/\\r/g, '');
+    // 1. Normalizar todos los espacios invisibles (nbsp, tabs, multi-espacios, \n) a un solo espacio simple
+    let cleaned = text.replace(/[\s\u00A0\t]+/g, ' ').replace(/\\n/g, ' ').replace(/\\r/g, '');
     
-    // Lista negra estricta de frases de relleno de Feliubadaló
-    const spamPhrases = [
-      "Si no encuentras lo que buscas",
-      "Pídelo aquí",
-      "Envíos desde 4h",
-      "Portes Gratis",
-      "Fácil gestión de devolución",
-      "Más de 2500 productos y 900 marcas",
-      ".", // Limpiará los puntos sueltos que puedan quedar en medio de la nada si se formaron
+    // 2. Usar Expresiones Regulares híper-permisivas (Ignoran diferencias de acentos y caracteres raros)
+    const spamPatterns = [
+      /Si no encuentras lo que buscas/gi,
+      /P[íi]delo aqu[íi]/gi,
+      /Env[íi]os desde \d+h/gi,
+      /Portes Gratis/gi,
+      /F[áa]cil gesti[óo]n de devoluci[óo]n/gi,
+      /M[áa]s de \d+ productos y \d+ marcas/gi,
+      /M[áa]s de \d+ productos/gi,
+      /y \d+ marcas/gi,
+      /900 marcas/gi,
+      /2500 productos/gi
     ];
     
-    spamPhrases.forEach(phrase => {
-      if (phrase === ".") {
-         // Fix solo para puntos huérfanos generados tras limpiar frases sin espacio
-         cleaned = cleaned.replace(/\.\./g, '.').replace(/^\.+|\.+$/g, '').trim();
-      } else {
-         const regex = new RegExp(phrase, 'gi');
-         cleaned = cleaned.replace(regex, '');
-      }
+    // Aniquilar patrones
+    spamPatterns.forEach(regex => {
+      cleaned = cleaned.replace(regex, '');
     });
     
-    // Limpieza final de puntos y espacios huérfanos que dejó el replace 
-    cleaned = cleaned.replace(/ +/g, ' ').replace(/\s*\.\s*(?=\.)/g, '').replace(/^\s*[\.\,]\s*|\s*[\.\,]\s*$/g, '').trim();
+    // 3. Limpieza de colisión: Si dos frases se borraron y quedó un " . . " o ".Más", arreglar ortografía básica.
+    cleaned = cleaned.replace(/\s+/g, ' '); // quitar múltiples espacios generados por los huecos
+    cleaned = cleaned.replace(/\s*\./g, '.'); // pegar el punto a la palabra anterior
+    cleaned = cleaned.replace(/\.{2,}/g, '.'); // si hay ".." convertir a "."
+    cleaned = cleaned.replace(/^\.+|\.+$/g, '').trim(); // quitar puntos sueltos al inicio o final de todo
 
-    return cleaned || "Un producto 100% verificado y validado por la plataforma VeganFood, trayendo la mejor calidad directamente desde el obrador/distribuidor hasta tu hogar de forma sostenible.";
+    return cleaned || "Un producto 100% verificado y validado por la plataforma VeganFood, trayendo localmente la mejor calidad.";
   };
 
   return (
