@@ -26,6 +26,11 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ q
     orderBy: { nombre: 'asc' }
   });
 
+  const promos = await prisma.product.findMany({
+    where: { enPromocion: true, oculto: false },
+    orderBy: { nombre: 'asc' }
+  });
+
   // 2. Obtener lista de marcas únicas reales de la DB para poblar el dropdown
   const uniqueBrands = await prisma.product.findMany({
     select: { marca: true },
@@ -95,6 +100,60 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ q
            </div>
         </div>
       </div>
+
+      {/* Promociones Destacadas */}
+      {!q && !marca && promos.length > 0 && (
+        <div className="mb-16">
+          <div className="flex items-center gap-3 mb-6">
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#a855f7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+            <h2 className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-fuchsia-500 tracking-tight">Selección Estrella</h2>
+            <span className="ml-2 px-3 py-1 bg-purple-500/20 text-purple-300 border border-purple-500/30 rounded-full text-xs font-bold uppercase tracking-widest shadow-[0_0_10px_rgba(168,85,247,0.4)]">Ofertas Dinámicas</span>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {promos.map((promo) => (
+              <div key={promo.id} className="relative group bg-gradient-to-b from-purple-900/40 to-slate-900 rounded-3xl border border-purple-500/30 overflow-hidden shadow-2xl shadow-purple-900/20 flex flex-col h-full transform transition-all duration-300 hover:-translate-y-2 hover:shadow-purple-500/20">
+                <div className="absolute top-0 right-0 p-3 z-20">
+                   <span className="bg-purple-500 text-white text-xs font-black uppercase px-2 py-1 rounded-md shadow-lg shadow-purple-500/50">Promo ✨</span>
+                </div>
+                {promo.agotado && (
+                  <div className="absolute top-4 left-4 z-20 bg-slate-900/80 backdrop-blur-md px-3 py-1 rounded-full border border-red-500/50 text-red-400 text-xs font-bold uppercase tracking-wider">
+                    Agotado
+                  </div>
+                )}
+                
+                <Link href={`/product/${promo.id}`} className="block relative h-56 w-full p-6 bg-slate-800/50 flex-shrink-0">
+                  <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-transparent z-0"></div>
+                  {promo.imagen ? (
+                    <Image src={promo.imagen} alt={promo.nombre} fill className="object-contain p-4 group-hover:scale-105 transition-transform duration-500 z-10 drop-shadow-xl" sizes="(max-width: 768px) 100vw, 33vw" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-slate-600 z-10 relative">
+                      <p className="text-sm">Sin imagen</p>
+                    </div>
+                  )}
+                </Link>
+
+                <div className="p-5 flex flex-col flex-grow relative z-10">
+                  <p className="text-purple-400 text-xs font-bold uppercase tracking-wider mb-2">{promo.marca}</p>
+                  <Link href={`/product/${promo.id}`}>
+                    <h3 className="text-lg font-bold text-white mb-2 leading-tight group-hover:text-purple-300 transition-colors line-clamp-2">{promo.nombre}</h3>
+                  </Link>
+                  <div className="mt-auto pt-4 flex items-end justify-between">
+                    <div>
+                      {promo.pvpr && promo.pvpr !== "Libre" && (
+                        <p className="text-xs text-slate-500 line-through mb-1 tracking-wider">PVPR {promo.pvpr}</p>
+                      )}
+                      <p className="text-3xl font-extrabold text-white tracking-tighter">
+                        {promo.precioVenta.toFixed(2)}<span className="text-xl text-purple-400">€</span>
+                      </p>
+                    </div>
+                    <AddToCartButton product={promo} />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Grid Menu Title */}
       <div className="flex items-end justify-between mb-8">

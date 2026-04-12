@@ -25,8 +25,8 @@ export default async function AdminDashboard() {
   const stockAgotado = agotadosList.length;
 
   const priceIntelligence = await prisma.product.findMany({
-      where: { precioCompetencia: { not: null }, oculto: false },
-      select: { id: true, nombre: true, marca: true, precioOriginal: true, precioVenta: true, precioCompetencia: true, competenciaUrl: true, competenciaNombre: true },
+      where: { precioCompetencia: { not: null } },
+      select: { id: true, nombre: true, marca: true, precioOriginal: true, precioVenta: true, precioCompetencia: true, competenciaUrl: true, competenciaNombre: true, oculto: true, enPromocion: true },
       orderBy: { nombre: 'asc' }
   });
 

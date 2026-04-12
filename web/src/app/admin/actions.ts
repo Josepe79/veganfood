@@ -74,3 +74,31 @@ export async function hideProductsBulk(productIds: string[]) {
         return { success: false, error: e.message };
     }
 }
+
+export async function recoverProduct(productId: string) {
+    try {
+        await prisma.product.update({
+            where: { id: productId },
+            data: { oculto: false }
+        });
+        revalidatePath('/');
+        revalidatePath('/admin');
+        return { success: true };
+    } catch(e: any) {
+        return { success: false, error: e.message };
+    }
+}
+
+export async function togglePromotion(productId: string, promote: boolean) {
+    try {
+        await prisma.product.update({
+            where: { id: productId },
+            data: { enPromocion: promote }
+        });
+        revalidatePath('/');
+        revalidatePath('/admin');
+        return { success: true };
+    } catch(e: any) {
+        return { success: false, error: e.message };
+    }
+}

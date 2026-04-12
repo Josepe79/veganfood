@@ -13,10 +13,12 @@ type IntelligenceItem = {
     precioCompetencia: number | null;
     competenciaUrl: string | null;
     competenciaNombre: string | null;
+    oculto: boolean;
+    enPromocion: boolean;
 };
 
 export function PricingTableClient({ data }: { data: IntelligenceItem[] }) {
-    const [filter, setFilter] = useState<"ALL" | "COMPETITIVO" | "AJUSTABLE" | "CRITICA">("ALL");
+    const [filter, setFilter] = useState<"ALL" | "COMPETITIVO" | "AJUSTABLE" | "CRITICA" | "OCULTO" | "PROMOCION">("ALL");
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
     const [isPending, startTransition] = useTransition();
 
@@ -26,8 +28,13 @@ export function PricingTableClient({ data }: { data: IntelligenceItem[] }) {
         const mercado = prod.precioCompetencia!;
         const costo = prod.precioOriginal;
         
-        let status: "COMPETITIVO" | "AJUSTABLE" | "CRITICA" = "COMPETITIVO";
-        if (mercado <= costo) {
+        let status: "COMPETITIVO" | "AJUSTABLE" | "CRITICA" | "OCULTO" | "PROMOCION" = "COMPETITIVO";
+        
+        if (prod.oculto) {
+            status = "OCULTO";
+        } else if (prod.enPromocion) {
+            status = "PROMOCION";
+        } else if (mercado <= costo) {
             status = "CRITICA";
         } else if (mercado < nuestro && mercado > costo) {
             status = "AJUSTABLE";
@@ -87,7 +94,13 @@ export function PricingTableClient({ data }: { data: IntelligenceItem[] }) {
                         Ajustables ({enrichedData.filter(p => p.status === "AJUSTABLE").length})
                     </button>
                     <button onClick={() => setFilter("COMPETITIVO")} className={`px-4 py-2 text-xs rounded-md whitespace-nowrap transition-colors ${filter === "COMPETITIVO" ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30" : "text-slate-400 hover:text-emerald-300"}`}>
-                        Competitivos ({enrichedData.filter(p => p.status === "COMPETITIVO").length})
+                        Competitivos ({enrichedData.filter(p => !p.oculto && !p.enPromocion && p.costo < p.mercado && p.mercado >= p.nuestro).length})
+                    </button>
+                    <button onClick={() => setFilter("PROMOCION")} className={`px-4 py-2 text-xs rounded-md whitespace-nowrap transition-colors ${filter === "PROMOCION" ? "bg-purple-500/20 text-purple-400 border border-purple-500/30 shadow-[0_0_15px_purple]" : "text-slate-400 hover:text-purple-300"}`}>
+                        En Promoción ({enrichedData.filter(p => p.enPromocion && !p.oculto).length})
+                    </button>
+                    <button onClick={() => setFilter("OCULTO")} className={`px-4 py-2 text-xs rounded-md whitespace-nowrap transition-colors ${filter === "OCULTO" ? "bg-slate-900 text-slate-300 border border-slate-600 shadow-inner" : "text-slate-500 hover:text-slate-300"}`}>
+                        Restaurar Ocultos ({enrichedData.filter(p => p.oculto).length})
                     </button>
                 </div>
 
@@ -143,9 +156,12 @@ export function PricingTableClient({ data }: { data: IntelligenceItem[] }) {
                             if (prod.status === "AJUSTABLE") {
                                 alertLevel = "bg-amber-500/10 border-amber-500/30 text-amber-400";
                                 statusMsg = "Ajustable";
-                            } else if (prod.status === "CRITICA") {
-                                alertLevel = "bg-red-500/10 border-red-500/30 text-red-500 font-bold";
-                                statusMsg = "Pérdida Crítica";
+                            } else if (prod.status === "OCULTO") {
+                                alertLevel = "bg-slate-800/80 border-slate-600/50 text-slate-400 opacity-60";
+                                statusMsg = "Retirado";
+                            } else if (prod.status === "PROMOCION") {
+                                alertLevel = "bg-purple-500/10 border-purple-500/50 text-purple-400 font-bold shadow-[0_0_10px_purple]";
+                                statusMsg = "En Promoción ✨";
                             }
 
                             return (
@@ -174,7 +190,7 @@ export function PricingTableClient({ data }: { data: IntelligenceItem[] }) {
                                                 <span className="text-xs uppercase tracking-wide">{statusMsg}</span>
                                                 <span className="font-mono">{prod.diff > 0 ? "+" : ""}{prod.diff.toFixed(2)}€</span>
                                             </div>
-                                            <PricingActions productId={prod.id} currentPrice={prod.nuestro} />
+                                            <PricingActions productId={prod.id} currentPrice={prod.nuestro} oculto={prod.oculto} enPromocion={prod.enPromocion} />
                                         </div>
                                     </td>
                                 </tr>
