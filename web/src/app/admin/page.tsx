@@ -16,9 +16,11 @@ export default async function AdminDashboard() {
     orderBy: { createdAt: 'desc' }
   });
 
-  const stockAgotado = await prisma.product.count({
-      where: { agotado: true }
+  const agotadosList = await prisma.product.findMany({
+      where: { agotado: true },
+      select: { id: true, nombre: true, ref: true, marca: true, imagen: true }
   });
+  const stockAgotado = agotadosList.length;
 
   // Consolidación de Lista de la Compra Mayorista (Feliubadaló)
   const consolidated = new Map();
@@ -220,6 +222,40 @@ export default async function AdminDashboard() {
                  )}
              </div>
           </div>
+        </div>
+      </div>
+      
+      {/* Sección Inferior: Auditoría de Agotados Fast-Sync */}
+      <div className="mt-8">
+        <div className="glass p-6 border-red-500/20">
+            <h2 className="text-xl font-bold text-red-400 mb-2 flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                Auditoría JIT: Referencias Bloqueadas
+            </h2>
+            <p className="text-xs text-slate-400 mb-6">El siguiente inventario se detectó como "Agotado" en Feliubadaló en la última sincronización y está oculto/deshabilitado en portada temporalmente.</p>
+            
+            {agotadosList.length === 0 ? (
+                <div className="text-center py-6 text-slate-500 text-sm border border-slate-700/50 rounded-lg border-dashed">
+                    Feliubadaló informa de Stock saludable. Ninguna limitación B2B activa.
+                </div>
+            ) : (
+                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 max-h-[400px] overflow-y-auto pr-2">
+                    {agotadosList.map(prod => (
+                        <div key={prod.id} className="bg-slate-900 border border-red-500/10 rounded-lg p-3 flex flex-col items-center text-center opacity-80 hover:opacity-100 transition-opacity">
+                            <div className="w-16 h-16 bg-white/5 rounded-md mb-3 flex-shrink-0 p-1 relative grayscale">
+                                <div className="absolute inset-0 bg-red-500/10 z-10 m-1 rounded mix-blend-multiply pointer-events-none"></div>
+                                {prod.imagen ? (
+                                    <Image src={prod.imagen} alt={prod.nombre} layout="fill" objectFit="contain" />
+                                ) : (
+                                    <div className="w-full h-full bg-slate-800"></div>
+                                )}
+                            </div>
+                            <p className="text-[10px] text-red-300 font-mono mb-1">{prod.marca} • {prod.ref}</p>
+                            <p className="text-xs text-slate-300 line-clamp-3 leading-tight">{prod.nombre}</p>
+                        </div>
+                    ))}
+                </div>
+            )}
         </div>
       </div>
     </div>
