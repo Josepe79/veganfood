@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "sync:stock": "npx tsx prisma/sync_stock.ts",
-    "sync:prices": "npx tsx prisma/sync_prices.ts"
+    "sync:prices": "npx tsx prisma/sync_prices.ts",
+    "sync:descriptions": "npx tsx prisma/sync_descriptions.ts"
   },
   "dependencies": {
     "@prisma/client": "5.22.0",

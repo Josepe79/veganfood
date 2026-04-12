@@ -68,15 +68,14 @@ async def main():
                 descripcion = ""
                 ingredientes = ""
 
-                # Feliubadaló usa tabs: description, ingredients, nutricional, etc.
-                # A menudo están en div#description, div#additional
-                desc_tag = soup.select_one('#description')
-                if desc_tag:
-                    descripcion = desc_tag.text.strip()
+                # Feliubadaló incrusta un global footer molesto bajo el ID '#description'. Lo ignoramos.
+                # La verdadera descripción habita en múltiples bloques '.product.attribute.description .value'
+                desc_panels = soup.select('.product.attribute.description .value')
+                if desc_panels:
+                    # Concatenar todos los fragmentos separados (A veces dividen descripcion en varios párrafos)
+                    descripcion = "\n\n".join([p.text.strip() for p in desc_panels if p.text.strip()])
                 else:
-                    # Alternativa
-                    desc_alt = soup.select_one('.product.attribute.description .value')
-                    descripcion = desc_alt.text.strip() if desc_alt else ""
+                    descripcion = ""
 
                 ing_tag = soup.select_one('#ingredientes')
                 if ing_tag:
