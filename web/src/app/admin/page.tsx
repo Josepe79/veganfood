@@ -301,6 +301,12 @@ export default async function AdminDashboard() {
                                 let statusMsg = "Competitivo";
                                 let diff = mercado - nuestro;
                                 
+                                let finalUrl = prod.competenciaUrl || "#";
+                                if (finalUrl !== "#" && !finalUrl.startsWith("http")) {
+                                    // Limpieza de records viejos o URLs rotas
+                                    finalUrl = `https://www.google.com/search?q=${encodeURIComponent(prod.nombre + " " + prod.marca)}`;
+                                }
+
                                 if (mercado < nuestro && mercado > costo) {
                                   alertLevel = "bg-amber-500/10 border-amber-500/30 text-amber-400"; // Mercado gana pero podemos ajustar margen
                                   statusMsg = "Ajustable";
@@ -318,7 +324,7 @@ export default async function AdminDashboard() {
                                     <td className="py-4 text-center font-mono text-slate-400">{costo.toFixed(2)}€</td>
                                     <td className="py-4 text-center font-mono text-white bg-slate-800/50 rounded-lg">{nuestro.toFixed(2)}€</td>
                                     <td className="py-4 text-center">
-                                      <a href={prod.competenciaUrl || "#"} target="_blank" className="font-mono text-blue-300 hover:underline">{mercado.toFixed(2)}€</a>
+                                      <a href={finalUrl} target="_blank" className="font-mono text-blue-300 hover:underline">{mercado.toFixed(2)}€</a>
                                       {prod.competenciaNombre && <p className="text-[10px] text-slate-500 mt-1 uppercase tracking-wider">{prod.competenciaNombre}</p>}
                                     </td>
                                     <td className="py-4 text-right pr-4">
