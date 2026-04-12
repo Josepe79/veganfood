@@ -32,6 +32,20 @@ export default async function ProductDetail({ params }: { params: Promise<{ id: 
     notFound();
   }
 
+  const sanitizeDescription = (text: string | null) => {
+    if (!text) return "Un producto 100% verificado y validado por la plataforma VeganFood, trayendo la mejor calidad directamente desde el obrador/distribuidor hasta tu hogar de forma sostenible.";
+    
+    let cleaned = text.replace(/\\n/g, '\n').replace(/\\r/g, '');
+    
+    // We strip the whole block of marketing text that got scraped from the wholesaler
+    // Using [\s\S] instead of dotall (s) flag for older TS target compatibility
+    cleaned = cleaned.replace(/Si no encuentras lo que buscas[\s\S]*?Pídelo aquí/g, '');
+    cleaned = cleaned.replace(/Envíos desde 4h[\s\S]*?Fácil gestión de devolución\./g, '');
+    cleaned = cleaned.replace(/Más de 2500 productos[\s\S]*?900 marcas\./g, '');
+    
+    return cleaned.trim() || "Un producto 100% verificado y validado por la plataforma VeganFood, trayendo la mejor calidad directamente desde el obrador/distribuidor hasta tu hogar de forma sostenible.";
+  };
+
   return (
     <main className="min-h-screen pt-24 pb-12 px-4 container mx-auto fade-in">
       {/* Breadcrumb / Back Navigation */}
@@ -93,7 +107,7 @@ export default async function ProductDetail({ params }: { params: Promise<{ id: 
                 {product.precioVenta.toFixed(2)}<span className="text-3xl text-primary ml-1 font-semibold">€</span>
               </div>
               <div className="text-sm text-slate-400 font-medium">
-                <div>Impuestos excluidos</div>
+                <div>Impuestos incluidos</div>
                 <div className="text-emerald-500 mt-2 flex items-center gap-1.5 bg-emerald-500/10 px-3 py-1 rounded-lg w-fit border border-emerald-500/20">
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>
                   Envío Refrigerado 24/48h
@@ -107,7 +121,7 @@ export default async function ProductDetail({ params }: { params: Promise<{ id: 
                 Descripción del Producto
               </h3>
               <p className="text-slate-300 leading-relaxed font-light text-[15px] whitespace-pre-line">
-                {product.descripcion && product.descripcion !== "" ? product.descripcion.replace(/\\n/g, '\n').replace(/\\r/g, '').trim() : "Un producto 100% verificado y validado por la plataforma VeganFood, trayendo la mejor calidad directamente desde el obrador/distribuidor hasta tu hogar de forma sostenible."}
+                {sanitizeDescription(product.descripcion)}
               </p>
             </div>
             
