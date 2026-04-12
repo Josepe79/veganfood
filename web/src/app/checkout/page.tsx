@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 export default function CheckoutPage() {
-  const { items, cartSubtotalAmount, cartTotalAmount, shippingFee, cartTotalItems, clearCart } = useCart();
+  const { items, cartSubtotalAmount, cartTotalAmount, shippingFee, cartTotalItems, clearCart, removeFromCart } = useCart();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -152,7 +152,12 @@ export default function CheckoutPage() {
                     <h3 className="text-sm font-semibold text-slate-200 line-clamp-2 leading-tight">{item.product.nombre}</h3>
                     <div className="flex justify-between items-center mt-2">
                       <span className="text-xs text-slate-400">Cant: {item.quantity}</span>
-                      <span className="text-sm font-bold text-white">{(item.product.precioVenta * item.quantity).toFixed(2)}€</span>
+                      <div className="flex items-center gap-3">
+                        <span className="text-sm font-bold text-white">{(item.product.precioVenta * item.quantity).toFixed(2)}€</span>
+                        <button type="button" onClick={() => removeFromCart(item.product.id)} className="text-slate-500 hover:text-red-400 transition-colors relative z-20" title="Quitar de la cesta">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>

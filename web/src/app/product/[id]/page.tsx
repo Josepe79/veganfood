@@ -8,9 +8,10 @@ import { Metadata } from 'next';
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const id = (await params).id;
   const product = await prisma.product.findUnique({
-    where: { id: params.id }
+    where: { id }
   });
 
   if (!product) return { title: 'Producto No Encontrado - VeganFood' };
@@ -21,9 +22,10 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
   };
 }
 
-export default async function ProductDetail({ params }: { params: { id: string } }) {
+export default async function ProductDetail({ params }: { params: Promise<{ id: string }> }) {
+  const id = (await params).id;
   const product = await prisma.product.findUnique({
-    where: { id: params.id }
+    where: { id }
   });
 
   if (!product) {
