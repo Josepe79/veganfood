@@ -23,6 +23,9 @@ model Product {
   descripcion     String?
   ingredientes    String?
 
+  precioCompetencia Float?
+  competenciaUrl    String?
+
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
   orderItems      OrderItem[]

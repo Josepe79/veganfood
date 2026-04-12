@@ -22,6 +22,12 @@ export default async function AdminDashboard() {
   });
   const stockAgotado = agotadosList.length;
 
+  const priceIntelligence = await prisma.product.findMany({
+      where: { precioCompetencia: { not: null } },
+      select: { id: true, nombre: true, marca: true, precioOriginal: true, precioVenta: true, precioCompetencia: true, competenciaUrl: true },
+      orderBy: { nombre: 'asc' }
+  });
+
   // Consolidación de Lista de la Compra Mayorista (Feliubadaló)
   const consolidated = new Map();
   let expectedB2BCost = 0;
@@ -254,6 +260,76 @@ export default async function AdminDashboard() {
                             <p className="text-xs text-slate-300 line-clamp-3 leading-tight">{prod.nombre}</p>
                         </div>
                     ))}
+                </div>
+            )}
+        </div>
+      </div>
+      
+      {/* Sección Inferior 2: Pricing Intelligence (Google Shopping API) */}
+      <div className="mt-8">
+        <div className="glass p-6 border-blue-500/20">
+            <h2 className="text-xl font-bold text-blue-400 mb-2 flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 18V6"/></svg>
+                Pricing Intelligence vs Mercado
+            </h2>
+            <p className="text-xs text-slate-400 mb-6">Comparativa en vivo de nuestro umbral de rentabilidad frente al precio más bajo encontrado en Internet (Google Shopping Scraper).</p>
+            
+            {priceIntelligence.length === 0 ? (
+                <div className="text-center py-6 text-slate-500 text-sm border border-slate-700/50 rounded-lg border-dashed">
+                    Motor SerpAPI en espera. Ejecuta 'npm run sync:prices' para iniciar escrutinio del mercado.
+                </div>
+            ) : (
+                <div className="overflow-x-auto max-h-[500px] overflow-y-auto">
+                    <table className="w-full text-left border-collapse text-sm">
+                        <thead className="sticky top-0 bg-slate-900 z-10 shadow-md">
+                            <tr className="text-slate-500 border-b border-slate-700/50">
+                                <th className="pb-3 pl-2 font-medium">Producto a Examen</th>
+                                <th className="pb-3 font-medium text-center">Costo Feliubadaló</th>
+                                <th className="pb-3 font-medium text-center">Nuestro PVP</th>
+                                <th className="pb-3 font-medium text-center">Mercado Google</th>
+                                <th className="pb-3 font-medium text-right pr-4">Estado / Delta</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {priceIntelligence.map((prod, idx) => {
+                                const nuestro = prod.precioVenta;
+                                const mercado = prod.precioCompetencia!;
+                                const costo = prod.precioOriginal;
+                                
+                                let alertLevel = "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"; // Somos más baratos
+                                let statusMsg = "Competitivo";
+                                let diff = mercado - nuestro;
+                                
+                                if (mercado < nuestro && mercado > costo) {
+                                  alertLevel = "bg-amber-500/10 border-amber-500/30 text-amber-400"; // Mercado gana pero podemos ajustar margen
+                                  statusMsg = "Ajustable";
+                                } else if (mercado <= costo) {
+                                  alertLevel = "bg-red-500/10 border-red-500/30 text-red-500 font-bold"; // Mercado vende más barato de lo que a nosotros nos cuesta
+                                  statusMsg = "Pérdida Crítica";
+                                }
+
+                                return (
+                                <tr key={prod.id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
+                                    <td className="py-4 pl-2">
+                                        <p className="font-semibold text-slate-200 line-clamp-1">{prod.nombre}</p>
+                                        <p className="text-xs text-slate-500">{prod.marca}</p>
+                                    </td>
+                                    <td className="py-4 text-center font-mono text-slate-400">{costo.toFixed(2)}€</td>
+                                    <td className="py-4 text-center font-mono text-white bg-slate-800/50 rounded-lg">{nuestro.toFixed(2)}€</td>
+                                    <td className="py-4 text-center">
+                                      <a href={prod.competenciaUrl || "#"} target="_blank" className="font-mono text-blue-300 hover:underline">{mercado.toFixed(2)}€</a>
+                                    </td>
+                                    <td className="py-4 text-right pr-4">
+                                        <div className={`inline-flex items-center gap-2 border px-3 py-1 rounded-md ${alertLevel}`}>
+                                            <span className="text-xs uppercase tracking-wide">{statusMsg}</span>
+                                            <span className="font-mono">{diff > 0 ? "+" : ""}{diff.toFixed(2)}€</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                                )
+                            })}
+                        </tbody>
+                    </table>
                 </div>
             )}
         </div>
