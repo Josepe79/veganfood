@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { sendOrderConfirmationEmail } from "@/lib/mailer";
 
 export async function POST(req: Request) {
   try {
@@ -20,6 +21,10 @@ export async function POST(req: Request) {
           data: { status: "PAID" }
         });
         console.log(`✅ Orden ${order.id} marcada como PAGADA exitosamente.`);
+
+        // Disparamos correo asíncrono al cliente (sin bloquear la API)
+        sendOrderConfirmationEmail(order.customerEmail, order.id, order.customerName, order.totalAmount)
+            .catch(err => console.error("Error disparando promise de email transaccional:", err));
       }
     }
 
