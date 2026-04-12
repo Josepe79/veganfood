@@ -51,12 +51,9 @@ export default function CheckoutPage() {
       });
 
       const data = await res.json();
-      if (res.ok) {
-        // En un entorno de producción, aquí invocaríamos RevolutCheckout(data.public_id)
-        // O haríamos window.location.href = data.revolut_pay_url;
-        alert("Orden Creada: Simulando pasarela de Revolut... public_id: " + data.orderId);
-        clearCart();
-        router.push("/");
+      if (res.ok && data.checkout_url) {
+        // Redirigir de inmediato al banco y el banco nos mandará de vuelta a /success
+        window.location.href = data.checkout_url;
       } else {
         alert("Error de procesamiento: " + data.error);
       }

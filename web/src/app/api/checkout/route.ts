@@ -29,23 +29,52 @@ export async function POST(req: Request) {
       }
     });
 
-    // 2. Aquí conectaríamos con Revolut Merchant API
-    // Revolut Flow: 
-    // const revolutResponse = await fetch("https://sandbox-merchant.revolut.com/api/1.0/orders", {
-    //   headers: { "Authorization": `Bearer ${process.env.REVOLUT_SECRET_KEY}` }, ...
-    // })
-    // const data = await revolutResponse.json();
-    // const revolutPublicId = data.public_id;
-    // await prisma.order.update({ where: { id: order.id }, data: { revolutOrderId: data.id } });
+    if (!process.env.REVOLUT_SECRET_KEY) {
+      throw new Error("REVOLUT_SECRET_KEY no está configurada en el servidor.");
+    }
 
-    // FIX: Simulamos el token público de revolut para probar
-    const fakeRevolutPublicId = `rev_pub_${Math.random().toString(36).substring(7)}`;
+    const isSandbox = process.env.REVOLUT_SECRET_KEY.startsWith('sand_');
+    const baseUrl = isSandbox ? "https://sandbox-merchant.revolut.com" : "https://merchant.revolut.com";
+
+    const originUrl = req.headers.get("origin") || "https://veganfood.es";
+
+    // Llamada oficial a Revolut Merchant API
+    const revolutResponse = await fetch(`${baseUrl}/api/1.0/orders`, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${process.env.REVOLUT_SECRET_KEY}`,
+        "Content-Type": "application/json",
+        "Accept": "application/json"
+      },
+      body: JSON.stringify({
+        amount: Math.round(totalAmount * 100), // En céntimos
+        currency: "EUR",
+        merchant_order_ext_ref: order.id,
+        customer_email: customer.email,
+        description: `VeganFood - Compra #${order.id.slice(-6)}`,
+        redirect_url: `${originUrl}/success`
+      })
+    });
+
+    if (!revolutResponse.ok) {
+      const errorText = await revolutResponse.text();
+      console.error("Revolut Error:", errorText);
+      throw new Error("Fallo al contactar con la pasarela bancaria.");
+    }
+
+    const data = await revolutResponse.json();
     
-    // Devolvemos el ID de Revolut para que el Frontend inyecte el Widget de tarjeta
+    // Guardamos el token identificador de revolut de vuelta en nuestra base de datos
+    await prisma.order.update({
+      where: { id: order.id },
+      data: { revolutOrderId: data.id }
+    });
+
+    // Devolvemos la URL segura al frontend
     return NextResponse.json({ 
       success: true, 
       orderId: order.id,
-      public_id: fakeRevolutPublicId
+      checkout_url: data.checkout_url
     }, { status: 200 });
 
   } catch (error: any) {
