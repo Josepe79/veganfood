@@ -15,10 +15,15 @@ export function Nav() {
           <span className="text-xl font-bold tracking-tight text-white">VeganFood<span className="text-primary">.es</span></span>
         </Link>
         
-        <div className="hidden md:flex items-center gap-6 font-medium text-sm">
-          <Link href="/" className="text-primary border-b-2 border-primary pb-1">Catálogo</Link>
-          <a href="#" className="hover:text-primary transition-colors text-slate-300">Novedades</a>
-          <a href="#" className="hover:text-primary transition-colors text-slate-300">Promociones</a>
+        <div className="hidden lg:flex items-center gap-5 font-medium text-[13px] uppercase tracking-wider text-slate-300">
+          <Link href="/?q=semilla" className="hover:text-emerald-400 transition-colors">Bio Despensa</Link>
+          <Link href="/?q=veg" className="hover:text-emerald-400 transition-colors">Sustitutos</Link>
+          <Link href="/?q=chocolate" className="hover:text-emerald-400 transition-colors">Snacks & Dulces</Link>
+          <Link href="/?q=proteina" className="hover:text-emerald-400 transition-colors">Suplementación</Link>
+          <Link href="/?q=flash" className="text-purple-400 hover:text-purple-300 transition-colors font-black flex items-center gap-1">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+            Ofertas Flash
+          </Link>
         </div>
         
         <div className="flex items-center gap-4">

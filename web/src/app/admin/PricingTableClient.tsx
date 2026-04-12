@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { hideProductsBulk } from "./actions";
+import { hideProductsBulk, promoteProductsBulk } from "./actions";
 import { PricingActions } from "./PricingActions";
 
 type IntelligenceItem = {
@@ -79,6 +79,17 @@ export function PricingTableClient({ data }: { data: IntelligenceItem[] }) {
         }
     };
 
+    const handleBulkPromote = () => {
+        if (selectedIds.size === 0) return;
+        if (confirm(`¿Destacar los ${selectedIds.size} productos seleccionados en la portada principal?`)) {
+            startTransition(() => {
+                promoteProductsBulk(Array.from(selectedIds), true).then(() => {
+                    setSelectedIds(new Set());
+                });
+            });
+        }
+    };
+
     return (
         <div className="w-full">
             {/* Header Toolbar */}
@@ -106,20 +117,35 @@ export function PricingTableClient({ data }: { data: IntelligenceItem[] }) {
 
                 <div className="flex items-center gap-2">
                     {selectedIds.size > 0 && (
-                        <button 
-                            onClick={handleBulkHide}
-                            disabled={isPending}
-                            className="bg-red-600 hover:bg-red-500 text-white px-4 py-2 rounded-lg text-sm font-semibold flex items-center gap-2 shadow-lg shadow-red-900/20 transition-all active:scale-95"
-                        >
-                            {isPending ? (
-                                <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                            ) : (
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path></svg>
-                            )}
-                            Purgar {selectedIds.size} ítems
-                        </button>
+                        <div className="flex gap-2">
+                            <button 
+                                onClick={handleBulkPromote}
+                                disabled={isPending}
+                                className="bg-purple-600 hover:bg-purple-500 text-white px-4 py-2 rounded-lg text-sm font-semibold flex items-center gap-2 shadow-[0_0_15px_purple] transition-all active:scale-95"
+                            >
+                                {isPending ? (
+                                    <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                                ) : (
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                                )}
+                                Promocionar {selectedIds.size}
+                            </button>
+                            <button 
+                                onClick={handleBulkHide}
+                                disabled={isPending}
+                                className="bg-red-600 hover:bg-red-500 text-white px-4 py-2 rounded-lg text-sm font-semibold flex items-center gap-2 shadow-lg shadow-red-900/20 transition-all active:scale-95"
+                            >
+                                {isPending ? (
+                                    <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                                ) : (
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path></svg>
+                                )}
+                                Purgar {selectedIds.size}
+                            </button>
+                        </div>
                     )}
                 </div>
+
             </div>
 
             {/* Visual Table */}

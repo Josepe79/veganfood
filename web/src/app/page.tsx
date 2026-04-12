@@ -13,9 +13,12 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ q
 
   // Construir consulta dinámica Prisma
   const whereClause: any = { oculto: false };
-  if (q) {
+  if (q === "flash") {
+    whereClause.enPromocion = true;
+  } else if (q) {
     whereClause.nombre = { contains: q, mode: 'insensitive' };
   }
+  
   if (marca) {
     whereClause.marca = { equals: marca };
   }
@@ -24,6 +27,12 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ q
   const products = await prisma.product.findMany({
     where: whereClause,
     orderBy: { nombre: 'asc' }
+  });
+
+  const novedades = await prisma.product.findMany({
+    where: { oculto: false },
+    orderBy: { createdAt: 'desc' },
+    take: 4
   });
 
   const promos = await prisma.product.findMany({
@@ -49,11 +58,16 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ q
         <div className="absolute top-0 right-0 w-96 h-96 bg-primary/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
         <div className="relative z-10 md:w-2/3">
           <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight text-white mb-4">
-            Nutrición 100% <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-primary">Vegana</span>
+            Tu despensa <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-primary">vegana</span>, directa y sin filtros.
           </h1>
-          <p className="text-lg text-slate-300 mb-8 max-w-xl">
-            Accede al mayor catálogo mayorista especializado en dietética natural. Sin stock oculto, precios totalmente dinámicos y sin interrupciones.
+          <p className="text-lg text-slate-300 mb-6 max-w-xl leading-relaxed">
+            Accede a la mayor selección de productos plant-based y dietética natural de España. Sin esperas, sin sorpresas de stock y con envío express de nuestra nevera a tu cocina.
           </p>
+          <div className="mb-10">
+             <Link href="#novedades" className="inline-block bg-white text-slate-900 font-bold px-8 py-3 rounded-full hover:bg-emerald-400 hover:text-slate-900 transition-all shadow-lg hover:shadow-emerald-400/50 hover:-translate-y-1">
+               Ver novedades de hoy
+             </Link>
+          </div>
           <form action="/" method="GET" className="flex flex-col sm:flex-row bg-slate-900/60 p-2 rounded-2xl border border-slate-700/50 backdrop-blur-sm max-w-2xl w-full gap-2">
             <input 
               name="q"
@@ -106,8 +120,11 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ q
         <div className="mb-16">
           <div className="flex items-center gap-3 mb-6">
             <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#a855f7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-            <h2 className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-fuchsia-500 tracking-tight">Selección Estrella</h2>
-            <span className="ml-2 px-3 py-1 bg-purple-500/20 text-purple-300 border border-purple-500/30 rounded-full text-xs font-bold uppercase tracking-widest shadow-[0_0_10px_rgba(168,85,247,0.4)]">Ofertas Dinámicas</span>
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#a855f7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+            <div>
+              <h2 className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-fuchsia-500 tracking-tight">Lo que estamos probando esta semana</h2>
+              <p className="text-slate-400 mt-1">Filtramos el catálogo mayorista para traerte solo lo que de verdad merece la pena.</p>
+            </div>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {promos.map((promo) => (
@@ -229,6 +246,82 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ q
           </div>
         )}
       </div>
+
+      {/* Trust Block Icons */}
+      {!q && !marca && (
+        <div className="mt-24 mb-16 grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="glass-card p-8 text-center bg-emerald-900/10 border-emerald-500/20 shadow-[0_0_30px_rgba(16,185,129,0.05)] transform hover:-translate-y-1 transition-transform">
+            <div className="w-16 h-16 mx-auto bg-emerald-500/20 text-emerald-400 rounded-full flex items-center justify-center mb-6 shadow-[0_0_15px_rgba(16,185,129,0.2)]">
+               <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+            </div>
+            <h3 className="text-xl font-bold text-white mb-3 tracking-tight">Stock Real</h3>
+            <p className="text-slate-400 text-sm leading-relaxed">Sincronizados con el almacén central de nuestro origen. Lo que ves, lo tienes. Sin sorpresas de inventario, te aseguramos el envío.</p>
+          </div>
+          <div className="glass-card p-8 text-center bg-blue-900/10 border-blue-500/20 shadow-[0_0_30px_rgba(59,130,246,0.05)] transform hover:-translate-y-1 transition-transform">
+            <div className="w-16 h-16 mx-auto bg-blue-500/20 text-blue-400 rounded-full flex items-center justify-center mb-6 shadow-[0_0_15px_rgba(59,130,246,0.2)]">
+               <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+            </div>
+            <h3 className="text-xl font-bold text-white mb-3 tracking-tight">Frescura Garantizada</h3>
+            <p className="text-slate-400 text-sm leading-relaxed">Logística de rotación altísima. Tu pedido no pasa meses guardado en una estantería, llega directo con máxima fecha de caducidad.</p>
+          </div>
+          <div className="glass-card p-8 text-center bg-amber-900/10 border-amber-500/20 shadow-[0_0_30px_rgba(245,158,11,0.05)] transform hover:-translate-y-1 transition-transform">
+            <div className="w-16 h-16 mx-auto bg-amber-500/20 text-amber-400 rounded-full flex items-center justify-center mb-6 shadow-[0_0_15px_rgba(245,158,11,0.2)]">
+               <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"></path></svg>
+            </div>
+            <h3 className="text-xl font-bold text-white mb-3 tracking-tight">100% Ético</h3>
+            <p className="text-slate-400 text-sm leading-relaxed">Auditoría estricta continua. No vendemos trazas ni crueldad animal. Filtramos todos los registros por tu tranquilidad.</p>
+          </div>
+        </div>
+      )}
+
+      {/* Recién Llegados - Carrusel Visual de Novedades */}
+      {!q && !marca && novedades.length > 0 && (
+        <div id="novedades" className="mt-20 scroll-mt-24 mb-10 p-10 bg-slate-800/20 rounded-3xl border border-white/5 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl pointer-events-none"></div>
+          <div className="mb-8">
+            <h2 className="text-3xl font-extrabold text-white tracking-tight">Recién llegados a la lonja vegana ⛵</h2>
+            <p className="text-slate-400 mt-2">Nuevas incorporaciones procesadas hoy en nuestra base logística.</p>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+             {novedades.map((nov) => (
+                <Link href={`/product/${nov.id}`} key={nov.id} className="block group">
+                  <div className="bg-slate-900/50 border border-slate-700/50 rounded-2xl overflow-hidden shadow-lg p-4 flex flex-col h-full transform transition-all hover:scale-105">
+                     <div className="relative h-32 w-full bg-slate-800 rounded-xl mb-3 p-2 flex items-center justify-center">
+                        {nov.imagen ? (
+                          <Image src={nov.imagen} alt={nov.nombre} fill className="object-contain p-2" sizes="200px" />
+                        ) : (
+                          <span className="text-xs text-slate-500">Sin foto</span>
+                        )}
+                        <span className="absolute -top-2 -right-2 bg-blue-500 text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-lg">New</span>
+                     </div>
+                     <p className="text-xs font-medium text-emerald-400 mb-1 line-clamp-1">{nov.marca}</p>
+                     <h4 className="text-sm text-slate-200 line-clamp-2 leading-tight group-hover:text-emerald-300 transition-colors mb-2 flex-grow">{nov.nombre}</h4>
+                     <p className="font-bold text-white">{nov.precioVenta.toFixed(2)}€</p>
+                  </div>
+                </Link>
+             ))}
+          </div>
+        </div>
+      )}
+
+      {/* Cómo Lo Hacemos / Transparencia */}
+      {!q && !marca && (
+        <div className="mt-20 glass rounded-3xl p-10 border border-slate-700/50 text-center md:text-left flex flex-col md:flex-row items-center gap-10">
+           <div className="md:w-1/3 flex justify-center">
+              <div className="w-32 h-32 bg-gradient-to-br from-emerald-500/20 to-primary/20 rounded-3xl rotate-12 flex items-center justify-center border border-emerald-500/30 shadow-[0_0_30px_rgba(16,185,129,0.15)]">
+                 <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-emerald-400 -rotate-12"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+              </div>
+           </div>
+           <div className="md:w-2/3">
+              <h2 className="text-2xl font-bold text-white tracking-tight mb-4 text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-white">¿Cómo lo hacemos posible?</h2>
+              <p className="text-slate-300 leading-relaxed text-lg font-light">
+                 Trabajamos con un modelo ético directo <strong>"Just-In-Time"</strong>. Cada mañana seleccionamos algorítmicamente los productos más competitivos de nuestro distribuidor mayorista especializado, y los procesamos en nuestra base central para enviártelo esa misma tarde. <br/><br/>
+                 Esto nos permite aniquilar a los especuladores de precios, garantizarte ofertas dinámicas ultra-rentables cada 24 horas y, sobre todo, despacharte el producto con la <strong>máxima fecha de caducidad posible</strong> directamente desde la cadena de frío del proveedor origen a tu mesa.
+              </p>
+           </div>
+        </div>
+      )}
+
     </div>
   );
 }

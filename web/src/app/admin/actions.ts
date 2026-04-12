@@ -102,3 +102,17 @@ export async function togglePromotion(productId: string, promote: boolean) {
         return { success: false, error: e.message };
     }
 }
+
+export async function promoteProductsBulk(productIds: string[], promote: boolean = true) {
+    try {
+        await prisma.product.updateMany({
+            where: { id: { in: productIds } },
+            data: { enPromocion: promote }
+        });
+        revalidatePath('/');
+        revalidatePath('/admin');
+        return { success: true };
+    } catch(e: any) {
+        return { success: false, error: e.message };
+    }
+}
