@@ -30,10 +30,6 @@ export function Nav() {
               </span>
             )}
           </Link>
-          
-          <button className="hidden md:block px-5 py-2 bg-gradient-to-r from-primary to-emerald-400 text-slate-900 font-bold rounded-lg hover:shadow-lg hover:shadow-primary/40 hover:-translate-y-0.5 transition-all outline-none">
-            Admin
-          </button>
         </div>
       </div>
     </nav>

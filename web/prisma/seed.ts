@@ -31,10 +31,10 @@ async function main() {
   let descartados = 0
 
   for (const item of productos) {
-    if (!item.descripcion || item.descripcion.trim() === "") {
-        descartados++;
-        continue;
-    }
+    // if (!item.descripcion || item.descripcion.trim() === "") {
+    //     descartados++;
+    //     continue;
+    // }
 
     // Parsear precio b2b
     // Feliubadalo devuelve algo como "4,30 €" o "4,30"

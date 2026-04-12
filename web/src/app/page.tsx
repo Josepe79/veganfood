@@ -1,6 +1,7 @@
 import { prisma } from "../lib/prisma";
 import Image from "next/image";
 import { AddToCartButton } from "@/components/AddToCartButton";
+import Link from 'next/link';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -63,31 +64,34 @@ export default async function Home() {
               </div>
             )}
             
-            <div className="relative pt-[100%] w-full bg-white/5 rounded-t-xl overflow-hidden p-6 flex items-center justify-center">
-              <div className="absolute inset-0 p-8 flex items-center justify-center">
-                {product.imagen ? (
-                  <Image 
-                    src={product.imagen} 
-                    alt={product.nombre} 
-                    width={250} 
-                    height={250} 
-                    className={`object-contain max-h-full transition-transform duration-500 group-hover:scale-110 ${product.agotado ? 'opacity-50 grayscale' : ''}`}
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-slate-800 rounded-xl text-slate-500">
-                    <svg className="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                  </div>
-                )}
+            <Link href={`/product/${product.id}`} className="block flex-grow cursor-pointer outline-none">
+              <div className="relative pt-[100%] w-full bg-white/5 rounded-t-xl overflow-hidden p-6 flex items-center justify-center">
+                <div className="absolute inset-0 p-8 flex items-center justify-center">
+                  {product.imagen ? (
+                    <Image 
+                      src={product.imagen} 
+                      alt={product.nombre} 
+                      width={250} 
+                      height={250} 
+                      className={`object-contain max-h-full transition-transform duration-500 group-hover:scale-110 ${product.agotado ? 'opacity-50 grayscale' : ''}`}
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-slate-800 rounded-xl text-slate-500">
+                      <svg className="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-            
-            <div className="p-5 flex flex-col flex-grow border-t border-white/5">
-              <div className="text-xs font-medium text-primary mb-2 tracking-wide uppercase">{product.marca}</div>
-              <h3 className="font-semibold text-slate-200 leading-snug mb-3 line-clamp-2">
-                {product.nombre}
-              </h3>
               
-              <div className="mt-auto">
+              <div className="px-5 pt-5 flex flex-col border-t border-white/5">
+                <div className="text-xs font-medium text-primary mb-2 tracking-wide uppercase">{product.marca}</div>
+                <h3 className="font-semibold text-slate-200 leading-snug mb-3 line-clamp-2 hover:text-emerald-400 transition-colors">
+                  {product.nombre}
+                </h3>
+              </div>
+            </Link>
+            
+            <div className="px-5 pb-5 mt-auto">
                 <div className="flex items-center justify-between">
                   <div className="text-2xl font-bold font-sans text-white border-b-2 border-transparent">
                     {product.precioVenta.toFixed(2)}€
