@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "npx prisma generate && npx prisma db push && next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "sync:stock": "npx tsx prisma/sync_stock.ts"
   },
   "dependencies": {
     "@prisma/client": "5.22.0",
