@@ -37,13 +37,31 @@ export default async function ProductDetail({ params }: { params: Promise<{ id: 
     
     let cleaned = text.replace(/\\n/g, '\n').replace(/\\r/g, '');
     
-    // We strip the whole block of marketing text that got scraped from the wholesaler
-    // Using [\s\S] instead of dotall (s) flag for older TS target compatibility
-    cleaned = cleaned.replace(/Si no encuentras lo que buscas[\s\S]*?Pídelo aquí/g, '');
-    cleaned = cleaned.replace(/Envíos desde 4h[\s\S]*?Fácil gestión de devolución\./g, '');
-    cleaned = cleaned.replace(/Más de 2500 productos[\s\S]*?900 marcas\./g, '');
+    // Lista negra estricta de frases de relleno de Feliubadaló
+    const spamPhrases = [
+      "Si no encuentras lo que buscas",
+      "Pídelo aquí",
+      "Envíos desde 4h",
+      "Portes Gratis",
+      "Fácil gestión de devolución",
+      "Más de 2500 productos y 900 marcas",
+      ".", // Limpiará los puntos sueltos que puedan quedar en medio de la nada si se formaron
+    ];
     
-    return cleaned.trim() || "Un producto 100% verificado y validado por la plataforma VeganFood, trayendo la mejor calidad directamente desde el obrador/distribuidor hasta tu hogar de forma sostenible.";
+    spamPhrases.forEach(phrase => {
+      if (phrase === ".") {
+         // Fix solo para puntos huérfanos generados tras limpiar frases sin espacio
+         cleaned = cleaned.replace(/\.\./g, '.').replace(/^\.+|\.+$/g, '').trim();
+      } else {
+         const regex = new RegExp(phrase, 'gi');
+         cleaned = cleaned.replace(regex, '');
+      }
+    });
+    
+    // Limpieza final de puntos y espacios huérfanos que dejó el replace 
+    cleaned = cleaned.replace(/ +/g, ' ').replace(/\s*\.\s*(?=\.)/g, '').replace(/^\s*[\.\,]\s*|\s*[\.\,]\s*$/g, '').trim();
+
+    return cleaned || "Un producto 100% verificado y validado por la plataforma VeganFood, trayendo la mejor calidad directamente desde el obrador/distribuidor hasta tu hogar de forma sostenible.";
   };
 
   return (
