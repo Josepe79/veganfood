@@ -32,3 +32,31 @@ export async function deleteOrder(orderId: string) {
     return { success: false, error: error.message };
   }
 }
+
+export async function hideProduct(productId: string) {
+    try {
+        await prisma.product.update({
+            where: { id: productId },
+            data: { oculto: true }
+        });
+        revalidatePath('/');
+        revalidatePath('/admin');
+        return { success: true };
+    } catch (e: any) {
+        return { success: false, error: e.message };
+    }
+}
+
+export async function updateProductPrice(productId: string, newPrice: number) {
+    try {
+        await prisma.product.update({
+            where: { id: productId },
+            data: { precioVenta: newPrice }
+        });
+        revalidatePath('/');
+        revalidatePath('/admin');
+        return { success: true };
+    } catch(e: any) {
+        return { success: false, error: e.message };
+    }
+}

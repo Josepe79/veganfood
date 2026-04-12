@@ -53,7 +53,8 @@ async function main() {
                          where: { id: prod.id },
                          data: { 
                              precioCompetencia: cleanPrice,
-                             competenciaUrl: competitorName 
+                             competenciaUrl: link,
+                             competenciaNombre: competitorName
                          }
                      });
                      console.log(`   └─ 🎯 Competidor Extremo: ${competitorName} lo tiene a ${cleanPrice}€`);

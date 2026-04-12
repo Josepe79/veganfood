@@ -12,7 +12,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ q
   const marca = params.marca || "";
 
   // Construir consulta dinámica Prisma
-  const whereClause: any = {};
+  const whereClause: any = { oculto: false };
   if (q) {
     whereClause.nombre = { contains: q, mode: 'insensitive' };
   }

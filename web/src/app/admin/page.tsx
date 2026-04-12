@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import Image from "next/image";
 import { AdminActions } from "./AdminActions";
 import { DeleteOrderButton } from "./DeleteOrderButton";
+import { PricingActions } from "./PricingActions";
 
 export const dynamic = 'force-dynamic';
 
@@ -24,7 +25,7 @@ export default async function AdminDashboard() {
 
   const priceIntelligence = await prisma.product.findMany({
       where: { precioCompetencia: { not: null } },
-      select: { id: true, nombre: true, marca: true, precioOriginal: true, precioVenta: true, precioCompetencia: true, competenciaUrl: true },
+      select: { id: true, nombre: true, marca: true, precioOriginal: true, precioVenta: true, precioCompetencia: true, competenciaUrl: true, competenciaNombre: true },
       orderBy: { nombre: 'asc' }
   });
 
@@ -318,11 +319,15 @@ export default async function AdminDashboard() {
                                     <td className="py-4 text-center font-mono text-white bg-slate-800/50 rounded-lg">{nuestro.toFixed(2)}€</td>
                                     <td className="py-4 text-center">
                                       <a href={prod.competenciaUrl || "#"} target="_blank" className="font-mono text-blue-300 hover:underline">{mercado.toFixed(2)}€</a>
+                                      {prod.competenciaNombre && <p className="text-[10px] text-slate-500 mt-1 uppercase tracking-wider">{prod.competenciaNombre}</p>}
                                     </td>
                                     <td className="py-4 text-right pr-4">
-                                        <div className={`inline-flex items-center gap-2 border px-3 py-1 rounded-md ${alertLevel}`}>
-                                            <span className="text-xs uppercase tracking-wide">{statusMsg}</span>
-                                            <span className="font-mono">{diff > 0 ? "+" : ""}{diff.toFixed(2)}€</span>
+                                        <div className="flex flex-col items-end gap-2">
+                                            <div className={`inline-flex items-center gap-2 border px-3 py-1 rounded-md ${alertLevel}`}>
+                                                <span className="text-xs uppercase tracking-wide">{statusMsg}</span>
+                                                <span className="font-mono">{diff > 0 ? "+" : ""}{diff.toFixed(2)}€</span>
+                                            </div>
+                                            <PricingActions productId={prod.id} currentPrice={nuestro} />
                                         </div>
                                     </td>
                                 </tr>
