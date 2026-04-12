@@ -50,9 +50,9 @@ export async function GET() {
 
       xml += `    <item>
       <g:id>${product.id}</g:id>
-      <g:title>${title}</g:title>
-      <g:description>${description}</g:description>
-      <g:link>${DOMAIN}/product/${product.id}</g:link>
+      <title>${title}</title>
+      <description>${description}</description>
+      <link>${DOMAIN}/product/${product.id}</link>
       <g:image_link>${imageLink}</g:image_link>
       <g:availability>${availability}</g:availability>
       <g:price>${price}</g:price>
