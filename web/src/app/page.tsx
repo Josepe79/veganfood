@@ -6,11 +6,37 @@ import Link from 'next/link';
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-export default async function Home() {
+export default async function Home({ searchParams }: { searchParams: Promise<{ q?: string, marca?: string }> }) {
+  const params = await searchParams;
+  const q = params.q || "";
+  const marca = params.marca || "";
+
+  // Construir consulta dinámica Prisma
+  const whereClause: any = {};
+  if (q) {
+    whereClause.nombre = { contains: q, mode: 'insensitive' };
+  }
+  if (marca) {
+    whereClause.marca = { equals: marca };
+  }
+
+  // 1. Obtener lista de productos filtrada
   const products = await prisma.product.findMany({
+    where: whereClause,
     orderBy: { nombre: 'asc' }
   });
 
+  // 2. Obtener lista de marcas únicas reales de la DB para poblar el dropdown
+  const uniqueBrands = await prisma.product.findMany({
+    select: { marca: true },
+    distinct: ['marca'],
+    orderBy: { marca: 'asc' }
+  });
+
+  // Texto dinámico para el encabezado del Grid
+  const gridTitle = (q || marca) ? `Resultados de búsqueda (${products.length})` : "Catálogo Destacado";
+  const gridSubtitle = q ? `Filtrando por "${q}"` : "Explora nuestra colección de proveedores top";
+  
   return (
     <div className="pt-24 pb-10">
       {/* Hero Header */}
@@ -23,16 +49,44 @@ export default async function Home() {
           <p className="text-lg text-slate-300 mb-8 max-w-xl">
             Accede al mayor catálogo mayorista especializado en dietética natural. Sin stock oculto, precios totalmente dinámicos y sin interrupciones.
           </p>
-          <div className="flex bg-slate-900/60 p-2 rounded-2xl border border-slate-700/50 backdrop-blur-sm max-w-md w-full">
+          <form action="/" method="GET" className="flex flex-col sm:flex-row bg-slate-900/60 p-2 rounded-2xl border border-slate-700/50 backdrop-blur-sm max-w-2xl w-full gap-2">
             <input 
+              name="q"
+              defaultValue={q}
               type="text" 
               placeholder="Ej: Tofu, Bebida de Avena..." 
               className="bg-transparent border-none text-white px-4 py-3 w-full focus:outline-none focus:ring-0 placeholder:text-slate-500"
             />
-            <button className="bg-primary hover:bg-primary-dark transition-colors text-white font-bold px-6 py-3 rounded-xl shadow-lg">
+            
+            <div className="relative border-t sm:border-t-0 sm:border-l border-slate-700/50 flex items-center min-w-[200px]">
+              <select name="marca" defaultValue={marca} className="appearance-none bg-transparent text-slate-300 w-full pl-4 pr-10 py-3 focus:outline-none focus:ring-0 cursor-pointer text-sm">
+                 <option value="" className="bg-slate-900">Cualquier Marca</option>
+                 {uniqueBrands.filter(b => b.marca).map(b => (
+                    <option key={b.marca} value={b.marca} className="bg-slate-900">{b.marca}</option>
+                 ))}
+              </select>
+              <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+              </div>
+            </div>
+
+            <button type="submit" className="bg-primary hover:bg-primary-dark transition-colors text-white font-bold px-8 py-3 rounded-xl shadow-lg mt-2 sm:mt-0">
               Buscar
             </button>
-          </div>
+            
+            {(q || marca) && (
+              <Link href="/" className="sm:hidden mt-2 text-center text-xs text-slate-400 underline">Limpiar filtros</Link>
+            )}
+          </form>
+          
+          {(q || marca) && (
+            <div className="mt-4 hidden sm:block">
+               <Link href="/" className="text-sm text-slate-400 hover:text-white transition-colors bg-white/5 px-4 py-1.5 rounded-full border border-white/10 flex items-center gap-2 inline-flex">
+                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                 Borrar Filtros
+               </Link>
+            </div>
+          )}
         </div>
         <div className="md:w-1/3 flex justify-center relative">
            <div className="absolute inset-0 bg-gradient-to-br from-emerald-400/20 to-transparent blur-2xl rounded-full"></div>
@@ -45,8 +99,8 @@ export default async function Home() {
       {/* Grid Menu Title */}
       <div className="flex items-end justify-between mb-8">
         <div>
-          <h2 className="text-3xl font-bold text-white tracking-tight">Catálogo Destacado</h2>
-          <p className="text-slate-400 mt-1">Explora nuestra colección de proveedores top</p>
+          <h2 className="text-3xl font-bold text-white tracking-tight">{gridTitle}</h2>
+          <p className="text-slate-400 mt-1">{gridSubtitle}</p>
         </div>
         <div className="hidden sm:flex gap-2">
            <span className="px-4 py-1.5 rounded-full text-sm font-medium bg-primary/20 text-emerald-400 border border-primary/30">Stock Real-Time</span>
