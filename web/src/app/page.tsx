@@ -156,9 +156,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ q
                   </Link>
                   <div className="mt-auto pt-4 flex items-end justify-between">
                     <div>
-                      {promo.pvpr && promo.pvpr !== "Libre" && (
-                        <p className="text-xs text-slate-500 line-through mb-1 tracking-wider">PVPR {promo.pvpr}</p>
-                      )}
+
                       <p className="text-3xl font-extrabold text-white tracking-tighter">
                         {promo.precioVenta.toFixed(2)}<span className="text-xl text-purple-400">€</span>
                       </p>
