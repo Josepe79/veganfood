@@ -3,6 +3,7 @@ import Image from "next/image";
 import { AdminActions } from "./AdminActions";
 import { DeleteOrderButton } from "./DeleteOrderButton";
 import { PricingActions } from "./PricingActions";
+import { PricingTableClient } from "./PricingTableClient";
 
 export const dynamic = 'force-dynamic';
 
@@ -24,7 +25,7 @@ export default async function AdminDashboard() {
   const stockAgotado = agotadosList.length;
 
   const priceIntelligence = await prisma.product.findMany({
-      where: { precioCompetencia: { not: null } },
+      where: { precioCompetencia: { not: null }, oculto: false },
       select: { id: true, nombre: true, marca: true, precioOriginal: true, precioVenta: true, precioCompetencia: true, competenciaUrl: true, competenciaNombre: true },
       orderBy: { nombre: 'asc' }
   });
@@ -280,68 +281,7 @@ export default async function AdminDashboard() {
                     Motor SerpAPI en espera. Ejecuta 'npm run sync:prices' para iniciar escrutinio del mercado.
                 </div>
             ) : (
-                <div className="overflow-x-auto max-h-[500px] overflow-y-auto">
-                    <table className="w-full text-left border-collapse text-sm">
-                        <thead className="sticky top-0 bg-slate-900 z-10 shadow-md">
-                            <tr className="text-slate-500 border-b border-slate-700/50">
-                                <th className="pb-3 pl-2 font-medium">Producto a Examen</th>
-                                <th className="pb-3 font-medium text-center">Costo Feliubadaló</th>
-                                <th className="pb-3 font-medium text-center">Nuestro PVP</th>
-                                <th className="pb-3 font-medium text-center">Mercado Google</th>
-                                <th className="pb-3 font-medium text-right pr-4">Estado / Delta</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {priceIntelligence.map((prod, idx) => {
-                                const nuestro = prod.precioVenta;
-                                const mercado = prod.precioCompetencia!;
-                                const costo = prod.precioOriginal;
-                                
-                                let alertLevel = "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"; // Somos más baratos
-                                let statusMsg = "Competitivo";
-                                let diff = mercado - nuestro;
-                                
-                                let finalUrl = prod.competenciaUrl || "#";
-                                if (finalUrl !== "#" && !finalUrl.startsWith("http")) {
-                                    // Limpieza de records viejos o URLs rotas
-                                    finalUrl = `https://www.google.com/search?q=${encodeURIComponent(prod.nombre + " " + prod.marca)}`;
-                                }
-
-                                if (mercado < nuestro && mercado > costo) {
-                                  alertLevel = "bg-amber-500/10 border-amber-500/30 text-amber-400"; // Mercado gana pero podemos ajustar margen
-                                  statusMsg = "Ajustable";
-                                } else if (mercado <= costo) {
-                                  alertLevel = "bg-red-500/10 border-red-500/30 text-red-500 font-bold"; // Mercado vende más barato de lo que a nosotros nos cuesta
-                                  statusMsg = "Pérdida Crítica";
-                                }
-
-                                return (
-                                <tr key={prod.id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
-                                    <td className="py-4 pl-2">
-                                        <p className="font-semibold text-slate-200 line-clamp-1">{prod.nombre}</p>
-                                        <p className="text-xs text-slate-500">{prod.marca}</p>
-                                    </td>
-                                    <td className="py-4 text-center font-mono text-slate-400">{costo.toFixed(2)}€</td>
-                                    <td className="py-4 text-center font-mono text-white bg-slate-800/50 rounded-lg">{nuestro.toFixed(2)}€</td>
-                                    <td className="py-4 text-center">
-                                      <a href={finalUrl} target="_blank" className="font-mono text-blue-300 hover:underline">{mercado.toFixed(2)}€</a>
-                                      {prod.competenciaNombre && <p className="text-[10px] text-slate-500 mt-1 uppercase tracking-wider">{prod.competenciaNombre}</p>}
-                                    </td>
-                                    <td className="py-4 text-right pr-4">
-                                        <div className="flex flex-col items-end gap-2">
-                                            <div className={`inline-flex items-center gap-2 border px-3 py-1 rounded-md ${alertLevel}`}>
-                                                <span className="text-xs uppercase tracking-wide">{statusMsg}</span>
-                                                <span className="font-mono">{diff > 0 ? "+" : ""}{diff.toFixed(2)}€</span>
-                                            </div>
-                                            <PricingActions productId={prod.id} currentPrice={nuestro} />
-                                        </div>
-                                    </td>
-                                </tr>
-                                )
-                            })}
-                        </tbody>
-                    </table>
-                </div>
+                <PricingTableClient data={priceIntelligence} />
             )}
         </div>
       </div>
