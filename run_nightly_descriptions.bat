@@ -1,4 +1,5 @@
 @echo off
+cd /d "%~dp0"
 echo ========================================================
 echo INICIANDO MOTOR DE DEEP SCRAPING DE FELIUBADALO (NIGHTLY)
 echo ========================================================
@@ -6,6 +7,7 @@ echo ========================================================
 echo.
 echo [1/3] Activando entorno virtual de Python y arrancando Headless Scraper...
 cd scraper
+
 call venv\Scripts\activate.bat
 python scraper_deep.py
 
