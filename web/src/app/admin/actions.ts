@@ -19,3 +19,16 @@ export async function marcarPedidosComoComprados() {
     return { success: false, error: error.message };
   }
 }
+
+export async function deleteOrder(orderId: string) {
+  try {
+    await prisma.order.delete({
+      where: { id: orderId }
+    });
+    revalidatePath("/admin");
+    return { success: true };
+  } catch(error: any) {
+    console.error("Error deleting order:", error);
+    return { success: false, error: error.message };
+  }
+}

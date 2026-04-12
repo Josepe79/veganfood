@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import Image from "next/image";
 import { AdminActions } from "./AdminActions";
+import { DeleteOrderButton } from "./DeleteOrderButton";
 
 export const dynamic = 'force-dynamic';
 
@@ -13,6 +14,10 @@ export default async function AdminDashboard() {
       }
     },
     orderBy: { createdAt: 'desc' }
+  });
+
+  const stockAgotado = await prisma.product.count({
+      where: { agotado: true }
   });
 
   // Consolidación de Lista de la Compra Mayorista (Feliubadaló)
@@ -64,6 +69,10 @@ export default async function AdminDashboard() {
         <div>
           <h1 className="text-4xl font-extrabold text-white tracking-tight">Centro de Recepción JIT</h1>
           <p className="text-slate-400 mt-2">Agrupador logístico en vivo para macro-pedidos B2B.</p>
+          <div className="mt-4 flex items-center gap-2">
+            <span className="bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-bold px-2 py-1 rounded-md uppercase tracking-wide">Stock Fast-Sync</span>
+            <span className="text-slate-400 text-sm font-medium">{stockAgotado} Referencias temporalmente agotadas en Feliubadaló.</span>
+          </div>
         </div>
         
         <div className="flex gap-4">
@@ -184,8 +193,11 @@ export default async function AdminDashboard() {
                                  <h3 className="font-bold text-slate-200 text-sm">{order.customerName}</h3>
                                  <p className="text-xs text-slate-400">{order.customerEmail}</p>
                              </div>
-                             <div className="bg-slate-800 rounded px-2 py-1 text-xs font-mono text-slate-300">
-                                 {new Date(order.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                             <div className="flex items-center gap-2">
+                                 <div className="bg-slate-800 rounded px-2 py-1 text-xs font-mono text-slate-300">
+                                     {new Date(order.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                                 </div>
+                                 <DeleteOrderButton orderId={order.id} />
                              </div>
                          </div>
                          <div className="space-y-2 mb-3">

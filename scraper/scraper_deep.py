@@ -3,6 +3,9 @@ import json
 import os
 from bs4 import BeautifulSoup
 from playwright.async_api import async_playwright
+from dotenv import load_dotenv
+
+load_dotenv()
 
 USERNAME = os.getenv("FELIUBADALO_EMAIL", "")
 PASSWORD = os.getenv("FELIUBADALO_PASSWORD", "")
