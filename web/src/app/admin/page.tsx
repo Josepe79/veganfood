@@ -114,19 +114,19 @@ export default async function AdminDashboard() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         
-        {/* Lado Izquierdo: Logística B2B */}
+        {/* Lado Izquierdo: Logística B2B (2/3 de ancho) */}
         <div className="lg:col-span-2 space-y-8">
           
           <div className="glass p-6">
             <div className="flex items-center justify-between mb-6 border-b border-white/10 pb-4">
                <div>
                   <h2 className="text-2xl font-bold text-white flex items-center gap-3">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-emerald-400"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
                     1. Lista de Compra a Feliubadaló
                   </h2>
                   <p className="text-xs text-slate-400 mt-1">Suma de productos de todos los pedidos pagados.</p>
                </div>
-               <span className="bg-primary/20 text-emerald-400 px-3 py-1 rounded-full text-sm font-bold border border-primary/30">
+               <span className="bg-emerald-500/20 text-emerald-400 px-3 py-1 rounded-full text-sm font-bold border border-emerald-500/30">
                  {shoppingList.length} Refs
                </span>
             </div>
@@ -137,12 +137,12 @@ export default async function AdminDashboard() {
                 </div>
             ) : (
                 <div className="overflow-x-auto">
-                    <table className="w-full text-left border-collapse">
+                    <table className="w-full text-left border-collapse text-sm">
                         <thead>
-                            <tr className="text-slate-500 border-b border-slate-700/50 text-xs uppercase tracking-widest">
-                                <th className="pb-3 pl-2 font-bold uppercase">Producto</th>
-                                <th className="pb-3 font-bold uppercase">EAN / Ref</th>
-                                <th className="pb-3 font-bold uppercase text-center">Cant.</th>
+                            <tr className="text-slate-500 border-b border-slate-700/50 text-xs uppercase tracking-widest font-bold">
+                                <th className="pb-3 pl-2">Producto</th>
+                                <th className="pb-3">EAN / Ref</th>
+                                <th className="pb-3 text-center">Cant.</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -177,85 +177,122 @@ export default async function AdminDashboard() {
                 </div>
             )}
           </div>
+        </div>
 
-          {/* Gestión de Salida a Transportista */}
-          <div className="glass p-6 border-primary/20">
+        {/* Lado Derecho: Gestión de Salida (1/3 de ancho) */}
+        <div className="lg:col-span-1">
+          <div className="glass p-6 border-primary/20 sticky top-24">
              <div className="flex items-center justify-between mb-6 border-b border-primary/10 pb-4">
                <div>
-                  <h2 className="text-2xl font-bold text-white flex items-center gap-3">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary"><path d="M10 14.7 12 17l4-4.3"/><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/></svg>
-                    2. Pedidos en Preparación / Salida
+                  <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary"><path d="M10 14.7 12 17l4-4.3"/><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/></svg>
+                    2. Salida / Tracking
                   </h2>
-                  <p className="text-xs text-slate-400 mt-1">Stock ya recibido. Introduce el tracking para notificar el envío.</p>
                </div>
-               <span className="bg-emerald-500/20 text-emerald-400 px-3 py-1 rounded-full text-sm font-bold border border-emerald-500/30">
+               <span className="bg-primary/20 text-primary px-2 py-1 rounded-full text-[10px] font-bold border border-primary/30">
                  {processingOrders.length} Listos
                </span>
              </div>
 
-             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+             <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-2">
                  {processingOrders.map(order => (
-                     <div key={order.id} className="bg-slate-900/80 p-5 rounded-2xl border border-slate-700/50 flex flex-col justify-between">
-                         <div>
-                            <div className="flex justify-between items-start mb-2">
-                                <span className="text-[10px] bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded border border-emerald-500/20 font-bold">READY TO SHIP</span>
-                                <span className="text-[10px] text-slate-500 font-mono">#{order.id.slice(-6).toUpperCase()}</span>
-                            </div>
-                            <h3 className="text-white font-bold text-lg">{order.customerName}</h3>
-                            <p className="text-xs text-slate-400 mb-4">{order.address}</p>
-                            
-                            <div className="space-y-1.5 mb-4">
-                                {order.items.map(item => (
-                                    <div key={item.id} className="text-[11px] text-slate-300 flex justify-between">
-                                        <span>• {item.product.nombre}</span>
-                                        <span className="font-bold text-slate-500 text-[10px]">x{item.quantity}</span>
-                                    </div>
-                                ))}
-                            </div>
-                         </div>
+                     <div key={order.id} className="bg-slate-900/80 p-4 rounded-xl border border-slate-700/50 flex flex-col">
+                        <div className="flex justify-between items-start mb-2">
+                            <h3 className="text-white font-bold text-sm truncate pr-2">{order.customerName}</h3>
+                            <span className="text-[10px] text-slate-500 font-mono flex-shrink-0">#{order.id.slice(-4).toUpperCase()}</span>
+                        </div>
+                        <p className="text-[10px] text-slate-400 mb-3 truncate italic">{order.address}</p>
+                        
+                        <div className="space-y-1 mb-4">
+                            {order.items.map(item => (
+                                <div key={item.id} className="text-[9px] text-slate-400 flex justify-between">
+                                    <span className="truncate pr-4">• {item.product.nombre}</span>
+                                    <span className="font-bold flex-shrink-0">x{item.quantity}</span>
+                                </div>
+                            ))}
+                        </div>
 
-                         <ShipOrderButton orderId={order.id} />
+                        <ShipOrderButton orderId={order.id} />
                      </div>
                  ))}
 
                  {processingOrders.length === 0 && (
-                     <div className="col-span-full py-12 text-center text-slate-600 text-sm italic">
-                         No hay pedidos en fase de empaquetado.
+                     <div className="py-8 text-center text-slate-600 text-xs italic">
+                         Nada para enviar.
                      </div>
                  )}
              </div>
           </div>
         </div>
+      </div>
 
-        {/* Lado Derecho: Auditoría y Pricing */}
-        <div className="space-y-8">
-            <div className="glass p-6">
-                <h2 className="text-xl font-bold text-white mb-4">Auditoría de Stock</h2>
-                <div className="flex items-center justify-between p-3 bg-red-500/5 border border-red-500/10 rounded-xl mb-6">
-                    <span className="text-xs text-slate-400 uppercase font-bold tracking-tighter">Agotados Feliu</span>
-                    <span className="text-xl font-bold text-red-400">{stockAgotado}</span>
+      {/* SECCIÓN INFERIOR PANORÁMICA (Auditoría y Precios) */}
+      <div className="mt-12 space-y-8">
+        
+        {/* Auditoría de Stock Expansiva */}
+        <div className="glass p-8 border-red-500/20">
+            <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+                <div>
+                   <h2 className="text-2xl font-bold text-red-400 flex items-center gap-3">
+                       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                       Auditoría de Stock Crítica (Feliubadaló)
+                   </h2>
+                   <p className="text-sm text-slate-400 mt-1">Inventario agotado en origen que ha sido ocultado automáticamente para evitar roturas de stock.</p>
                 </div>
-                <div className="space-y-4 max-h-[300px] overflow-y-auto pr-2">
-                    {agotadosList.slice(0, 5).map(prod => (
-                        <div key={prod.id} className="flex items-center gap-3">
-                            <div className="w-8 h-8 relative grayscale opacity-50 shrink-0">
-                                {prod.imagen && <Image src={prod.imagen} alt={prod.nombre} layout="fill" objectFit="contain" />}
+                <div className="bg-red-500/10 border border-red-500/20 rounded-xl px-6 py-3 text-center">
+                    <p className="text-[10px] text-red-300 font-bold uppercase tracking-widest mb-1">Agotados Reales</p>
+                    <p className="text-3xl font-extrabold text-red-500">{stockAgotado}</p>
+                </div>
+            </div>
+            
+            {agotadosList.length === 0 ? (
+                <div className="text-center py-10 text-slate-500 text-sm border border-slate-700/50 rounded-lg border-dashed">
+                    Feliubadaló informa de Stock saludable. Ninguna limitación B2B activa.
+                </div>
+            ) : (
+                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4">
+                    {agotadosList.map(prod => (
+                        <div key={prod.id} className="bg-slate-900 border border-red-500/10 rounded-xl p-3 flex flex-col items-center text-center group">
+                            <div className="w-16 h-16 bg-white/5 rounded-md mb-3 flex-shrink-0 p-1 relative grayscale group-hover:grayscale-0 transition-all">
+                                {prod.imagen ? (
+                                    <Image src={prod.imagen} alt={prod.nombre} layout="fill" objectFit="contain" />
+                                ) : (
+                                    <div className="w-full h-full bg-slate-800"></div>
+                                )}
                             </div>
-                            <p className="text-[10px] text-slate-500 line-clamp-1">{prod.nombre}</p>
+                            <p className="text-[9px] text-red-300 font-mono mb-1 truncate w-full">{prod.marca}</p>
+                            <p className="text-[10px] text-slate-400 line-clamp-2 leading-tight h-6">{prod.nombre}</p>
                         </div>
                     ))}
-                    {stockAgotado > 5 && <p className="text-center text-[10px] text-slate-600">...y {stockAgotado - 5} más</p>}
+                </div>
+            )}
+        </div>
+
+        {/* Pricing Intelligence Expansiva */}
+        <div className="glass p-8 border-blue-500/20">
+            <div className="flex items-center gap-4 mb-8">
+                <div className="w-12 h-12 bg-blue-500/20 rounded-full flex items-center justify-center text-blue-400">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 18V6"/></svg>
+                </div>
+                <div>
+                   <h2 className="text-2xl font-bold text-blue-400">Pricing Intelligence en Pantalla Completa</h2>
+                   <p className="text-sm text-slate-400">Monitor dinámico de competitividad frente a Google Shopping. (Solo productos con EAN).</p>
                 </div>
             </div>
-
-            <div className="glass p-6">
-                <h2 className="text-xl font-bold text-white mb-4">Acciones de Precio</h2>
-                <PricingTableClient data={priceIntelligence.slice(0, 10)} />
-                <p className="text-[10px] text-slate-500 mt-4 text-center">Mostrando top 10 variaciones críticas.</p>
-            </div>
+            
+            {priceIntelligence.length === 0 ? (
+                <div className="text-center py-12 text-slate-500 text-sm border border-slate-700/50 rounded-lg border-dashed">
+                    Motor SerpAPI en espera. Ejecuta 'npm run sync:prices' para iniciar escrutinio del mercado.
+                </div>
+            ) : (
+                <PricingTableClient data={priceIntelligence} />
+            )}
         </div>
 
       </div>
+    </div>
+  );
+}
     </div>
   );
 }

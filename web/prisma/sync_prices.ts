@@ -8,17 +8,18 @@ async function delay(ms: number) {
 
 async function main() {
     const SERPAPI_KEY = process.env.SERPAPI_KEY;
+    const promotedOnly = process.argv.includes('--promoted-only');
 
     if (!SERPAPI_KEY) {
-        console.error("⛔ ERROR CRÍITICO: SERPAPI_KEY no detectada.");
+        console.error("⛔ ERROR CRÍTICO: SERPAPI_KEY no detectada.");
         console.log("-> Regístrate en https://serpapi.com/ para obtener tu API Key gratuita e incrústala en el archivo de entorno web/.env");
         process.exit(1);
     }
 
-    console.log("🚀 Iniciando Motor de Inteligencia Competitiva (Google Shopping vía SerpAPI)...");
+    console.log(`🚀 Iniciando Motor de Inteligencia Competitiva ${promotedOnly ? '(SOLO PROMOCIONES) ' : ''}...`);
     
     // Filtramos aquellos productos cuyo EAN pueda servir a modo de clave universal, e ignoramos vacíos.
-    const products = await prisma.product.findMany({
+    const query: any = { 
         where: { 
             agotado: false,
             AND: [
@@ -27,7 +28,13 @@ async function main() {
             ]
         },
         select: { id: true, ean: true, nombre: true }
-    });
+    };
+
+    if (promotedOnly) {
+        query.where.enPromocion = true;
+    }
+
+    const products = await prisma.product.findMany(query);
 
     console.log(`Detectados ${products.length} productos trackeables mediante EAN.`);
 
