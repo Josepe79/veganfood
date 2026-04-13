@@ -55,3 +55,66 @@ export async function sendOrderConfirmationEmail(emailTo: string, orderId: strin
         return false;
     }
 }
+
+export async function sendOrderPreparingEmail(emailTo: string, orderId: string, customerName: string) {
+    try {
+        const mailOptions = {
+            from: `"VeganFood Team" <${process.env.SMTP_USER}>`,
+            to: emailTo,
+            subject: `Tu pedido #${orderId.substring(0, 8).toUpperCase()} ya está en preparación 🥦`,
+            html: `
+                <div style="font-family: Arial, sans-serif; padding: 30px; max-width: 600px; margin: 0 auto; border: 1px solid #e0e0e0; border-radius: 10px; background-color: #fafafa;">
+                    <div style="text-align: center; margin-bottom: 20px;">
+                        <img src="https://veganfood.es/logo.png" alt="VeganFood Logo" style="max-width: 150px;">
+                    </div>
+                    <h2 style="color: #43a047;">¡Buenas noticias, ${customerName}!</h2>
+                    <p style="color: #424242; font-size: 16px;">
+                        Acabamos de solicitar tus productos a nuestro centro de distribución JIT. 
+                        Tu pedido <strong>#${orderId.substring(0, 8).toUpperCase()}</strong> ya está siendo empaquetado y preparado con mucho mimo.
+                    </p>
+                    <div style="background-color: #e8f5e9; padding: 15px; border-radius: 8px; margin: 20px 0; text-align: center;">
+                        <p style="margin: 0; color: #2e7d32; font-weight: bold;">Estado: En Preparación 📦</p>
+                    </div>
+                    <p style="color: #757575; font-size: 14px;">Te avisaremos en cuanto el transportista recoja el paquete.</p>
+                </div>
+            `
+        };
+        await transporter.sendMail(mailOptions);
+        return true;
+    } catch (e) {
+        console.error("Error enviando email de preparación:", e);
+        return false;
+    }
+}
+
+export async function sendOrderShippedEmail(emailTo: string, orderId: string, customerName: string, trackingNumber: string) {
+    try {
+        const trackingUrl = `https://pro.packlink.es/tracking/${trackingNumber}`; // Ajustar si usas otro transportista
+        const mailOptions = {
+            from: `"VeganFood Envíos" <${process.env.SMTP_USER}>`,
+            to: emailTo,
+            subject: `¡Tu pedido ya va de camino! 🚚 (#${orderId.substring(0, 8).toUpperCase()})`,
+            html: `
+                <div style="font-family: Arial, sans-serif; padding: 30px; max-width: 600px; margin: 0 auto; border: 1px solid #e0e0e0; border-radius: 10px; background-color: #fafafa;">
+                    <div style="text-align: center; margin-bottom: 20px;">
+                        <img src="https://veganfood.es/logo.png" alt="VeganFood Logo" style="max-width: 150px;">
+                    </div>
+                    <h2 style="color: #1a237e;">¡Ya ha salido!</h2>
+                    <p style="color: #424242; font-size: 16px;">
+                        Tu pedido <strong>#${orderId.substring(0, 8).toUpperCase()}</strong> ha sido entregado al transportista y va directo a tu casa.
+                    </p>
+                    <div style="background-color: #e8eaf6; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                        <p style="margin: 0 0 10px 0; color: #1a237e;"><strong>Código de seguimiento:</strong> ${trackingNumber}</p>
+                        <a href="${trackingUrl}" style="display: inline-block; padding: 10px 20px; background-color: #1a237e; color: white; text-decoration: none; border-radius: 5px; font-weight: bold;">Seguir mi pedido</a>
+                    </div>
+                    <p style="color: #757575; font-size: 14px; text-align: center;">¡Gracias por confiar en VeganFood!</p>
+                </div>
+            `
+        };
+        await transporter.sendMail(mailOptions);
+        return true;
+    } catch (e) {
+        console.error("Error enviando email de envío:", e);
+        return false;
+    }
+}

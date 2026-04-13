@@ -43,6 +43,7 @@ model Order {
   totalAmount   Float
   status        String      @default("PENDING") // PENDING, COMPLETED, CANCELLED
   revolutOrderId String?
+  trackingNumber String?
   items         OrderItem[]
   
   createdAt     DateTime    @default(now())
