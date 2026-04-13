@@ -12,14 +12,13 @@ async function main() {
 
     if (!SERPAPI_KEY) {
         console.error("⛔ ERROR CRÍTICO: SERPAPI_KEY no detectada.");
-        console.log("-> Regístrate en https://serpapi.com/ para obtener tu API Key gratuita e incrústala en el archivo de entorno web/.env");
         process.exit(1);
     }
 
-    console.log(`🚀 Iniciando Motor de Inteligencia Competitiva ${promotedOnly ? '(SOLO PROMOCIONES) ' : ''}...`);
+    console.log(`🚀 Iniciando Motor de Inteligencia Competitiva ${promotedOnly ? '(SOLO PROMOCIONES) ' : '(Full Scan - máx 250 créditos)'}...`);
     
-    // Filtramos aquellos productos cuyo EAN pueda servir a modo de clave universal, e ignoramos vacíos.
     const query: any = { 
+        take: 250, // Limitamos al plan gratuito de SerpAPI
         where: { 
             agotado: false,
             AND: [
@@ -27,7 +26,7 @@ async function main() {
                { ean: { not: "" } }
             ]
         },
-        select: { id: true, ean: true, nombre: true }
+        select: { id: true, ean: true, nombre: true, precioVenta: true }
     };
 
     if (promotedOnly) {
@@ -35,8 +34,10 @@ async function main() {
     }
 
     const products = await prisma.product.findMany(query);
+    console.log(`Detectados ${products.length} productos a escanear (límite 250 créditos).`);
 
-    console.log(`Detectados ${products.length} productos trackeables mediante EAN.`);
+    let competitivosEncontrados = 0;
+    let sinDato = 0;
 
     for (let i = 0; i < products.length; i++) {
         const prod = products[i];
@@ -46,9 +47,14 @@ async function main() {
             const url = `https://serpapi.com/search.json?engine=google_shopping&q=${prod.ean}&hl=es&gl=es&tbs=mr:1,sales:1&api_key=${SERPAPI_KEY}`;
             const res = await fetch(url);
             const data = await res.json();
+
+            // Detectar si la API ha agotado los créditos
+            if (data.error && data.error.includes('rate')) {
+                console.log('⛔ Créditos SerpAPI agotados. Deteniendo...');
+                break;
+            }
             
             if (data.shopping_results && data.shopping_results.length > 0) {
-                // Ordenamos explícitamente para asegurar que atrapamos el más competitivo (barato) reportado por Shopping
                 const cheapest = data.shopping_results.sort((a: any, b: any) => parseFloat(a.extracted_price || 9999) - parseFloat(b.extracted_price || 9999))[0];
                 
                 const cleanPrice = parseFloat(cheapest.extracted_price || "0");
@@ -56,30 +62,43 @@ async function main() {
                 const link = cheapest.link || "";
                 
                 if (cleanPrice > 0) {
-                     await prisma.product.update({
-                         where: { id: prod.id },
-                         data: { 
-                             precioCompetencia: cleanPrice,
-                             competenciaUrl: link,
-                             competenciaNombre: competitorName
-                         }
-                     });
-                     console.log(`   └─ 🎯 Competidor Extremo: ${competitorName} lo tiene a ${cleanPrice}€`);
+                    const somosMasBaratos = prod.precioVenta <= cleanPrice;
+
+                    await prisma.product.update({
+                        where: { id: prod.id },
+                        data: { 
+                            precioCompetencia: cleanPrice,
+                            competenciaUrl: link,
+                            competenciaNombre: competitorName
+                            // El usuario marcará manualmente los destacados desde el panel
+                        }
+                    });
+                    
+                    if (somosMasBaratos) {
+                        competitivosEncontrados++;
+                        console.log(`   └─ ✅ COMPETITIVO: Nosotros ${prod.precioVenta.toFixed(2)}€ vs ${competitorName} ${cleanPrice.toFixed(2)}€`);
+                    } else {
+                        console.log(`   └─ 📊 ${competitorName} más barato: ${cleanPrice.toFixed(2)}€ vs nuestros ${prod.precioVenta.toFixed(2)}€`);
+                    }
                 } else {
-                     console.log(`   └─ 🟡 Formato de bloque irregular. Saltando métrica.`);
+                    sinDato++;
+                    console.log(`   └─ 🟡 Precio no extraíble.`);
                 }
             } else {
-                console.log(`   └─ 🔕 Faltan referencias nativas en Google Shopping para este EAN.`);
+                sinDato++;
+                console.log(`   └─ 🔕 Sin resultados en Google Shopping.`);
             }
             
             await delay(1200); 
 
         } catch(error) {
-            console.log(`   └─ ❌ Fallo transversal consultando EAN ${prod.ean}: ${error}`);
+            console.log(`   └─ ❌ Error consultando EAN ${prod.ean}: ${error}`);
         }
     }
     
-    console.log("🏁 Mapeo de Inteligencia B2C procesado integralmente con éxito.");
+    console.log(`\n🏁 Escaneo completado.`);
+    console.log(`   ✅ Productos marcados como DESTACADOS (competitivos): ${competitivosEncontrados}`);
+    console.log(`   🔕 Sin dato de competencia: ${sinDato}`);
     process.exit(0);
 }
 

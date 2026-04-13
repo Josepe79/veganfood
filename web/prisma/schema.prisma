@@ -28,6 +28,7 @@ model Product {
   competenciaNombre String?
   oculto            Boolean  @default(false)
   enPromocion       Boolean  @default(false)
+  needsReview       Boolean  @default(false)
 
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt

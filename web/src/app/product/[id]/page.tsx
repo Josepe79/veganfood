@@ -32,38 +32,18 @@ export default async function ProductDetail({ params }: { params: Promise<{ id: 
     notFound();
   }
 
-  const sanitizeDescription = (text: string | null) => {
-    if (!text) return "Un producto 100% verificado y validado por la plataforma VeganFood, trayendo la mejor calidad directamente desde el obrador/distribuidor hasta tu hogar de forma sostenible.";
+  const getDescription = (text: string | null): string => {
+    if (!text) return "<p>Un producto 100% verificado y validado por la plataforma VeganFood, trayendo la mejor calidad directamente desde el distribuidor hasta tu hogar de forma sostenible.</p>";
     
-    // 1. Normalizar todos los espacios invisibles (nbsp, tabs, multi-espacios, \n) a un solo espacio simple
-    let cleaned = text.replace(/[\s\u00A0\t]+/g, ' ').replace(/\\n/g, ' ').replace(/\\r/g, '');
+    // Si ya es HTML (viene de la IA), lo devolvemos tal cual
+    if (text.trim().startsWith('<')) return text;
     
-    // 2. Usar Expresiones Regulares híper-permisivas (Ignoran diferencias de acentos y caracteres raros)
-    const spamPatterns = [
-      /Si no encuentras lo que buscas/gi,
-      /P[íi]delo aqu[íi]/gi,
-      /Env[íi]os desde \d+h/gi,
-      /Portes Gratis/gi,
-      /F[áa]cil gesti[óo]n de devoluci[óo]n/gi,
-      /M[áa]s de \d+ productos y \d+ marcas/gi,
-      /M[áa]s de \d+ productos/gi,
-      /y \d+ marcas/gi,
-      /900 marcas/gi,
-      /2500 productos/gi
-    ];
-    
-    // Aniquilar patrones
-    spamPatterns.forEach(regex => {
-      cleaned = cleaned.replace(regex, '');
-    });
-    
-    // 3. Limpieza de colisión: Si dos frases se borraron y quedó un " . . " o ".Más", arreglar ortografía básica.
-    cleaned = cleaned.replace(/\s+/g, ' '); // quitar múltiples espacios generados por los huecos
-    cleaned = cleaned.replace(/\s*\./g, '.'); // pegar el punto a la palabra anterior
-    cleaned = cleaned.replace(/\.{2,}/g, '.'); // si hay ".." convertir a "."
-    cleaned = cleaned.replace(/^\.+|\.+$/g, '').trim(); // quitar puntos sueltos al inicio o final de todo
-
-    return cleaned || "Un producto 100% verificado y validado por la plataforma VeganFood, trayendo localmente la mejor calidad.";
+    // Si es texto plano antiguo, lo envolvemos en párrafos
+    return text
+      .split('\n')
+      .filter(p => p.trim())
+      .map(p => `<p>${p.trim()}</p>`)
+      .join('');
   };
 
   return (
@@ -135,14 +115,11 @@ export default async function ProductDetail({ params }: { params: Promise<{ id: 
               </div>
             </div>
             
-            <div className="bg-slate-800/30 border border-white/5 rounded-2xl p-6 mb-8 shadow-inner">
-              <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-                <svg className="w-5 h-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                Descripción del Producto
-              </h3>
-              <p className="text-slate-300 leading-relaxed font-light text-[15px] whitespace-pre-line">
-                {sanitizeDescription(product.descripcion)}
-              </p>
+            <div className="bg-slate-800/30 border border-white/5 rounded-2xl p-6 mb-8 shadow-inner product-description">
+              <div
+                className="text-slate-300 leading-relaxed font-light text-[15px]"
+                dangerouslySetInnerHTML={{ __html: getDescription(product.descripcion) }}
+              />
             </div>
             
             {product.ingredientes && product.ingredientes !== "" && (
