@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, useTransition } from "react";
 import { hideProductsBulk, promoteProductsBulk, prepareSocialMediaVideo } from "./actions";
 import { PricingActions } from "./PricingActions";
