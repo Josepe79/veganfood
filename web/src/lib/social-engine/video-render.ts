@@ -40,14 +40,14 @@ export async function renderSocialVideo(assets: VideoAsset): Promise<string> {
     }
 
     const filters: any[] = [
-      // 1. Fondo de video
+      // 1. Fondo de video HD (720x1280)
       {
-        filter: "scale", options: "1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,boxblur=20:10",
+        filter: "scale", options: "720:1280:force_original_aspect_ratio=increase,crop=720:1280,boxblur=20:10",
         inputs: "0:v", outputs: "bg"
       },
-      // 2. Producto frontal
+      // 2. Producto frontal más pequeño acorde a 720p
       {
-        filter: "scale", options: "800:-1",
+        filter: "scale", options: "500:-1",
         inputs: "0:v", outputs: "fg"
       },
       // 3. Superposición video final
