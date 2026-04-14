@@ -32,55 +32,44 @@ export async function renderSocialVideo(assets: VideoAsset): Promise<string> {
   }
 
   return new Promise((resolve, reject) => {
-    let command = ffmpeg(assets.productImage)
-      // Crear fondo desenfocado (Blurred background)
-      .complexFilter([
-        // 1. Reescalar y desenfocar la imagen original para el fondo 1080x1920
-        {
-          filter: "scale", options: "1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,boxblur=20:10",
-          inputs: "0:v", outputs: "bg"
-        },
-        // 2. Escalar imagen del producto para el frente
-        {
-          filter: "scale", options: "800:-1",
-          inputs: "0:v", outputs: "fg"
-        },
-        // 3. Superponer frente sobre fondo
-        {
-          filter: "overlay", options: "(W-w)/2:(H-h)/2",
-          inputs: ["bg", "fg"], outputs: "canvas"
-        },
-        // 4. Añadir textos dinámicos (Subtítulos basados en el guion)
-        ...assets.overlays.map((ov, index) => ({
-          filter: "drawtext",
-          options: {
-            text: ov.text,
-            fontsize: 60,
-            fontcolor: "white",
-            shadowcolor: "black",
-            shadowx: 3, shadowy: 3,
-            x: "(w-text_w)/2",
-            y: "h-300",
-            enable: `between(t,${ov.time},${ov.time + 4})`
-          },
-          inputs: index === 0 ? "canvas" : `text${index - 1}`,
-          outputs: `text${index}`
-        }))
-      ], assets.overlays.length > 0 ? `text${assets.overlays.length - 1}` : "canvas");
-
-    // Añadir Audio (Voz + Música)
-    command = command.input(assets.voiceAudio);
+    let command = ffmpeg(assets.productImage);
+    command.input(assets.voiceAudio);
     
     if (musicPath) {
-      command = command.input(musicPath);
-      // Mezclar audio: Voz (volumen alto) + Música (volumen bajo)
-      command = command.complexFilter([
+      command.input(musicPath);
+    }
+
+    const filters: any[] = [
+      // 1. Fondo de video
+      {
+        filter: "scale", options: "1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,boxblur=20:10",
+        inputs: "0:v", outputs: "bg"
+      },
+      // 2. Producto frontal
+      {
+        filter: "scale", options: "800:-1",
+        inputs: "0:v", outputs: "fg"
+      },
+      // 3. Superposición video final
+      {
+        filter: "overlay", options: "(W-w)/2:(H-h)/2",
+        inputs: ["bg", "fg"], outputs: "vout"
+      }
+    ];
+
+    if (musicPath) {
+      filters.push(
         { filter: "volume", options: "1.5", inputs: "1:a", outputs: "v_voice" },
         { filter: "volume", options: "0.2", inputs: "2:a", outputs: "v_music" },
-        { filter: "amix", options: "inputs=2:duration=first", inputs: ["v_voice", "v_music"] }
-      ]);
-    } else {
-      command = command.audioChannels(2).audioCodec("aac");
+        { filter: "amix", options: "inputs=2:duration=first", inputs: ["v_voice", "v_music"], outputs: "aout" }
+      );
+    }
+
+    command.complexFilter(filters, musicPath ? ["vout", "aout"] : ["vout"]);
+
+    if (!musicPath) {
+      // Si no hay música extra, mapear solo voz original (entrada 1)
+      command.outputOptions(["-map 1:a"]);
     }
 
     command
@@ -89,11 +78,14 @@ export async function renderSocialVideo(assets: VideoAsset): Promise<string> {
         "-preset ultrafast",
         "-pix_fmt yuv420p",
         "-r 30",
-        "-t 15" // Máximo 15 segundos para estos reels rápidos
+        "-t 15" // Máximo 15 segundos
       ])
       .on("start", (cmd) => console.log("Empezando renderizado FFmpeg:", cmd))
       .on("end", () => resolve(outputPath))
-      .on("error", (err) => reject(err))
+      .on("error", (err) => {
+          console.error("Fallo grave de FFmpeg:", err);
+          reject(err);
+      })
       .save(outputPath);
   });
 }
