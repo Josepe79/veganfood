@@ -5,6 +5,7 @@ import { DeleteOrderButton } from "./DeleteOrderButton";
 import { PricingActions } from "./PricingActions";
 import { PricingTableClient } from "./PricingTableClient";
 import { ShipOrderButton } from "./ShipOrderButton";
+import { PromotionToggle } from "./PromotionToggle";
 
 export const dynamic = 'force-dynamic';
 
@@ -43,6 +44,21 @@ export default async function AdminDashboard() {
       where: { precioCompetencia: { not: null } },
       select: { id: true, nombre: true, marca: true, precioOriginal: true, precioVenta: true, precioCompetencia: true, competenciaUrl: true, competenciaNombre: true, oculto: true, enPromocion: true },
       orderBy: { nombre: 'asc' }
+  });
+
+  // Productos destacados actuales
+  const promotedProducts = await prisma.product.findMany({
+      where: { enPromocion: true, oculto: false },
+      select: { id: true, nombre: true, marca: true, imagen: true, precioVenta: true, enPromocion: true },
+      orderBy: { nombre: 'asc' }
+  });
+
+  // Candidatos a destacar (precio bajo, con imagen, disponibles)
+  const candidatos = await prisma.product.findMany({
+      where: { enPromocion: false, oculto: false, agotado: false, imagen: { not: '' } },
+      select: { id: true, nombre: true, marca: true, imagen: true, precioVenta: true, enPromocion: true },
+      orderBy: { precioVenta: 'asc' },
+      take: 40
   });
 
   // Consolidación de Lista de la Compra Mayorista (Basada en pedidos "waiting")
@@ -287,6 +303,63 @@ export default async function AdminDashboard() {
             ) : (
                 <PricingTableClient data={priceIntelligence} />
             )}
+        </div>
+
+        {/* ⭐ GESTIÓN DE DESTACADOS */}
+        <div className="mt-8 glass p-6 rounded-2xl border border-yellow-500/20">
+            <div className="flex items-center gap-3 mb-6">
+                <div className="w-8 h-8 bg-yellow-400/20 rounded-lg flex items-center justify-center">
+                    <svg className="w-4 h-4 text-yellow-400" viewBox="0 0 24 24" fill="currentColor">
+                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                    </svg>
+                </div>
+                <div>
+                    <h2 className="text-xl font-bold text-white">Gestión de Destacados</h2>
+                    <p className="text-sm text-slate-400">Controla qué productos aparecen en la sección "Lo que estamos probando" de la portada. Haz clic en ⭐ para añadir o quitar.</p>
+                </div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                {/* Actualmente destacados */}
+                <div>
+                    <h3 className="text-sm font-bold text-yellow-400 uppercase tracking-widest mb-3 flex items-center gap-2">
+                        <span>⭐ En portada ahora ({promotedProducts.length})</span>
+                    </h3>
+                    <div className="space-y-2 max-h-80 overflow-y-auto pr-2">
+                        {promotedProducts.length === 0 ? (
+                            <p className="text-slate-500 text-sm py-4 text-center border border-dashed border-slate-700 rounded-lg">Ningún producto destacado. Añade algunos de la columna derecha.</p>
+                        ) : promotedProducts.map((p: any) => (
+                            <div key={p.id} className="flex items-center gap-3 bg-yellow-400/5 border border-yellow-400/20 rounded-xl px-3 py-2">
+                                {p.imagen && <img src={p.imagen} alt={p.nombre} className="w-10 h-10 object-contain rounded-lg bg-white/5 flex-shrink-0" />}
+                                <div className="flex-1 min-w-0">
+                                    <p className="text-white text-sm font-medium truncate">{p.nombre}</p>
+                                    <p className="text-yellow-400/70 text-xs">{p.marca} · {p.precioVenta.toFixed(2)}€</p>
+                                </div>
+                                <PromotionToggle productId={p.id} isPromoted={true} productName={p.nombre} />
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+                {/* Candidatos a destacar */}
+                <div>
+                    <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-3">
+                        Candidatos (precio más bajo, con imagen)
+                    </h3>
+                    <div className="space-y-2 max-h-80 overflow-y-auto pr-2">
+                        {candidatos.map((p: any) => (
+                            <div key={p.id} className="flex items-center gap-3 bg-slate-800/50 border border-slate-700/50 rounded-xl px-3 py-2 hover:border-yellow-400/30 transition-colors">
+                                {p.imagen && <img src={p.imagen} alt={p.nombre} className="w-10 h-10 object-contain rounded-lg bg-white/5 flex-shrink-0" />}
+                                <div className="flex-1 min-w-0">
+                                    <p className="text-white text-sm font-medium truncate">{p.nombre}</p>
+                                    <p className="text-slate-400 text-xs">{p.marca} · {p.precioVenta.toFixed(2)}€</p>
+                                </div>
+                                <PromotionToggle productId={p.id} isPromoted={false} productName={p.nombre} />
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </div>
         </div>
 
       </div>
