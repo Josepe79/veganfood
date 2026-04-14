@@ -16,10 +16,11 @@ type IntelligenceItem = {
     competenciaNombre: string | null;
     oculto: boolean;
     enPromocion: boolean;
+    createdAt: Date;
 };
 
 export function PricingTableClient({ data }: { data: IntelligenceItem[] }) {
-    const [filter, setFilter] = useState<"ALL" | "COMPETITIVO" | "AJUSTABLE" | "CRITICA" | "OCULTO" | "PROMOCION">("ALL");
+    const [filter, setFilter] = useState<"ALL" | "COMPETITIVO" | "AJUSTABLE" | "CRITICA" | "OCULTO" | "PROMOCION" | "NOVEDADES">("ALL");
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
     const [isPending, startTransition] = useTransition();
     const [socialData, setSocialData] = useState<{ videoUrl: string, captions: any } | null>(null);
@@ -68,8 +69,14 @@ export function PricingTableClient({ data }: { data: IntelligenceItem[] }) {
         return { ...prod, status, mercado, nuestro, costo, diff, finalUrl };
     });
 
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
     const filteredData = enrichedData.filter(prod => {
         if (filter === "ALL") return true;
+        if (filter === "OCULTO") return prod.oculto;
+        if (filter === "PROMOCION") return prod.enPromocion;
+        if (filter === "NOVEDADES") return new Date(prod.createdAt) >= sevenDaysAgo;
         return prod.status === filter;
     });
 
@@ -117,6 +124,18 @@ export function PricingTableClient({ data }: { data: IntelligenceItem[] }) {
                 <div className="flex bg-slate-800/50 rounded-lg p-1 border border-slate-700/50 overflow-x-auto max-w-full">
                     <button onClick={() => setFilter("ALL")} className={`px-4 py-2 text-xs rounded-md whitespace-nowrap transition-colors ${filter === "ALL" ? "bg-slate-700 text-white shadow-sm" : "text-slate-400 hover:text-slate-200"}`}>
                         Todos ({enrichedData.length})
+                    </button>
+                    <button 
+                        onClick={() => setFilter("PROMOCION")}
+                        className={`px-4 py-2 rounded-xl text-sm font-bold tracking-wide transition-all ${filter === "PROMOCION" ? "bg-yellow-400 text-yellow-950 shadow-md transform scale-105" : "bg-white/5 text-slate-400 hover:bg-white/10"}`}
+                    >
+                        Promoción
+                    </button>
+                    <button 
+                        onClick={() => setFilter("NOVEDADES")}
+                        className={`px-4 py-2 rounded-xl text-sm font-bold tracking-wide transition-all ${filter === "NOVEDADES" ? "bg-purple-500 text-white shadow-md transform scale-105" : "bg-white/5 text-slate-400 hover:bg-white/10"}`}
+                    >
+                        Novedades
                     </button>
                     <button onClick={() => setFilter("CRITICA")} className={`px-4 py-2 text-xs rounded-md whitespace-nowrap transition-colors ${filter === "CRITICA" ? "bg-red-500/20 text-red-400 border border-red-500/30" : "text-slate-400 hover:text-red-300"}`}>
                         Críticos ({enrichedData.filter(p => p.status === "CRITICA").length})
