@@ -1,8 +1,7 @@
-"use client";
-
 import { useState, useTransition } from "react";
-import { hideProductsBulk, promoteProductsBulk } from "./actions";
+import { hideProductsBulk, promoteProductsBulk, prepareSocialMediaVideo } from "./actions";
 import { PricingActions } from "./PricingActions";
+import SocialPreviewModal from "./SocialPreviewModal";
 
 type IntelligenceItem = {
     id: string;
@@ -21,6 +20,20 @@ export function PricingTableClient({ data }: { data: IntelligenceItem[] }) {
     const [filter, setFilter] = useState<"ALL" | "COMPETITIVO" | "AJUSTABLE" | "CRITICA" | "OCULTO" | "PROMOCION">("ALL");
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
     const [isPending, startTransition] = useTransition();
+    const [socialData, setSocialData] = useState<{ videoUrl: string, caption: string } | null>(null);
+    const [isGeneratingSocial, setIsGeneratingSocial] = useState(false);
+
+    const handleGenerateSocial = (productId: string) => {
+        setIsGeneratingSocial(true);
+        prepareSocialMediaVideo(productId).then(res => {
+            if (res.success && res.videoUrl && res.caption) {
+                setSocialData({ videoUrl: res.videoUrl, caption: res.caption });
+            } else {
+                alert("Error generando video: " + (res.error || "Desconocido"));
+            }
+            setIsGeneratingSocial(false);
+        });
+    };
 
     // Enriquecemos los datos calculando su status algorítmico al vuelo para poder filtrarlos
     const enrichedData = data.map(prod => {
@@ -233,7 +246,14 @@ export function PricingTableClient({ data }: { data: IntelligenceItem[] }) {
                                                 <span className="text-xs uppercase tracking-wide">{statusMsg}</span>
                                                 {prod.diff !== null && <span className="font-mono">{prod.diff > 0 ? "+" : ""}{prod.diff.toFixed(2)}€</span>}
                                             </div>
-                                            <PricingActions productId={prod.id} currentPrice={prod.nuestro} oculto={prod.oculto} enPromocion={prod.enPromocion} />
+                                            <PricingActions 
+                                                productId={prod.id} 
+                                                currentPrice={prod.nuestro} 
+                                                oculto={prod.oculto} 
+                                                enPromocion={prod.enPromocion} 
+                                                onGenerateSocial={() => handleGenerateSocial(prod.id)}
+                                                isGeneratingSocial={isGeneratingSocial}
+                                            />
                                         </div>
                                     </td>
                                 </tr>
@@ -242,6 +262,25 @@ export function PricingTableClient({ data }: { data: IntelligenceItem[] }) {
                     </tbody>
                 </table>
             </div>
+
+            {/* Social Preview Modal */}
+            {socialData && (
+                <SocialPreviewModal 
+                    videoUrl={socialData.videoUrl} 
+                    caption={socialData.caption} 
+                    onClose={() => setSocialData(null)} 
+                />
+            )}
         </div>
     );
+}
+
+function PageModal({ children }: { children: React.ReactNode }) {
+    return (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center pointer-events-none">
+            <div className="pointer-events-auto">
+                {children}
+            </div>
+        </div>
+    )
 }

@@ -3,7 +3,21 @@
 import { useState, useTransition } from "react";
 import { hideProduct, updateProductPrice, recoverProduct, togglePromotion } from "./actions";
 
-export function PricingActions({ productId, currentPrice, oculto, enPromocion }: { productId: string, currentPrice: number, oculto: boolean, enPromocion: boolean }) {
+export function PricingActions({ 
+    productId, 
+    currentPrice, 
+    oculto, 
+    enPromocion,
+    onGenerateSocial,
+    isGeneratingSocial = false
+}: { 
+    productId: string, 
+    currentPrice: number, 
+    oculto: boolean, 
+    enPromocion: boolean,
+    onGenerateSocial?: () => void,
+    isGeneratingSocial?: boolean
+}) {
   const [isPending, startTransition] = useTransition();
   const [isEditing, setIsEditing] = useState(false);
   const [newPrice, setNewPrice] = useState(currentPrice.toString());
@@ -60,6 +74,19 @@ export function PricingActions({ productId, currentPrice, oculto, enPromocion }:
 
   return (
     <div className="flex gap-2">
+      <button
+        onClick={onGenerateSocial}
+        disabled={isGeneratingSocial || isPending}
+        title="Generar Vídeo Social (IA)"
+        className={`bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 rounded p-1.5 transition-colors ${(isGeneratingSocial || isPending) ? 'opacity-50' : ''}`}
+      >
+        {isGeneratingSocial ? (
+            <svg className="animate-spin h-3.5 w-3.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+        ) : (
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"></path><polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"></polygon></svg>
+        )}
+      </button>
+
       <button
         onClick={() => setIsEditing(true)}
         disabled={isPending}

@@ -2,6 +2,10 @@
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { sendOrderPreparingEmail, sendOrderShippedEmail } from "@/lib/mailer";
+import { generateSocialScript } from "@/lib/social-engine/script-gen";
+import { generateSocialVoice } from "@/lib/social-engine/voice-gen";
+import { renderSocialVideo } from "@/lib/social-engine/video-render";
+import { publishToSocial } from "@/lib/social-engine/ayrshare";
 
 export async function marcarPedidosComoComprados() {
   try {
@@ -150,6 +154,61 @@ export async function promoteProductsBulk(productIds: string[], promote: boolean
         revalidatePath('/admin');
         return { success: true };
     } catch(e: any) {
+        return { success: false, error: e.message };
+    }
+}
+
+/**
+ * Genera el vídeo social para un producto (Script -> Voz -> Render)
+ */
+export async function prepareSocialMediaVideo(productId: string) {
+    try {
+        const product = await prisma.product.findUnique({ where: { id: productId } });
+        if (!product) throw new Error("Producto no encontrado");
+
+        console.log(`[Social] Generando guion para: ${product.nombre}`);
+        const script = await generateSocialScript(product.nombre, product.marca || "VeganFood", product.descripcion || "");
+        
+        console.log(`[Social] Generando locución...`);
+        const voicePath = await generateSocialVoice(script.hook + " " + script.mid + " " + script.cta, `voice-${productId}.mp3`);
+        
+        console.log(`[Social] Renderizando vídeo vertical...`);
+        const videoPath = await renderSocialVideo({
+            productImage: product.imagen || "https://online.feliubadalo.com/media/catalog/product/placeholder/default/2.png",
+            voiceAudio: voicePath,
+            overlays: script.overlays,
+            outputName: `social-${productId}-${Date.now()}.mp4`
+        });
+
+        // La URL pública (asumiendo que servimos /public/temp-videos)
+        const publicUrl = `/temp-videos/${videoPath.split(/[\\/]/).pop()}`;
+
+        return { 
+            success: true, 
+            videoUrl: publicUrl,
+            caption: `${script.hook}\n\n${script.mid}\n\n${script.cta}\n\n#VeganFood #PlantBased #Vegano #Sostenible`
+        };
+    } catch (e: any) {
+        console.error("Error en prepareSocialMediaVideo:", e);
+        return { success: false, error: e.message };
+    }
+}
+
+/**
+ * Publica un vídeo ya generado a Ayrshare
+ */
+export async function executeSocialPost(videoUrl: string, caption: string) {
+    try {
+        // Ayrshare requiere una URL absoluta y pública. 
+        // En desarrollo localhost esto fallará si Ayrshare no puede alcanzar el server.
+        const DOMAIN = process.env.NEXT_PUBLIC_APP_URL || "https://veganfood.es";
+        const absoluteUrl = videoUrl.startsWith('http') ? videoUrl : `${DOMAIN}${videoUrl}`;
+
+        console.log(`[Social] Publicando en redes vía Ayrshare: ${absoluteUrl}`);
+        const result = await publishToSocial(absoluteUrl, caption);
+        
+        return { success: true, result };
+    } catch (e: any) {
         return { success: false, error: e.message };
     }
 }
