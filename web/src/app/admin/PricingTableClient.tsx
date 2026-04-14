@@ -110,7 +110,7 @@ export function PricingTableClient({ data }: { data: IntelligenceItem[] }) {
                         Ajustables ({enrichedData.filter(p => p.status === "AJUSTABLE").length})
                     </button>
                     <button onClick={() => setFilter("COMPETITIVO")} className={`px-4 py-2 text-xs rounded-md whitespace-nowrap transition-colors ${filter === "COMPETITIVO" ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30" : "text-slate-400 hover:text-emerald-300"}`}>
-                        Competitivos ({enrichedData.filter(p => !p.oculto && !p.enPromocion && p.costo < p.mercado && p.mercado >= p.nuestro).length})
+                        Competitivos ({enrichedData.filter(p => !p.oculto && !p.enPromocion && p.mercado !== null && p.costo < p.mercado && p.mercado >= p.nuestro).length})
                     </button>
                     <button onClick={() => setFilter("PROMOCION")} className={`px-4 py-2 text-xs rounded-md whitespace-nowrap transition-colors ${filter === "PROMOCION" ? "bg-purple-500/20 text-purple-400 border border-purple-500/30 shadow-[0_0_15px_purple]" : "text-slate-400 hover:text-purple-300"}`}>
                         En Promoción ({enrichedData.filter(p => p.enPromocion && !p.oculto).length})
