@@ -35,6 +35,10 @@ export function PricingTableClient({ data }: { data: IntelligenceItem[] }) {
                 alert("Error generando video: " + (res.error || "Desconocido"));
             }
             setGeneratingSocialId(null);
+        }).catch(err => {
+            alert("Error de conexión o timeout. El vídeo podría estar generándose demasiado lento para el servidor. Avisa al proveedor de sistemas.");
+            console.error(err);
+            setGeneratingSocialId(null);
         });
     };
 

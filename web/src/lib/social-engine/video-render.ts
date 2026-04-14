@@ -86,6 +86,7 @@ export async function renderSocialVideo(assets: VideoAsset): Promise<string> {
     command
       .outputOptions([
         "-c:v libx264",
+        "-preset ultrafast",
         "-pix_fmt yuv420p",
         "-r 30",
         "-t 15" // Máximo 15 segundos para estos reels rápidos
