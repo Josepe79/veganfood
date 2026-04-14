@@ -25,19 +25,23 @@ export function PricingTableClient({ data }: { data: IntelligenceItem[] }) {
     // Enriquecemos los datos calculando su status algorítmico al vuelo para poder filtrarlos
     const enrichedData = data.map(prod => {
         const nuestro = prod.precioVenta;
-        const mercado = prod.precioCompetencia!;
+        const mercado = prod.precioCompetencia; // puede ser null
         const costo = prod.precioOriginal;
         
-        let status: "COMPETITIVO" | "AJUSTABLE" | "CRITICA" | "OCULTO" | "PROMOCION" = "COMPETITIVO";
+        let status: "COMPETITIVO" | "AJUSTABLE" | "CRITICA" | "OCULTO" | "PROMOCION" | "SIN_DATO" = "SIN_DATO";
         
         if (prod.oculto) {
             status = "OCULTO";
         } else if (prod.enPromocion) {
             status = "PROMOCION";
+        } else if (mercado === null) {
+            status = "SIN_DATO";
         } else if (mercado <= costo) {
             status = "CRITICA";
         } else if (mercado < nuestro && mercado > costo) {
             status = "AJUSTABLE";
+        } else {
+            status = "COMPETITIVO";
         }
 
         let finalUrl = prod.competenciaUrl || "#";
@@ -45,7 +49,8 @@ export function PricingTableClient({ data }: { data: IntelligenceItem[] }) {
             finalUrl = `https://www.google.com/search?q=${encodeURIComponent(prod.nombre + " " + prod.marca)}`;
         }
 
-        return { ...prod, status, mercado, nuestro, costo, diff: mercado - nuestro, finalUrl };
+        const diff = mercado !== null ? mercado - nuestro : null;
+        return { ...prod, status, mercado, nuestro, costo, diff, finalUrl };
     });
 
     const filteredData = enrichedData.filter(prod => {
@@ -188,6 +193,12 @@ export function PricingTableClient({ data }: { data: IntelligenceItem[] }) {
                             } else if (prod.status === "PROMOCION") {
                                 alertLevel = "bg-purple-500/10 border-purple-500/50 text-purple-400 font-bold shadow-[0_0_10px_purple]";
                                 statusMsg = "En Promoción ✨";
+                            } else if (prod.status === "SIN_DATO") {
+                                alertLevel = "bg-slate-700/50 border-slate-600/50 text-slate-400";
+                                statusMsg = "Sin dato";
+                            } else if (prod.status === "CRITICA") {
+                                alertLevel = "bg-red-500/10 border-red-500/30 text-red-400";
+                                statusMsg = "Crítico";
                             }
 
                             return (
@@ -207,14 +218,20 @@ export function PricingTableClient({ data }: { data: IntelligenceItem[] }) {
                                     <td className="py-4 text-center font-mono text-slate-400">{prod.costo.toFixed(2)}€</td>
                                     <td className="py-4 text-center font-mono text-white bg-slate-800/50 rounded-lg">{prod.nuestro.toFixed(2)}€</td>
                                     <td className="py-4 text-center">
-                                        <a href={prod.finalUrl} target="_blank" className="font-mono text-blue-300 hover:underline">{prod.mercado.toFixed(2)}€</a>
-                                        {prod.competenciaNombre && <p className="text-[10px] text-slate-500 mt-1 uppercase tracking-wider">{prod.competenciaNombre}</p>}
+                                        {prod.mercado !== null ? (
+                                            <>
+                                                <a href={prod.finalUrl} target="_blank" className="font-mono text-blue-300 hover:underline">{prod.mercado.toFixed(2)}€</a>
+                                                {prod.competenciaNombre && <p className="text-[10px] text-slate-500 mt-1 uppercase tracking-wider">{prod.competenciaNombre}</p>}
+                                            </>
+                                        ) : (
+                                            <span className="text-slate-600 text-xs">Sin escanear</span>
+                                        )}
                                     </td>
                                     <td className="py-4 text-right pr-4">
                                         <div className="flex flex-col items-end gap-2">
                                             <div className={`inline-flex items-center gap-2 border px-3 py-1 rounded-md ${alertLevel}`}>
                                                 <span className="text-xs uppercase tracking-wide">{statusMsg}</span>
-                                                <span className="font-mono">{prod.diff > 0 ? "+" : ""}{prod.diff.toFixed(2)}€</span>
+                                                {prod.diff !== null && <span className="font-mono">{prod.diff > 0 ? "+" : ""}{prod.diff.toFixed(2)}€</span>}
                                             </div>
                                             <PricingActions productId={prod.id} currentPrice={prod.nuestro} oculto={prod.oculto} enPromocion={prod.enPromocion} />
                                         </div>
