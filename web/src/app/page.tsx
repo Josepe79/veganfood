@@ -6,10 +6,12 @@ import Link from 'next/link';
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-export default async function Home({ searchParams }: { searchParams: Promise<{ q?: string, marca?: string }> }) {
+export default async function Home({ searchParams }: { searchParams: Promise<{ q?: string, marca?: string, page?: string }> }) {
   const params = await searchParams;
   const q = params.q || "";
   const marca = params.marca || "";
+  const page = parseInt(params.page || "1");
+  const pageSize = 24;
 
   // Construir consulta dinámica Prisma
   const whereClause: any = { oculto: false };
@@ -23,11 +25,18 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ q
     whereClause.marca = { equals: marca };
   }
 
-  // 1. Obtener lista de productos filtrada
-  const products = await prisma.product.findMany({
-    where: whereClause,
-    orderBy: { nombre: 'asc' }
-  });
+  // 1. Obtener lista de productos filtrada con paginación
+  const [products, totalCount] = await Promise.all([
+    prisma.product.findMany({
+      where: whereClause,
+      orderBy: { nombre: 'asc' },
+      skip: (page - 1) * pageSize,
+      take: pageSize
+    }),
+    prisma.product.count({ where: whereClause })
+  ]);
+
+  const totalPages = Math.ceil(totalCount / pageSize);
 
   const novedades = await prisma.product.findMany({
     where: { oculto: false },
@@ -48,7 +57,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ q
   });
 
   // Texto dinámico para el encabezado del Grid
-  const gridTitle = (q || marca) ? `Resultados de búsqueda (${products.length})` : "Catálogo Destacado";
+  const gridTitle = (q || marca) ? `Resultados de búsqueda (${totalCount})` : "Catálogo Destacado";
   const gridSubtitle = q ? `Filtrando por "${q}"` : "Explora nuestra colección de proveedores top";
   
   return (
@@ -240,10 +249,38 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ q
           <div className="col-span-full py-20 text-center text-slate-400 glass rounded-3xl">
             <svg className="w-16 h-16 mx-auto mb-4 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" /></svg>
             <p className="text-xl">Catálogo vacío.</p>
-            <p className="text-sm mt-2">Asegúrate de ejecutar el Scraper y sembrar la base de datos.</p>
+            <p className="text-sm mt-2">No hemos encontrado productos que coincidan con tu búsqueda.</p>
           </div>
         )}
       </div>
+
+      {/* Pagination Controls */}
+      {totalPages > 1 && (
+        <div className="mt-12 flex flex-col items-center gap-4">
+          <div className="flex items-center gap-2">
+            <Link 
+              href={`/?${new URLSearchParams({ ...Object.fromEntries(Object.entries(params)), page: (page - 1).toString() })}`}
+              className={`px-6 py-3 rounded-xl border font-bold transition-all ${page <= 1 ? 'pointer-events-none opacity-20 border-white/5 bg-white/5 text-slate-600' : 'bg-slate-800 border-white/10 text-white hover:bg-slate-700 hover:border-primary/50 text-sm'}`}
+            >
+              Anterior
+            </Link>
+            
+            <div className="flex gap-1">
+               <span className="bg-primary/20 text-primary border border-primary/30 px-4 py-3 rounded-xl font-black text-sm">
+                 Página {page} de {totalPages}
+               </span>
+            </div>
+
+            <Link 
+              href={`/?${new URLSearchParams({ ...Object.fromEntries(Object.entries(params)), page: (page + 1).toString() })}`}
+              className={`px-6 py-3 rounded-xl border font-bold transition-all ${page >= totalPages ? 'pointer-events-none opacity-20 border-white/5 bg-white/5 text-slate-600' : 'bg-primary text-white border-primary hover:bg-emerald-500 shadow-lg shadow-emerald-500/20 text-sm'}`}
+            >
+              Siguiente
+            </Link>
+          </div>
+          <p className="text-slate-500 text-[10px] uppercase tracking-widest font-bold">Mostrando {products.length} de {totalCount} productos</p>
+        </div>
+      )}
 
       {/* Trust Block Icons */}
       {!q && !marca && (

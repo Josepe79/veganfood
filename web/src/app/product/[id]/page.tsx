@@ -146,7 +146,9 @@ export default async function ProductDetail({ params }: { params: Promise<{ id: 
                   <div className="grid grid-cols-2 gap-3 mt-8 pt-6 border-t border-white/5">
                       <div className="flex items-center gap-2 text-slate-400">
                           <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-500 shrink-0">
-                              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15L12 15M12 15L12 15M12 15L12 15M12 15L12 15" strokeLinecap="round" strokeLinejoin="round"/><path d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 011 1v2a1 1 0 01-1 1h-1m-4-14l-2 2L8 5m0 0l2 2" strokeLinecap="round" strokeLinejoin="round"/><path d="M3 10h10M3 14h10" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                              </svg>
                           </div>
                           <span className="text-[10px] font-bold uppercase tracking-wider">Envío JIT 24h</span>
                       </div>

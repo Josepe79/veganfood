@@ -100,12 +100,12 @@ function Footer() {
               <span className="text-xl font-bold tracking-tight text-white">VeganFood<span className="text-primary">.es</span></span>
             </div>
             <p className="text-slate-400 text-sm leading-relaxed mb-6">
-              Supermercado 100% vegetal operado por <strong>Jepco Consutors SL</strong>. Especialistas en logística JIT para productos frescos y éticos.
+              Supermercado 100% vegetal operado por <strong>Jepco Consutors SL</strong>. Logística JIT para máxima frescura en alimentación ética.
             </p>
             <div className="space-y-3 text-xs text-slate-500">
                <div className="flex items-center gap-2">
                   <svg className="w-4 h-4 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-                  <span>Avda. Salvador Espriu 38, 08181 Sentmenat (BCN)</span>
+                  <span>Avda. Salvador Espriu 38, Sentmenat (BCN)</span>
                </div>
                <div className="flex items-center gap-2">
                   <svg className="w-4 h-4 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
@@ -118,29 +118,34 @@ function Footer() {
             <h4 className="text-white font-bold mb-4 uppercase tracking-wider text-sm">Empresa</h4>
             <ul className="space-y-3 text-sm text-slate-400">
               <li><a href="/sobre-nosotros" className="hover:text-primary transition-colors">Sobre Nosotros</a></li>
-              <li><a href="/contacto" className="hover:text-primary transition-colors">Contacto Directo</a></li>
+              <li><a href="/contacto" className="hover:text-primary transition-colors">Contacto</a></li>
               <li><a href="/aviso-legal" className="hover:text-primary transition-colors">Aviso Legal</a></li>
-              <li><a href="/politica-privacidad" className="hover:text-primary transition-colors">Política de Privacidad</a></li>
+              <li><a href="/politica-privacidad" className="hover:text-primary transition-colors">Privacidad</a></li>
+            </ul>
+          </div>
+
+          <div>
+            <h4 className="text-white font-bold mb-4 uppercase tracking-wider text-sm">Marcas Top</h4>
+            <ul className="space-y-3 text-sm text-slate-400">
+              <li><a href="/?marca=Terrasana" className="hover:text-primary transition-colors">Terrasana</a></li>
+              <li><a href="/?marca=Solnatural" className="hover:text-primary transition-colors">Solnatural</a></li>
+              <li><a href="/?marca=Vegetalia" className="hover:text-primary transition-colors">Vegetalia</a></li>
+              <li><a href="/?marca=Salud%20Viva" className="hover:text-primary transition-colors">Salud Viva</a></li>
             </ul>
           </div>
 
           <div>
             <h4 className="text-white font-bold mb-4 uppercase tracking-wider text-sm">Soporte</h4>
-            <ul className="space-y-3 text-sm text-slate-400">
+            <ul className="space-y-3 text-sm text-slate-400 mb-6">
               <li><a href="/envios-y-devoluciones" className="hover:text-primary transition-colors">Envíos y Devoluciones</a></li>
-              <li><a href="/condiciones-compra" className="hover:text-primary transition-colors">Condiciones de Venta</a></li>
-              <li><span className="text-slate-600">Preguntas Frecuentes (FAQ)</span></li>
-              <li className="pt-2"><p className="text-[10px] text-slate-500 font-bold uppercase tracking-tight">Atención Telefónica</p><p className="text-xs text-white">L-V: 09:00h a 18:00h</p></li>
+              <li><a href="/condiciones-compra" className="hover:text-primary transition-colors">Términos de Compra</a></li>
             </ul>
-          </div>
-
-          <div>
-            <h4 className="text-white font-bold mb-4 uppercase tracking-wider text-sm">Métodos de Pago</h4>
-            <div className="grid grid-cols-2 gap-2">
-                {['Visa', 'Mastercard', 'Bizum', 'Revolut Pay', 'Apple Pay', 'Google Pay'].map(p => (
-                   <div key={p} className="bg-slate-800/80 border border-white/5 rounded-md px-2 py-1.5 text-[10px] text-slate-300 font-medium text-center">
+            <h4 className="text-white font-bold mb-3 uppercase tracking-wider text-[10px] text-slate-500">Pagos Seguros</h4>
+            <div className="flex flex-wrap gap-2">
+                {['Visa', 'MC', 'Bizum', 'Revolut'].map(p => (
+                   <span key={p} className="bg-slate-800 border border-white/5 rounded px-1.5 py-0.5 text-[9px] text-slate-400 font-bold uppercase tracking-tighter">
                        {p}
-                   </div>
+                   </span>
                 ))}
             </div>
           </div>
