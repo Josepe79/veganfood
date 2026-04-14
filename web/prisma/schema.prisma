@@ -30,6 +30,9 @@ model Product {
   enPromocion       Boolean  @default(false)
   needsReview       Boolean  @default(false)
 
+  videoUrl          String?
+  captions          Json?
+
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
   orderItems      OrderItem[]

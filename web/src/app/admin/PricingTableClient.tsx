@@ -17,6 +17,8 @@ type IntelligenceItem = {
     oculto: boolean;
     enPromocion: boolean;
     createdAt: Date;
+    videoUrl?: string | null;
+    captions?: any | null;
 };
 
 export function PricingTableClient({ data }: { data: IntelligenceItem[] }) {
@@ -26,17 +28,43 @@ export function PricingTableClient({ data }: { data: IntelligenceItem[] }) {
     const [socialData, setSocialData] = useState<{ videoUrl: string, captions: any } | null>(null);
     const [generatingSocialId, setGeneratingSocialId] = useState<string | null>(null);
 
+    useEffect(() => {
+        let interval: NodeJS.Timeout;
+        if (generatingSocialId) {
+            interval = setInterval(() => {
+                fetch(`/api/social-status?id=${generatingSocialId}`)
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.ready) {
+                            setSocialData({ videoUrl: data.videoUrl, captions: data.captions });
+                            setGeneratingSocialId(null);
+                        }
+                    })
+                    .catch(err => console.error("Error polling social status:", err));
+            }, 3000); // Poll once every 3 seconds
+        }
+        return () => {
+            if (interval) clearInterval(interval);
+        };
+    }, [generatingSocialId]);
+
     const handleGenerateSocial = (productId: string) => {
+        // Optimización masiva: Si el vídeo ya existe en la DB y te lo traje en el data[] de Prisma, ¡ábrelo de inmediato!
+        const product = data.find(p => p.id === productId);
+        if (product && product.videoUrl) {
+            setSocialData({ videoUrl: product.videoUrl, captions: product.captions });
+            return;
+        }
+
         setGeneratingSocialId(productId);
         prepareSocialMediaVideo(productId).then(res => {
-            if (res.success && res.videoUrl && res.captions) {
-                setSocialData({ videoUrl: res.videoUrl, captions: res.captions });
-            } else {
-                alert("Error generando video: " + (res.error || "Desconocido"));
+            if (!res.success) {
+                alert("Error técnico de servidor: " + (res.error || "Desconocido"));
+                setGeneratingSocialId(null);
             }
-            setGeneratingSocialId(null);
+            // Si funciona, dejamos que el useEffect haga el Polling del background task.
         }).catch(err => {
-            alert("Error de conexión o timeout. El vídeo podría estar generándose demasiado lento para el servidor. Avisa al proveedor de sistemas.");
+            alert("Error de red llamando a la IA. Revisa tu conexión a internet.");
             console.error(err);
             setGeneratingSocialId(null);
         });

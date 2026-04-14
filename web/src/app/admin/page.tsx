@@ -52,7 +52,7 @@ export default async function AdminDashboard() {
               { createdAt: { gte: sevenDaysAgo } }   // Novedades (Últimos 7 días)
           ]
       },
-      select: { id: true, nombre: true, marca: true, precioOriginal: true, precioVenta: true, precioCompetencia: true, competenciaUrl: true, competenciaNombre: true, oculto: true, enPromocion: true, createdAt: true },
+      select: { id: true, nombre: true, marca: true, precioOriginal: true, precioVenta: true, precioCompetencia: true, competenciaUrl: true, competenciaNombre: true, oculto: true, enPromocion: true, createdAt: true, videoUrl: true, captions: true },
       orderBy: { createdAt: 'desc' }
   });
 

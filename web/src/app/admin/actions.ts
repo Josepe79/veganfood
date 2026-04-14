@@ -161,20 +161,44 @@ export async function promoteProductsBulk(productIds: string[], promote: boolean
 }
 
 /**
- * Genera el vídeo social para un producto (Script -> Voz -> Render)
+ * Función principal que llama la UI. Detona el trabajo en segundo plano y devuelve OK instantáneo.
  */
 export async function prepareSocialMediaVideo(productId: string) {
     try {
         const product = await prisma.product.findUnique({ where: { id: productId } });
         if (!product) throw new Error("Producto no encontrado");
 
-        console.log(`[Social] Generando guion para: ${product.nombre}`);
+        // Disparamos la generación pesada en segundo plano de manera asíncrona sin esperar
+        backgroundRenderTask(productId).catch(err => {
+            console.error("Fallo crítico en Worker de Segundo Plano:", err);
+        });
+
+        return { 
+            success: true, 
+            message: "Proceso asíncrono iniciado"
+        };
+    } catch (e: any) {
+        console.error("Error en prepareSocialMediaVideo:", e);
+        return { success: false, error: e.message };
+    }
+}
+
+/**
+ * Worker Asíncrono - No bloquea la UI, escribe en Base de Datos cuando termina.
+ */
+async function backgroundRenderTask(productId: string) {
+    console.log(`[Worker] Iniciando trabajo asíncrono para producto: ${productId}`);
+    const product = await prisma.product.findUnique({ where: { id: productId } });
+    if (!product) return;
+
+    try {
+        console.log(`[Worker] Generando guion para: ${product.nombre}`);
         const script = await generateSocialScript(product.nombre, product.marca || "VeganFood", product.descripcion || "");
         
-        console.log(`[Social] Generando locución...`);
+        console.log(`[Worker] Generando locución...`);
         const voicePath = await generateSocialVoice(script.hook + " " + script.mid + " " + script.cta, `voice-${productId}.mp3`);
         
-        console.log(`[Social] Descargando imagen del producto de forma segura...`);
+        console.log(`[Worker] Descargando imagen del producto...`);
         let localImage = "https://online.feliubadalo.com/media/catalog/product/placeholder/default/2.png";
         const tempDir = path.join(process.cwd(), "tmp");
         if (!fs.existsSync(tempDir)) fs.mkdirSync(tempDir);
@@ -188,11 +212,11 @@ export async function prepareSocialMediaVideo(productId: string) {
             fs.writeFileSync(safeLocalImagePath, buffer);
             localImage = safeLocalImagePath;
         } catch (e) {
-            console.warn("Fallo descargando la imagen, ffmpeg intentará tirar de red externa (arriesgado).", e);
+            console.warn("[Worker] Fallo descargando la imagen, ffmpeg intentará tirar de red externa.", e);
             localImage = product.imagen || localImage;
         }
 
-        console.log(`[Social] Renderizando vídeo vertical...`);
+        console.log(`[Worker] Renderizando vídeo vertical FFmpeg...`);
         const videoPath = await renderSocialVideo({
             productImage: localImage,
             voiceAudio: voicePath,
@@ -200,17 +224,20 @@ export async function prepareSocialMediaVideo(productId: string) {
             outputName: `social-${productId}-${Date.now()}.mp4`
         });
 
-        // La URL pública (asumiendo que servimos /public/temp-videos)
         const publicUrl = `/temp-videos/${videoPath.split(/[\\/]/).pop()}`;
 
-        return { 
-            success: true, 
-            videoUrl: publicUrl,
-            captions: script.captions
-        };
-    } catch (e: any) {
-        console.error("Error en prepareSocialMediaVideo:", e);
-        return { success: false, error: e.message };
+        console.log(`[Worker] ¡Vídeo completado! Guardando en Base de Datos permanentemente...`);
+        // Actualizamos la base de datos persistiendo el vídeo
+        await prisma.product.update({
+            where: { id: productId },
+            data: { 
+                videoUrl: publicUrl,
+                captions: script.captions as any
+            }
+        });
+
+    } catch (e) {
+        console.error(`[Worker] Error FATAL en trabajo de vídeo para ${productId}:`, e);
     }
 }
 
