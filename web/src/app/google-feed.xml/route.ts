@@ -12,6 +12,11 @@ const escapeXml = (unsafe: string) => {
     .replace(/'/g, "&apos;");
 };
 
+const stripHtml = (html: string) => {
+    if (!html) return "";
+    return html.replace(/<[^>]*>?/gm, "").replace(/\s\s+/g, " ").trim();
+};
+
 export const dynamic = "force-dynamic"; // El catálogo muta frecuentemente
 
 export async function GET() {
@@ -44,7 +49,7 @@ export async function GET() {
         : "https://online.feliubadalo.com/media/catalog/product/placeholder/default/2.png";
 
       const title = escapeXml(product.nombre).slice(0, 149); // Google rechaza titles > 150 chars
-      const description = escapeXml(product.descripcion || product.nombre).slice(0, 4000);
+      const description = escapeXml(stripHtml(product.descripcion || product.nombre)).slice(0, 4000);
       
       const price = `${product.precioVenta.toFixed(2)} EUR`;
 

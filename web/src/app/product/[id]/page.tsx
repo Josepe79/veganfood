@@ -141,10 +141,34 @@ export default async function ProductDetail({ params }: { params: Promise<{ id: 
               ) : (
                 <div className="transform transition-all active:scale-[0.99]">
                   <AddToCartButton product={product} isLarge={true} />
-                  <p className="text-center text-xs text-slate-500 mt-4 font-medium flex items-center justify-center gap-1.5">
-                     <svg className="w-3.5 h-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
-                     Pago 100% seguro y encriptado.
-                  </p>
+                  
+                  {/* Trust Badge Grid */}
+                  <div className="grid grid-cols-2 gap-3 mt-8 pt-6 border-t border-white/5">
+                      <div className="flex items-center gap-2 text-slate-400">
+                          <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-500 shrink-0">
+                              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15L12 15M12 15L12 15M12 15L12 15M12 15L12 15" strokeLinecap="round" strokeLinejoin="round"/><path d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 011 1v2a1 1 0 01-1 1h-1m-4-14l-2 2L8 5m0 0l2 2" strokeLinecap="round" strokeLinejoin="round"/><path d="M3 10h10M3 14h10" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                          </div>
+                          <span className="text-[10px] font-bold uppercase tracking-wider">Envío JIT 24h</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-slate-400">
+                          <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-500 shrink-0">
+                              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+                          </div>
+                          <span className="text-[10px] font-bold uppercase tracking-wider">Pago SSL Seguro</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-slate-400">
+                          <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-500 shrink-0">
+                              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
+                          </div>
+                          <span className="text-[10px] font-bold uppercase tracking-wider">Garantía 14 días</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-slate-400">
+                          <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-500 shrink-0">
+                              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
+                          </div>
+                          <span className="text-[10px] font-bold uppercase tracking-wider">Directo Obradores</span>
+                      </div>
+                  </div>
                 </div>
               )}
             </div>
