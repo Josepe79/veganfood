@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect } from "react";
 import { hideProductsBulk, promoteProductsBulk, prepareSocialMediaVideo } from "./actions";
 import { PricingActions } from "./PricingActions";
 import SocialPreviewModal from "./SocialPreviewModal";
