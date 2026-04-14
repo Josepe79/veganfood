@@ -5,11 +5,9 @@ import path from 'path'
 const prisma = new PrismaClient()
 
 async function main() {
-  console.log("Iniciando seeder...")
+  console.log("Iniciando seeder inteligente (Upsert)...")
   
-  // Limpiar bd actual
-  await prisma.product.deleteMany()
-  console.log("Base de datos de productos reseteada.")
+  // ELIMINADO: await prisma.product.deleteMany() -> Ya no borramos la BD para proteger datos.
 
   // Leer productos (Priorizar JSON Completo del Deep Scrape Nocturno)
   let dataPath = path.join(process.cwd(), '../scraper/productos_completos.json')
@@ -27,25 +25,14 @@ async function main() {
   const rawData = fs.readFileSync(dataPath, 'utf8')
   const productos = JSON.parse(rawData)
   
-  let parseados = 0
-  let descartados = 0
+  let insertados = 0
+  let actualizados = 0
 
   for (const item of productos) {
-    // if (!item.descripcion || item.descripcion.trim() === "") {
-    //     descartados++;
-    //     continue;
-    // }
-
-    // Parsear precio b2b
-    // Feliubadalo devuelve algo como "4,30 €" o "4,30"
     let cleanB2b = item.precio_b2b.replace('€', '').replace(',', '.').trim()
     let originalCost = parseFloat(cleanB2b)
-    
-    if (isNaN(originalCost)) {
-      originalCost = 0.0
-    }
+    if (isNaN(originalCost)) originalCost = 0.0
 
-    // Parsear PVPR (Precio Venta Público Recomendado)
     let pvprVal = 0;
     if (item.pvpr && item.pvpr.toLowerCase() !== 'libre') {
        let cleanPvpr = item.pvpr.replace('€', '').replace(',', '.').trim()
@@ -53,10 +40,8 @@ async function main() {
        if(isNaN(pvprVal)) pvprVal = 0;
     }
 
-    // Lógica de Precios del Cliente:
-    // Si hay un PVPR válido, lo usamos. Si no, aplicamos 10% de margen al costo original.
     let calculatedSalePrice = 0;
-    let finalMargin = 0.0;
+    let finalMargin = 0.10;
 
     if (pvprVal > 0) {
        calculatedSalePrice = pvprVal;
@@ -64,35 +49,65 @@ async function main() {
           finalMargin = (calculatedSalePrice - originalCost) / originalCost;
        }
     } else {
-       finalMargin = 0.10;
        calculatedSalePrice = originalCost * (1 + finalMargin);
     }
 
-    // Ajustar agotado
     const agotado = item.agotado === true
 
-    await prisma.product.create({
-      data: {
-        nombre: item.nombre,
-        marca: item.marca,
-        ean: item.ean || "",
-        ref: item.ref || "",
-        precioOriginal: originalCost,
-        margen: finalMargin,
-        precioVenta: calculatedSalePrice,
-        pvpr: item.pvpr || "",
-        agotado: agotado,
-        imagen: item.imagen || "",
-        urlOriginal: item.url_original || null,
-        descripcion: item.descripcion || null,
-        ingredientes: item.ingredientes || null
-      }
-    })
-    parseados++
+    // Buscar si el producto ya existe (Prioridad: EAN > Ref > Nombre)
+    let searchCondition = {};
+    if (item.ean && item.ean.trim() !== "") {
+        searchCondition = { ean: item.ean };
+    } else if (item.ref && item.ref.trim() !== "") {
+        searchCondition = { ref: item.ref };
+    } else {
+        searchCondition = { nombre: item.nombre };
+    }
+
+    try {
+        const existing = await prisma.product.findFirst({ where: searchCondition });
+
+        if (existing) {
+            // ACTUALIZAR SEGURA: Solo tocamos precios base y stock. No tocamos descripciones de IA ni precios de venta manuales.
+            await prisma.product.update({
+                where: { id: existing.id },
+                data: {
+                    precioOriginal: originalCost,
+                    pvpr: item.pvpr || "",
+                    agotado: agotado,
+                }
+            });
+            actualizados++;
+        } else {
+            // INSERCIÓN NUEVA: Producto recién detectado en Feliubadaló
+            await prisma.product.create({
+              data: {
+                nombre: item.nombre,
+                marca: item.marca,
+                ean: item.ean || "",
+                ref: item.ref || "",
+                precioOriginal: originalCost,
+                margen: finalMargin,
+                precioVenta: calculatedSalePrice,
+                pvpr: item.pvpr || "",
+                agotado: agotado,
+                imagen: item.imagen || "",
+                urlOriginal: item.url_original || null,
+                // Insertamos descripciones vírgenes (B2B) para que luego la IA las reescriba
+                descripcion: item.descripcion || null,
+                ingredientes: item.ingredientes || null
+              }
+            });
+            insertados++;
+        }
+    } catch (e) {
+        console.error(`Error procesando [${item.nombre}]:`, e);
+    }
   }
 
-  console.log(`¡Seeder completado! Se han insertado ${parseados} productos veganos Premium completos al catálogo.`)
-  console.log(`Filtro de Calidad JIT descartó ${descartados} productos por no tener ficha descriptiva en el JSON.`);
+  console.log(`¡Sincronización Inteligente JIT completada!`)
+  console.log(`- Nuevos productos insertados al catálogo: ${insertados}`);
+  console.log(`- Productos actualizados (Precios/Stock): ${actualizados}`);
 }
 
 main()
