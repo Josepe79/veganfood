@@ -69,7 +69,15 @@ export async function generateSocialScript(productName: string, brand: string, d
         { text: productName, time: 0 },
         { text: "100% Vegano", time: 5 },
         { text: "VeganFood.es", time: 10 }
-      ]
+      ],
+      captions: {
+        igTikTok: `¿Buscabas el ${productName} definitivo? 🌱 Descubre la mejor calidad de ${brand}. Corre que vuela. 🏃💨 Consíguelo en el link de la bio.`,
+        ytShorts: {
+          title: `${productName} - Lo mejor en alimentación vegana`,
+          desc: `Explora las propiedades de ${productName} de ${brand}. Selección exclusiva de VeganFood.es para una dieta saludable.`
+        },
+        whatsapp: `¡Hola! 👋 Mira lo que acaba de aterrizar en VeganFood.es: ${productName} de ${brand}. Haz tu pedido hoy antes de las 14h y lo recibes mañana. 🚛 Pídelo aquí: https://veganfood.es/`
+      }
     };
   }
 }
