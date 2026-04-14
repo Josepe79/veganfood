@@ -186,7 +186,7 @@ export async function prepareSocialMediaVideo(productId: string) {
         return { 
             success: true, 
             videoUrl: publicUrl,
-            caption: `${script.hook}\n\n${script.mid}\n\n${script.cta}\n\n#VeganFood #PlantBased #Vegano #Sostenible`
+            captions: script.captions
         };
     } catch (e: any) {
         console.error("Error en prepareSocialMediaVideo:", e);

@@ -20,14 +20,14 @@ export function PricingTableClient({ data }: { data: IntelligenceItem[] }) {
     const [filter, setFilter] = useState<"ALL" | "COMPETITIVO" | "AJUSTABLE" | "CRITICA" | "OCULTO" | "PROMOCION">("ALL");
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
     const [isPending, startTransition] = useTransition();
-    const [socialData, setSocialData] = useState<{ videoUrl: string, caption: string } | null>(null);
+    const [socialData, setSocialData] = useState<{ videoUrl: string, captions: any } | null>(null);
     const [isGeneratingSocial, setIsGeneratingSocial] = useState(false);
 
     const handleGenerateSocial = (productId: string) => {
         setIsGeneratingSocial(true);
         prepareSocialMediaVideo(productId).then(res => {
-            if (res.success && res.videoUrl && res.caption) {
-                setSocialData({ videoUrl: res.videoUrl, caption: res.caption });
+            if (res.success && res.videoUrl && res.captions) {
+                setSocialData({ videoUrl: res.videoUrl, captions: res.captions });
             } else {
                 alert("Error generando video: " + (res.error || "Desconocido"));
             }
@@ -267,7 +267,7 @@ export function PricingTableClient({ data }: { data: IntelligenceItem[] }) {
             {socialData && (
                 <SocialPreviewModal 
                     videoUrl={socialData.videoUrl} 
-                    caption={socialData.caption} 
+                    captions={socialData.captions} 
                     onClose={() => setSocialData(null)} 
                 />
             )}

@@ -6,34 +6,52 @@ export interface SocialScript {
   hook: string;
   mid: string;
   cta: string;
-  overlays: { text: string; time: number }[]; // Tiempos sugeridos para FFmpeg
+  overlays: { text: string; time: number }[];
+  captions: {
+    igTikTok: string;
+    ytShorts: { title: string; desc: string };
+    whatsapp: string;
+  };
 }
 
 export async function generateSocialScript(productName: string, brand: string, description: string): Promise<SocialScript> {
   const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
   const prompt = `
-    Actúa como un experto en Marketing Viral para TikTok e Instagram especializado en productos veganos.
-    Tu objetivo es escribir un guion de 15 segundos para promocionar este producto:
-    Producto: ${productName}
-    Marca: ${brand}
-    Descripción: ${description}
+    Eres un Social Media Manager experto en el sector foodie y plant-based. Tu misión es generar los textos (captions) para los vídeos promocionales de veganfood.es.
 
-    Formato de respuesta: JSON estricto con esta estructura:
+    DATOS DEL PRODUCTO:
+    - Nombre: ${productName}
+    - Marca: ${brand}
+    - Descripción: ${description}
+    - Enlace: https://veganfood.es/product/ (añadir el ID al final si es posible)
+
+    CONTEXTO DE MARCA:
+    - Identidad: Tono fresco, ético y apetecible. Como un experto en nutrición recomendando a un amigo.
+    - Estructura: Gancho (Hook) + Valor + CTA + Hashtags.
+    - Emojis: Con intención (🌱, 🚛, ✨, 😋).
+
+    FORMATO DE RESPUESTA (JSON POST-PROCESABLE):
     {
-      "hook": "Frase de inicio potente (máx 50 carácteres)",
-      "mid": "Beneficio clave (máx 80 carácteres)",
-      "cta": "Llamada a la acción (máx 40 carácteres)",
+      "hook": "Gancho para el vídeo (máx 50 carácteres)",
+      "mid": "Beneficio principal para el vídeo (máx 80 carácteres)",
+      "cta": "Cierre para el vídeo (máx 40 carácteres)",
       "overlays": [
-        {"text": "Texto para el hook", "time": 0},
-        {"text": "Texto para el beneficio", "time": 5},
-        {"text": "Texto para el cierre", "time": 10}
-      ]
+        {"text": "Hook", "time": 0},
+        {"text": "Valor", "time": 5},
+        {"text": "CTA", "time": 10}
+      ],
+      "captions": {
+        "igTikTok": "Texto para Instagram/TikTok (Máx 150 caracteres, directo, beneficio)",
+        "ytShorts": {
+          "title": "[Nombre Producto] - Lo mejor en alimentación vegana 2026",
+          "desc": "Explora las propiedades de ${productName}. Selección exclusiva de VeganFood.es para una dieta saludable."
+        },
+        "whatsapp": "Texto para WhatsApp Business con enfoque en venta directa y urgencia 24h"
+      }
     }
-    Instrucciones:
-    - Lenguaje inspirador, B2C, nada de tono mayorista.
-    - Usa emojis.
-    - Respuesta SOLO el JSON.
+
+    Respuesta SOLO el JSON.
   `;
 
   try {
