@@ -23,17 +23,17 @@ export function PricingTableClient({ data }: { data: IntelligenceItem[] }) {
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
     const [isPending, startTransition] = useTransition();
     const [socialData, setSocialData] = useState<{ videoUrl: string, captions: any } | null>(null);
-    const [isGeneratingSocial, setIsGeneratingSocial] = useState(false);
+    const [generatingSocialId, setGeneratingSocialId] = useState<string | null>(null);
 
     const handleGenerateSocial = (productId: string) => {
-        setIsGeneratingSocial(true);
+        setGeneratingSocialId(productId);
         prepareSocialMediaVideo(productId).then(res => {
             if (res.success && res.videoUrl && res.captions) {
                 setSocialData({ videoUrl: res.videoUrl, captions: res.captions });
             } else {
                 alert("Error generando video: " + (res.error || "Desconocido"));
             }
-            setIsGeneratingSocial(false);
+            setGeneratingSocialId(null);
         });
     };
 
@@ -254,7 +254,7 @@ export function PricingTableClient({ data }: { data: IntelligenceItem[] }) {
                                                 oculto={prod.oculto} 
                                                 enPromocion={prod.enPromocion} 
                                                 onGenerateSocial={() => handleGenerateSocial(prod.id)}
-                                                isGeneratingSocial={isGeneratingSocial}
+                                                isGeneratingSocial={generatingSocialId === prod.id}
                                             />
                                         </div>
                                     </td>
