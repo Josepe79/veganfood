@@ -15,7 +15,7 @@ export interface SocialScript {
 }
 
 export async function generateSocialScript(productName: string, brand: string, description: string): Promise<SocialScript> {
-  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
 
   const prompt = `
     Eres un Social Media Manager experto en el sector foodie y plant-based. Tu misión es generar los textos (captions) para los vídeos promocionales de veganfood.es.

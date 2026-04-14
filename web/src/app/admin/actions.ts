@@ -6,6 +6,8 @@ import { generateSocialScript } from "@/lib/social-engine/script-gen";
 import { generateSocialVoice } from "@/lib/social-engine/voice-gen";
 import { renderSocialVideo } from "@/lib/social-engine/video-render";
 import { publishToSocial } from "@/lib/social-engine/ayrshare";
+import fs from "fs";
+import path from "path";
 
 export async function marcarPedidosComoComprados() {
   try {
@@ -172,9 +174,27 @@ export async function prepareSocialMediaVideo(productId: string) {
         console.log(`[Social] Generando locución...`);
         const voicePath = await generateSocialVoice(script.hook + " " + script.mid + " " + script.cta, `voice-${productId}.mp3`);
         
+        console.log(`[Social] Descargando imagen del producto de forma segura...`);
+        let localImage = "https://online.feliubadalo.com/media/catalog/product/placeholder/default/2.png";
+        const tempDir = path.join(process.cwd(), "tmp");
+        if (!fs.existsSync(tempDir)) fs.mkdirSync(tempDir);
+        
+        const safeLocalImagePath = path.join(tempDir, `img-${productId}.jpg`);
+        try {
+            const imgRes = await fetch(product.imagen || localImage, {
+                headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36" }
+            });
+            const buffer = Buffer.from(await imgRes.arrayBuffer());
+            fs.writeFileSync(safeLocalImagePath, buffer);
+            localImage = safeLocalImagePath;
+        } catch (e) {
+            console.warn("Fallo descargando la imagen, ffmpeg intentará tirar de red externa (arriesgado).", e);
+            localImage = product.imagen || localImage;
+        }
+
         console.log(`[Social] Renderizando vídeo vertical...`);
         const videoPath = await renderSocialVideo({
-            productImage: product.imagen || "https://online.feliubadalo.com/media/catalog/product/placeholder/default/2.png",
+            productImage: localImage,
             voiceAudio: voicePath,
             overlays: script.overlays,
             outputName: `social-${productId}-${Date.now()}.mp4`
