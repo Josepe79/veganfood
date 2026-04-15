@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, useTransition, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { hideProductsBulk, promoteProductsBulk, prepareSocialMediaVideo } from "./actions";
