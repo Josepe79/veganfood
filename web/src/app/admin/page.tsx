@@ -6,6 +6,7 @@ import { PricingActions } from "./PricingActions";
 import { PricingTableClient } from "./PricingTableClient";
 import { ShipOrderButton } from "./ShipOrderButton";
 import { PromotionToggle } from "./PromotionToggle";
+import { revalidatePath } from "next/cache";
 
 export const dynamic = 'force-dynamic';
 
@@ -20,12 +21,13 @@ export default async function AdminDashboard() {
         include: { product: true }
       }
     },
-    orderBy: { createdAt: 'desc' }
+    orderBy: { updatedAt: 'desc' }
   });
 
-  // 2. Pedidos que YA hemos comprado y están en tránsito/preparación
   const processingOrders = await prisma.order.findMany({
-    where: { status: "PROCESSING" },
+    where: { 
+        status: "PROCESSING" 
+    },
     include: {
       items: {
         include: { product: true }
@@ -39,9 +41,6 @@ export default async function AdminDashboard() {
       select: { id: true, nombre: true, ref: true, marca: true, imagen: true }
   });
   const stockAgotado = agotadosList.length;
-
-  const sevenDaysAgo = new Date();
-  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
   const priceIntelligence = await prisma.product.findMany({
       where: {
@@ -229,6 +228,7 @@ export default async function AdminDashboard() {
         {/* Lado Derecho: Gestión de Salida (1/3 de ancho) */}
         <div className="lg:col-span-1">
           <div className="glass p-6 border-primary/20 sticky top-24">
+             <div className="flex items-center justify-between mb-6 border-b border-primary/10 pb-4">
                <div>
                   <h2 className="text-xl font-bold text-white flex items-center gap-2">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary"><path d="M10 14.7 12 17l4-4.3"/><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/></svg>
@@ -321,7 +321,7 @@ export default async function AdminDashboard() {
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 18V6"/></svg>
                 </div>
                 <div>
-                   <h2 className="text-2xl font-bold text-blue-400">Pricing Intelligence en Pantalla Completa</h2>
+                   <h2 className="text-2xl font-bold text-blue-400">Pricing Intelligence & Control</h2>
                    <p className="text-sm text-slate-400">Monitor dinámico de competitividad frente a Google Shopping. (Solo productos con EAN).</p>
                 </div>
             </div>
