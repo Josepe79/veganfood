@@ -134,6 +134,7 @@ export async function recoverProduct(productId: string) {
 
 export async function togglePromotion(productId: string, promote: boolean) {
     try {
+        console.log(`[ACTION] togglePromotion: ${productId} -> ${promote}`);
         await prisma.product.update({
             where: { id: productId },
             data: { enPromocion: promote }
@@ -142,6 +143,7 @@ export async function togglePromotion(productId: string, promote: boolean) {
         revalidatePath('/admin');
         return { success: true };
     } catch(e: any) {
+        console.error(`[ACTION] togglePromotion failed for ${productId}:`, e);
         return { success: false, error: e.message };
     }
 }
