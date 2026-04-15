@@ -19,8 +19,6 @@ type IntelligenceItem = {
     enPromocion: boolean;
     isNuevo: boolean;
     createdAt: string; // ISO String from server
-    videoUrl?: string | null;
-    captions?: any | null;
 };
 
 export function PricingTableClient({ data }: { data: IntelligenceItem[] }) {
@@ -52,13 +50,6 @@ export function PricingTableClient({ data }: { data: IntelligenceItem[] }) {
     }, [generatingSocialId]);
 
     const handleGenerateSocial = (productId: string) => {
-        // Optimización masiva: Si el vídeo ya existe en la DB y te lo traje en el data[] de Prisma, ¡ábrelo de inmediato!
-        const product = data.find(p => p.id === productId);
-        if (product && product.videoUrl) {
-            setSocialData({ videoUrl: product.videoUrl, captions: product.captions });
-            return;
-        }
-
         setGeneratingSocialId(productId);
         prepareSocialMediaVideo(productId).then(res => {
             if (!res.success) {

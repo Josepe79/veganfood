@@ -139,8 +139,14 @@ export async function togglePromotion(productId: string, promote: boolean) {
             where: { id: productId },
             data: { enPromocion: promote }
         });
-        revalidatePath('/');
-        revalidatePath('/admin');
+        
+        try {
+            revalidatePath('/');
+            revalidatePath('/admin');
+        } catch (revalidateError) {
+            console.error("[ACTION] Revalidation failed but update succeeded:", revalidateError);
+        }
+        
         return { success: true };
     } catch(e: any) {
         console.error(`[ACTION] togglePromotion failed for ${productId}:`, e);
@@ -150,14 +156,19 @@ export async function togglePromotion(productId: string, promote: boolean) {
 
 export async function promoteProductsBulk(productIds: string[], promote: boolean) {
     try {
-        console.log(`[ACTION] promoteProductsBulk called: ids=${productIds.length}, promote=${promote} (type ${typeof promote})`);
+        console.log(`[ACTION] promoteProductsBulk called: ids=${productIds.length}, promote=${promote}`);
         const result = await prisma.product.updateMany({
             where: { id: { in: productIds } },
             data: { enPromocion: promote }
         });
-        console.log(`[ACTION] Prisma updateMany result: ${JSON.stringify(result)}`);
-        revalidatePath('/');
-        revalidatePath('/admin');
+        
+        try {
+            revalidatePath('/');
+            revalidatePath('/admin');
+        } catch (revalidateError) {
+            console.error("[ACTION] Bulk revalidation failed:", revalidateError);
+        }
+
         return { success: true };
     } catch(e: any) {
         console.error("[ACTION] promoteProductsBulk failed:", e);
