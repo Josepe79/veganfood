@@ -94,16 +94,6 @@ export function ReviewCenterClient({
         }
     };
 
-    if (products.length === 0) {
-        return (
-            <div className="py-12 text-center text-emerald-500 bg-emerald-500/10 border border-emerald-500/30 rounded-2xl flex flex-col items-center">
-                <svg className="w-16 h-16 mb-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-                <h3 className="text-xl font-bold">Auditoría Ética Limpia</h3>
-                <p className="text-slate-400 mt-2 text-sm max-w-md">No hay productos marcados por el equipo de IA actualmente. Todo el catálogo ha sido validado acorde a los criterios veganos estrictos.</p>
-            </div>
-        );
-    }
-
     return (
         <div className="bg-slate-900/50 border border-red-500/20 rounded-2xl overflow-hidden shadow-[0_0_30px_rgba(239,68,68,0.05)]">
             
@@ -116,6 +106,7 @@ export function ReviewCenterClient({
                             className="rounded border-red-500 bg-slate-800 text-red-500 focus:ring-red-500/50 accent-red-500 w-5 h-5 cursor-pointer"
                             checked={products.length > 0 && selectedIds.size === products.length}
                             onChange={handleSelectAll}
+                            disabled={products.length === 0}
                         />
                         <label htmlFor="selectAllAudit" className="text-sm font-bold text-red-300 cursor-pointer whitespace-nowrap">
                             Todos ({products.length})
@@ -149,21 +140,21 @@ export function ReviewCenterClient({
                         className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-sm font-bold shadow-lg shadow-emerald-900/20 transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-                        Validar como Seguros
+                        Validar
                     </button>
                     
                     <button 
                         disabled={isPending || selectedIds.size === 0}
-                        onClick={() => handleAction("HIDE", "Ocultar de la vista del público")}
+                        onClick={() => handleAction("HIDE", "Ocultar")}
                         className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-slate-200 border border-slate-600 rounded-lg text-sm font-bold transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
-                        Ocultar del Catálogo
+                        Ocultar
                     </button>
 
                     <button 
                         disabled={isPending || selectedIds.size === 0}
-                        onClick={() => handleAction("DELETE", "Eliminar permanentemente")}
+                        onClick={() => handleAction("DELETE", "Eliminar")}
                         className="px-4 py-2 bg-red-600 hover:bg-red-500 text-white rounded-lg text-sm font-bold shadow-[0_0_15px_rgba(239,68,68,0.4)] transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
@@ -172,9 +163,17 @@ export function ReviewCenterClient({
                 </div>
             </div>
 
-            {/* Listado */}
+            {/* Listado o Estado Vacío */}
             <div className="max-h-[600px] overflow-y-auto w-full">
-                {products.map(prod => (
+                {products.length === 0 ? (
+                    <div className="py-20 text-center flex flex-col items-center justify-center">
+                        <div className="w-20 h-20 bg-emerald-500/10 rounded-full flex items-center justify-center text-emerald-500 mb-4 ring-1 ring-emerald-500/30">
+                            <svg className="w-10 h-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                        </div>
+                        <h3 className="text-xl font-bold text-white">Marca "{selectedBrand || 'Todas'}" limpia</h3>
+                        <p className="text-slate-500 mt-2 text-sm max-w-xs">Has terminado con esta selección. Selecciona otra marca en el desplegable superior para continuar con la auditoría.</p>
+                    </div>
+                ) : products.map(prod => (
                     <div key={prod.id} className={`p-4 border-b border-white/5 flex flex-col md:flex-row gap-6 transition-colors hover:bg-white/5 ${selectedIds.has(prod.id) ? 'bg-red-500/5' : ''}`}>
                         
                         <div className="flex items-start gap-4 md:w-1/3 shrink-0">
