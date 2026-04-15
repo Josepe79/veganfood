@@ -101,7 +101,7 @@ async function main() {
 
     const products = await prisma.product.findMany({
         ...(limit ? { take: limit } : {}),
-        where: { descripcion: { not: null } },
+        where: { descripcion: { not: null }, isAiGenerated: false },
         select: { id: true, nombre: true, marca: true, descripcion: true, ingredientes: true },
         orderBy: { nombre: 'asc' }
     });
