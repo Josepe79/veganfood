@@ -39,9 +39,9 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ q
   const totalPages = Math.ceil(totalCount / pageSize);
 
   const novedades = await prisma.product.findMany({
-    where: { oculto: false },
+    where: { oculto: false, isNuevo: true },
     orderBy: { createdAt: 'desc' },
-    take: 4
+    take: 8
   });
 
   const promos = await prisma.product.findMany({

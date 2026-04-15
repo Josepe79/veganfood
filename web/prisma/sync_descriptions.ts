@@ -34,6 +34,11 @@ async function main() {
         });
 
         if (targetTarget) {
+            if (targetTarget.isAiGenerated) {
+                // Protección: No sobreescribir la magia de la IA con el gris texto del distribuidor
+                continue;
+            }
+
             await prisma.product.update({
                 where: { id: targetTarget.id },
                 data: {

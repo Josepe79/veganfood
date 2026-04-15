@@ -75,6 +75,7 @@ async function main() {
                     precioOriginal: originalCost,
                     pvpr: item.pvpr || "",
                     agotado: agotado,
+                    isNuevo: item.is_nuevo || false
                 }
             });
             actualizados++;
@@ -93,6 +94,7 @@ async function main() {
                 agotado: agotado,
                 imagen: item.imagen || "",
                 urlOriginal: item.url_original || null,
+                isNuevo: item.is_nuevo || false,
                 // Insertamos descripciones vírgenes (B2B) para que luego la IA las reescriba
                 descripcion: item.descripcion || null,
                 ingredientes: item.ingredientes || null

@@ -32,6 +32,8 @@ model Product {
 
   videoUrl          String?
   captions          Json?
+  isNuevo         Boolean  @default(false)
+  isAiGenerated   Boolean  @default(false)
 
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt

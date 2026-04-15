@@ -49,7 +49,7 @@ export default async function AdminDashboard() {
               { precioCompetencia: { not: null } }, // Con dato de SerpAPI
               { oculto: true },                      // Productos retirados (historial)
               { enPromocion: true },                 // Productos en promoción
-              { createdAt: { gte: sevenDaysAgo } }   // Novedades (Últimos 7 días)
+              { isNuevo: true }                      // Novedades Genuinas (Feliubadaló)
           ]
       },
       select: { id: true, nombre: true, marca: true, precioOriginal: true, precioVenta: true, precioCompetencia: true, competenciaUrl: true, competenciaNombre: true, oculto: true, enPromocion: true, createdAt: true, videoUrl: true, captions: true },

@@ -122,7 +122,7 @@ async function main() {
             if (!dryRun) {
                 await prisma.product.update({
                     where: { id: product.id },
-                    data: { descripcion: result.descripcion, needsReview: result.needsReview }
+                    data: { descripcion: result.descripcion, needsReview: result.needsReview, isAiGenerated: true }
                 });
             }
             procesados++;
