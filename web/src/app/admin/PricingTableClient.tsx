@@ -1,6 +1,5 @@
-"use client";
-
 import { useState, useTransition, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { hideProductsBulk, promoteProductsBulk, prepareSocialMediaVideo } from "./actions";
 import { PricingActions } from "./PricingActions";
 import SocialPreviewModal from "./SocialPreviewModal";
@@ -25,6 +24,7 @@ export function PricingTableClient({ data }: { data: IntelligenceItem[] }) {
     const [filter, setFilter] = useState<"ALL" | "COMPETITIVO" | "AJUSTABLE" | "CRITICA" | "OCULTO" | "PROMOCION" | "NOVEDADES">("ALL");
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
     const [isPending, startTransition] = useTransition();
+    const router = useRouter();
     const [socialData, setSocialData] = useState<{ videoUrl: string, captions: any } | null>(null);
     const [generatingSocialId, setGeneratingSocialId] = useState<string | null>(null);
 
@@ -141,10 +141,10 @@ export function PricingTableClient({ data }: { data: IntelligenceItem[] }) {
     const handleBulkPromote = () => {
         if (selectedIds.size === 0) return;
         if (confirm(`¿Destacar los ${selectedIds.size} productos seleccionados en la portada principal?`)) {
-            startTransition(() => {
-                promoteProductsBulk(Array.from(selectedIds), true).then(() => {
-                    setSelectedIds(new Set());
-                });
+            startTransition(async () => {
+                await promoteProductsBulk(Array.from(selectedIds), true);
+                setSelectedIds(new Set());
+                router.refresh();
             });
         }
     };
@@ -159,13 +159,13 @@ export function PricingTableClient({ data }: { data: IntelligenceItem[] }) {
                     </button>
                     <button 
                         onClick={() => setFilter("PROMOCION")}
-                        className={`px-4 py-2 rounded-xl text-sm font-bold tracking-wide transition-all ${filter === "PROMOCION" ? "bg-yellow-400 text-yellow-950 shadow-md transform scale-105" : "bg-white/5 text-slate-400 hover:bg-white/10"}`}
+                        className={`px-4 py-2 text-xs rounded-md whitespace-nowrap transition-colors ${filter === "PROMOCION" ? "bg-purple-500/20 text-purple-400 border border-purple-500/30 shadow-[0_0_15px_purple]" : "text-slate-400 hover:text-purple-300"}`}
                     >
-                        Promoción
+                        En Promoción ({enrichedData.filter(p => p.enPromocion && !p.oculto).length})
                     </button>
                     <button 
                         onClick={() => setFilter("NOVEDADES")}
-                        className={`px-4 py-2 rounded-xl text-sm font-bold tracking-wide transition-all ${filter === "NOVEDADES" ? "bg-purple-500 text-white shadow-md transform scale-105" : "bg-white/5 text-slate-400 hover:bg-white/10"}`}
+                        className={`px-4 py-2 text-xs rounded-md whitespace-nowrap transition-colors ${filter === "NOVEDADES" ? "bg-blue-500/20 text-blue-400 border border-blue-500/30" : "text-slate-400 hover:text-blue-300"}`}
                     >
                         Novedades
                     </button>
@@ -177,9 +177,6 @@ export function PricingTableClient({ data }: { data: IntelligenceItem[] }) {
                     </button>
                     <button onClick={() => setFilter("COMPETITIVO")} className={`px-4 py-2 text-xs rounded-md whitespace-nowrap transition-colors ${filter === "COMPETITIVO" ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30" : "text-slate-400 hover:text-emerald-300"}`}>
                         Competitivos ({enrichedData.filter(p => !p.oculto && !p.enPromocion && p.mercado !== null && p.costo < p.mercado && p.mercado >= p.nuestro).length})
-                    </button>
-                    <button onClick={() => setFilter("PROMOCION")} className={`px-4 py-2 text-xs rounded-md whitespace-nowrap transition-colors ${filter === "PROMOCION" ? "bg-purple-500/20 text-purple-400 border border-purple-500/30 shadow-[0_0_15px_purple]" : "text-slate-400 hover:text-purple-300"}`}>
-                        En Promoción ({enrichedData.filter(p => p.enPromocion && !p.oculto).length})
                     </button>
                     <button onClick={() => setFilter("OCULTO")} className={`px-4 py-2 text-xs rounded-md whitespace-nowrap transition-colors ${filter === "OCULTO" ? "bg-slate-900 text-slate-300 border border-slate-600 shadow-inner" : "text-slate-500 hover:text-slate-300"}`}>
                         Restaurar Ocultos ({enrichedData.filter(p => p.oculto).length})
@@ -205,10 +202,10 @@ export function PricingTableClient({ data }: { data: IntelligenceItem[] }) {
                                 onClick={() => {
                                     if (selectedIds.size === 0) return;
                                     if (confirm(`¿Quitar la estrella de destacados a estos ${selectedIds.size} productos?`)) {
-                                        startTransition(() => {
-                                            promoteProductsBulk(Array.from(selectedIds), false).then(() => {
-                                                setSelectedIds(new Set());
-                                            });
+                                        startTransition(async () => {
+                                            await promoteProductsBulk(Array.from(selectedIds), false);
+                                            setSelectedIds(new Set());
+                                            router.refresh();
                                         });
                                     }
                                 }}
@@ -218,7 +215,16 @@ export function PricingTableClient({ data }: { data: IntelligenceItem[] }) {
                                 Quitar Promoción
                             </button>
                             <button 
-                                onClick={handleBulkHide}
+                                onClick={() => {
+                                    if (selectedIds.size === 0) return;
+                                    if (confirm(`¿Purgar los ${selectedIds.size} productos seleccionados directamente de la tienda?`)) {
+                                        startTransition(async () => {
+                                            await hideProductsBulk(Array.from(selectedIds));
+                                            setSelectedIds(new Set());
+                                            router.refresh();
+                                        });
+                                    }
+                                }}
                                 disabled={isPending}
                                 className="bg-red-600 hover:bg-red-500 text-white px-4 py-2 rounded-lg text-sm font-semibold flex items-center gap-2 shadow-lg shadow-red-900/20 transition-all active:scale-95"
                             >

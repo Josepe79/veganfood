@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { hideProduct, updateProductPrice, recoverProduct, togglePromotion } from "./actions";
 
 export function PricingActions({ 
@@ -20,34 +21,39 @@ export function PricingActions({
 }) {
   const [isPending, startTransition] = useTransition();
   const [isEditing, setIsEditing] = useState(false);
+  const router = useRouter();
   const [newPrice, setNewPrice] = useState(currentPrice.toString());
 
   const handleHide = () => {
       if (confirm("¿Seguro que deseas ocultar este producto indefinidamente de forma manual?")) {
-          startTransition(() => {
-              hideProduct(productId);
+          startTransition(async () => {
+              await hideProduct(productId);
+              router.refresh();
           });
       }
   };
 
   const handleRecover = () => {
-      startTransition(() => {
-          recoverProduct(productId);
+      startTransition(async () => {
+          await recoverProduct(productId);
+          router.refresh();
       });
   };
 
   const handleTogglePromo = () => {
-      startTransition(() => {
-          togglePromotion(productId, !enPromocion);
+      startTransition(async () => {
+          await togglePromotion(productId, !enPromocion);
+          router.refresh();
       });
   };
 
   const handleSavePrice = () => {
       const parsed = parseFloat(newPrice);
       if (!isNaN(parsed)) {
-          startTransition(() => {
-              updateProductPrice(productId, parsed);
+          startTransition(async () => {
+              await updateProductPrice(productId, parsed);
               setIsEditing(false);
+              router.refresh();
           });
       }
   };
