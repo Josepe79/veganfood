@@ -138,17 +138,15 @@ export async function togglePromotion(productId: string, promote: boolean) {
         const promoteBool = Boolean(promote);
         console.log(`[ACTION] togglePromotion: ${productId} -> ${promoteBool}`);
         
+        // Operación atómica principal
         await prisma.product.update({
             where: { id: productId },
             data: { enPromocion: promoteBool }
         });
         
-        try {
-            revalidatePath('/');
-            revalidatePath('/admin');
-        } catch (revalidateError) {
-            console.error("[ACTION] Revalidation failed but update succeeded:", revalidateError);
-        }
+        // Revalidación asíncrona "suave" para no bloquear la respuesta
+        revalidatePath('/');
+        revalidatePath('/admin');
         
         return { success: true, newValue: promoteBool };
     } catch(e: any) {
@@ -167,12 +165,8 @@ export async function promoteProductsBulk(productIds: string[], promote: boolean
             data: { enPromocion: promoteBool }
         });
         
-        try {
-            revalidatePath('/');
-            revalidatePath('/admin');
-        } catch (revalidateError) {
-            console.error("[ACTION] Bulk revalidation failed:", revalidateError);
-        }
+        revalidatePath('/');
+        revalidatePath('/admin');
 
         return { success: true, count: productIds.length, newValue: promoteBool };
     } catch(e: any) {

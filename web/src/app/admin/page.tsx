@@ -6,6 +6,7 @@ import { PricingActions } from "./PricingActions";
 import { PricingTableClient } from "./PricingTableClient";
 import { ShipOrderButton } from "./ShipOrderButton";
 import { PromotionToggle } from "./PromotionToggle";
+import { PromotionReset } from "./PromotionReset";
 import { revalidatePath } from "next/cache";
 
 export const dynamic = 'force-dynamic';
@@ -136,7 +137,10 @@ export default async function AdminDashboard() {
         <div className="flex flex-col md:flex-row justify-between items-end mb-6 gap-4">
             <div>
             <h1 className="text-4xl font-extrabold text-white tracking-tight">Centro de Recepción JIT</h1>
-            <p className="text-slate-400 mt-2">Agrupador logístico en vivo para macro-pedidos B2B.</p>
+            <div className="flex items-center gap-4 mt-2">
+                <p className="text-slate-400">Agrupador logístico en vivo para macro-pedidos B2B.</p>
+                <PromotionReset />
+            </div>
             </div>
             
             <div className="flex gap-4">
