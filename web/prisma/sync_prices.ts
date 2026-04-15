@@ -24,14 +24,14 @@ async function main() {
             AND: [
                { ean: { not: null } },
                { ean: { not: "" } }
+            ],
+            OR: [
+                { isNuevo: true },
+                { enPromocion: true }
             ]
         },
         select: { id: true, ean: true, nombre: true, precioVenta: true }
     };
-
-    if (promotedOnly) {
-        query.where.enPromocion = true;
-    }
 
     const products = await prisma.product.findMany(query);
     console.log(`Detectados ${products.length} productos a escanear (límite 250 créditos).`);

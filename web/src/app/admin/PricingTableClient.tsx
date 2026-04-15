@@ -202,6 +202,22 @@ export function PricingTableClient({ data }: { data: IntelligenceItem[] }) {
                                 Promocionar {selectedIds.size}
                             </button>
                             <button 
+                                onClick={() => {
+                                    if (selectedIds.size === 0) return;
+                                    if (confirm(`¿Quitar la estrella de destacados a estos ${selectedIds.size} productos?`)) {
+                                        startTransition(() => {
+                                            promoteProductsBulk(Array.from(selectedIds), false).then(() => {
+                                                setSelectedIds(new Set());
+                                            });
+                                        });
+                                    }
+                                }}
+                                disabled={isPending}
+                                className="bg-slate-700 hover:bg-slate-600 text-slate-300 px-4 py-2 rounded-lg text-sm font-semibold flex items-center gap-2 border border-slate-600 transition-all active:scale-95"
+                            >
+                                Quitar Promoción
+                            </button>
+                            <button 
                                 onClick={handleBulkHide}
                                 disabled={isPending}
                                 className="bg-red-600 hover:bg-red-500 text-white px-4 py-2 rounded-lg text-sm font-semibold flex items-center gap-2 shadow-lg shadow-red-900/20 transition-all active:scale-95"
