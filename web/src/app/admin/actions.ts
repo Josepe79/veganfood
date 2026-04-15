@@ -6,6 +6,8 @@ import { generateSocialScript } from "@/lib/social-engine/script-gen";
 import { generateSocialVoice } from "@/lib/social-engine/voice-gen";
 import { renderSocialVideo } from "@/lib/social-engine/video-render";
 import { publishToSocial } from "@/lib/social-engine/ayrshare";
+import fs from "fs";
+import path from "path";
 
 
 export async function marcarPedidosComoComprados() {
