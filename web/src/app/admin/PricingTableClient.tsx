@@ -17,7 +17,8 @@ type IntelligenceItem = {
     competenciaNombre: string | null;
     oculto: boolean;
     enPromocion: boolean;
-    createdAt: Date;
+    isNuevo: boolean;
+    createdAt: string; // ISO String from server
     videoUrl?: string | null;
     captions?: any | null;
 };
@@ -110,7 +111,7 @@ export function PricingTableClient({ data }: { data: IntelligenceItem[] }) {
         if (filter === "ALL") return true;
         if (filter === "OCULTO") return prod.oculto;
         if (filter === "PROMOCION") return prod.enPromocion;
-        if (filter === "NOVEDADES") return new Date(prod.createdAt) >= sevenDaysAgo;
+        if (filter === "NOVEDADES") return prod.isNuevo;
         return prod.status === filter;
     });
 

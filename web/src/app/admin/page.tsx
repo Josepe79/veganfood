@@ -52,9 +52,30 @@ export default async function AdminDashboard() {
               { isNuevo: true }                      // Novedades Genuinas (Feliubadaló)
           ]
       },
-      select: { id: true, nombre: true, marca: true, precioOriginal: true, precioVenta: true, precioCompetencia: true, competenciaUrl: true, competenciaNombre: true, oculto: true, enPromocion: true, createdAt: true, videoUrl: true, captions: true },
+      select: { 
+          id: true, 
+          nombre: true, 
+          marca: true, 
+          precioOriginal: true, 
+          precioVenta: true, 
+          precioCompetencia: true, 
+          competenciaUrl: true, 
+          competenciaNombre: true, 
+          oculto: true, 
+          enPromocion: true, 
+          isNuevo: true,
+          createdAt: true, 
+          videoUrl: true, 
+          captions: true 
+      },
       orderBy: { createdAt: 'desc' }
   });
+
+  // Sanitización de datos para evitar errores de serialización (Dates a Strings)
+  const sanitizedPriceIntelligence = priceIntelligence.map(p => ({
+      ...p,
+      createdAt: p.createdAt.toISOString()
+  }));
 
   // Productos destacados actuales
   const promotedProducts = await prisma.product.findMany({
@@ -208,7 +229,6 @@ export default async function AdminDashboard() {
         {/* Lado Derecho: Gestión de Salida (1/3 de ancho) */}
         <div className="lg:col-span-1">
           <div className="glass p-6 border-primary/20 sticky top-24">
-             <div className="flex items-center justify-between mb-6 border-b border-primary/10 pb-4">
                <div>
                   <h2 className="text-xl font-bold text-white flex items-center gap-2">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary"><path d="M10 14.7 12 17l4-4.3"/><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/></svg>
@@ -306,12 +326,12 @@ export default async function AdminDashboard() {
                 </div>
             </div>
             
-            {priceIntelligence.length === 0 ? (
+            {sanitizedPriceIntelligence.length === 0 ? (
                 <div className="text-center py-12 text-slate-500 text-sm border border-slate-700/50 rounded-lg border-dashed">
                     Motor SerpAPI en espera. Ejecuta 'npm run sync:prices' para iniciar escrutinio del mercado.
                 </div>
             ) : (
-                <PricingTableClient data={priceIntelligence} />
+                <PricingTableClient data={sanitizedPriceIntelligence as any} />
             )}
         </div>
 
