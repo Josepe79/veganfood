@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { hideProduct, updateProductPrice, recoverProduct, togglePromotion } from "./actions";
+import { hideProduct, updateProductPrice, recoverProduct } from "./actions";
 
 export function PricingActions({ 
     productId, 
@@ -42,8 +42,21 @@ export function PricingActions({
 
   const handleTogglePromo = () => {
       startTransition(async () => {
-          await togglePromotion(productId, !enPromocion);
-          router.refresh();
+          try {
+              const res = await fetch("/api/admin/promotion", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ productId, promote: !enPromocion })
+              });
+              const result = await res.json();
+              if (result.status === "success") {
+                  router.refresh();
+              } else {
+                  alert("Error: " + result.message);
+              }
+          } catch (e: any) {
+              alert("Error de conexión: " + e.message);
+          }
       });
   };
 
