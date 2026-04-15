@@ -134,10 +134,17 @@ export async function recoverProduct(productId: string) {
 
 export async function togglePromotion(productId: string, promote: boolean) {
     try {
-        console.log(`[ACTION] togglePromotion: ${productId} -> ${promote}`);
+        // Forzamos conversión a booleano real para evitar problemas de serialización
+        const promoteBool = Boolean(promote);
+        
+        const logMsg = `[${new Date().toISOString()}] ACTION togglePromotion: ${productId} -> ${promoteBool}\n`;
+        fs.appendFileSync(path.join(process.cwd(), "actions_debug.log"), logMsg);
+        
+        console.log(`[ACTION] togglePromotion: ${productId} -> ${promoteBool}`);
+        
         await prisma.product.update({
             where: { id: productId },
-            data: { enPromocion: promote }
+            data: { enPromocion: promoteBool }
         });
         
         try {
@@ -147,7 +154,7 @@ export async function togglePromotion(productId: string, promote: boolean) {
             console.error("[ACTION] Revalidation failed but update succeeded:", revalidateError);
         }
         
-        return { success: true };
+        return { success: true, newValue: promoteBool };
     } catch(e: any) {
         console.error(`[ACTION] togglePromotion failed for ${productId}:`, e);
         return { success: false, error: e.message };
@@ -156,10 +163,16 @@ export async function togglePromotion(productId: string, promote: boolean) {
 
 export async function promoteProductsBulk(productIds: string[], promote: boolean) {
     try {
-        console.log(`[ACTION] promoteProductsBulk called: ids=${productIds.length}, promote=${promote}`);
-        const result = await prisma.product.updateMany({
+        const promoteBool = Boolean(promote);
+        
+        const logMsg = `[${new Date().toISOString()}] ACTION promoteProductsBulk: ids=${productIds.length} -> ${promoteBool}\n`;
+        fs.appendFileSync(path.join(process.cwd(), "actions_debug.log"), logMsg);
+        
+        console.log(`[ACTION] promoteProductsBulk called: ids=${productIds.length}, promote=${promoteBool}`);
+        
+        await prisma.product.updateMany({
             where: { id: { in: productIds } },
-            data: { enPromocion: promote }
+            data: { enPromocion: promoteBool }
         });
         
         try {
@@ -169,7 +182,7 @@ export async function promoteProductsBulk(productIds: string[], promote: boolean
             console.error("[ACTION] Bulk revalidation failed:", revalidateError);
         }
 
-        return { success: true };
+        return { success: true, count: productIds.length, newValue: promoteBool };
     } catch(e: any) {
         console.error("[ACTION] promoteProductsBulk failed:", e);
         return { success: false, error: e.message };

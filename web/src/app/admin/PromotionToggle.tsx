@@ -1,15 +1,20 @@
 "use client";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { togglePromotion } from "./actions";
 
 export function PromotionToggle({ productId, isPromoted, productName }: { productId: string; isPromoted: boolean; productName: string }) {
+    const router = useRouter();
     const [promoted, setPromoted] = useState(isPromoted);
     const [loading, setLoading] = useState(false);
 
     const handleToggle = async () => {
         setLoading(true);
         const result = await togglePromotion(productId, !promoted);
-        if (result.success) setPromoted(!promoted);
+        if (result.success) {
+            setPromoted(!promoted);
+            router.refresh(); // Sincroniza el resto de la página
+        }
         setLoading(false);
     };
 
