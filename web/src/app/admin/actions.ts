@@ -6,8 +6,7 @@ import { generateSocialScript } from "@/lib/social-engine/script-gen";
 import { generateSocialVoice } from "@/lib/social-engine/voice-gen";
 import { renderSocialVideo } from "@/lib/social-engine/video-render";
 import { publishToSocial } from "@/lib/social-engine/ayrshare";
-import fs from "fs";
-import path from "path";
+
 
 export async function marcarPedidosComoComprados() {
   try {
@@ -134,12 +133,7 @@ export async function recoverProduct(productId: string) {
 
 export async function togglePromotion(productId: string, promote: boolean) {
     try {
-        // Forzamos conversión a booleano real para evitar problemas de serialización
         const promoteBool = Boolean(promote);
-        
-        const logMsg = `[${new Date().toISOString()}] ACTION togglePromotion: ${productId} -> ${promoteBool}\n`;
-        fs.appendFileSync(path.join(process.cwd(), "actions_debug.log"), logMsg);
-        
         console.log(`[ACTION] togglePromotion: ${productId} -> ${promoteBool}`);
         
         await prisma.product.update({
@@ -164,10 +158,6 @@ export async function togglePromotion(productId: string, promote: boolean) {
 export async function promoteProductsBulk(productIds: string[], promote: boolean) {
     try {
         const promoteBool = Boolean(promote);
-        
-        const logMsg = `[${new Date().toISOString()}] ACTION promoteProductsBulk: ids=${productIds.length} -> ${promoteBool}\n`;
-        fs.appendFileSync(path.join(process.cwd(), "actions_debug.log"), logMsg);
-        
         console.log(`[ACTION] promoteProductsBulk called: ids=${productIds.length}, promote=${promoteBool}`);
         
         await prisma.product.updateMany({
