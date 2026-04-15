@@ -133,51 +133,6 @@ export async function recoverProduct(productId: string) {
     }
 }
 
-export async function togglePromotion(productId: string, promote: boolean) {
-    try {
-        const promoteBool = Boolean(promote);
-        console.log(`[ACTION] togglePromotion: ${productId} -> ${promoteBool}`);
-        
-        // 1. Operación de base de datos GARANTIZADA
-        await prisma.product.update({
-            where: { id: productId },
-            data: { enPromocion: promoteBool }
-        });
-        
-        // 2. Revalidación en segundo plano (sin 'await' para no bloquear si falla el render)
-        Promise.resolve().then(() => {
-            revalidatePath('/');
-            revalidatePath('/admin');
-        }).catch(err => console.error("[NON-BLOCKING] Revalidation failed:", err));
-        
-        return { success: true };
-    } catch(e: any) {
-        console.error(`[ACTION] togglePromotion failed for ${productId}:`, e);
-        return { success: false, error: e.message };
-    }
-}
-
-export async function promoteProductsBulk(productIds: string[], promote: boolean) {
-    try {
-        const promoteBool = Boolean(promote);
-        console.log(`[ACTION] promoteProductsBulk called: ids=${productIds.length}, promote=${promoteBool}`);
-        
-        await prisma.product.updateMany({
-            where: { id: { in: productIds } },
-            data: { enPromocion: promoteBool }
-        });
-        
-        Promise.resolve().then(() => {
-            revalidatePath('/');
-            revalidatePath('/admin');
-        }).catch(err => console.error("[NON-BLOCKING] Bulk revalidation failed:", err));
-
-        return { success: true };
-    } catch(e: any) {
-        console.error("[ACTION] promoteProductsBulk failed:", e);
-        return { success: false, error: e.message };
-    }
-}
 
 /**
  * Función principal que llama la UI. Detona el trabajo en segundo plano y devuelve OK instantáneo.

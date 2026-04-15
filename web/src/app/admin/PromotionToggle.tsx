@@ -1,7 +1,6 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { togglePromotion } from "./actions";
 
 export function PromotionToggle({ productId, isPromoted, productName }: { productId: string; isPromoted: boolean; productName: string }) {
     const router = useRouter();
@@ -10,16 +9,30 @@ export function PromotionToggle({ productId, isPromoted, productName }: { produc
 
     const handleToggle = async () => {
         setLoading(true);
-        const result = await togglePromotion(productId, !promoted);
-        if (result.success) {
-            setPromoted(!promoted);
-            router.refresh(); 
-            // Fallback de seguridad: Si en 1 segundo la UI no ha cambiado (caché rebelde), forzamos recarga
-            setTimeout(() => {
-                router.refresh();
-            }, 1000);
+        try {
+            // Migración a API Estándar para evitar errores de Server Actions
+            const res = await fetch("/api/admin/promotion", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ productId, promote: !promoted })
+            });
+            const result = await res.json();
+
+            if (result.status === "success") {
+                setPromoted(!promoted);
+                router.refresh(); 
+                // Fallback de seguridad: Forzamos un segundo refresco para asegurar sincronía de UI
+                setTimeout(() => {
+                    router.refresh();
+                }, 500);
+            } else {
+                alert("Error técnico: " + result.message);
+            }
+        } catch (e: any) {
+            alert("Error de conexión: " + e.message);
+        } finally {
+            setLoading(false);
         }
-        setLoading(false);
     };
 
     return (

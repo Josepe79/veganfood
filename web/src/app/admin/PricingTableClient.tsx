@@ -136,9 +136,23 @@ export function PricingTableClient({ data }: { data: IntelligenceItem[] }) {
         if (selectedIds.size === 0) return;
         if (confirm(`¿Destacar los ${selectedIds.size} productos seleccionados en la portada principal?`)) {
             startTransition(async () => {
-                await promoteProductsBulk(Array.from(selectedIds), true);
-                setSelectedIds(new Set());
-                router.refresh();
+                try {
+                    const res = await fetch("/api/admin/promotion", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ productIds: Array.from(selectedIds), promote: true })
+                    });
+                    const result = await res.json();
+                    
+                    if (result.status === "success") {
+                        setSelectedIds(new Set());
+                        router.refresh();
+                    } else {
+                        alert("Error: " + result.message);
+                    }
+                } catch (e: any) {
+                    alert("Error de conexión: " + e.message);
+                }
             });
         }
     };
@@ -197,9 +211,23 @@ export function PricingTableClient({ data }: { data: IntelligenceItem[] }) {
                                     if (selectedIds.size === 0) return;
                                     if (confirm(`¿Quitar la estrella de destacados a estos ${selectedIds.size} productos?`)) {
                                         startTransition(async () => {
-                                            await promoteProductsBulk(Array.from(selectedIds), false);
-                                            setSelectedIds(new Set());
-                                            router.refresh();
+                                            try {
+                                                const res = await fetch("/api/admin/promotion", {
+                                                    method: "POST",
+                                                    headers: { "Content-Type": "application/json" },
+                                                    body: JSON.stringify({ productIds: Array.from(selectedIds), promote: false })
+                                                });
+                                                const result = await res.json();
+                                                
+                                                if (result.status === "success") {
+                                                    setSelectedIds(new Set());
+                                                    router.refresh();
+                                                } else {
+                                                    alert("Error: " + result.message);
+                                                }
+                                            } catch (e: any) {
+                                                alert("Error de conexión: " + e.message);
+                                            }
                                         });
                                     }
                                 }}
