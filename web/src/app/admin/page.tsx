@@ -7,6 +7,7 @@ import { PricingTableClient } from "./PricingTableClient";
 import { ShipOrderButton } from "./ShipOrderButton";
 import { PromotionToggle } from "./PromotionToggle";
 import { PromotionReset } from "./PromotionReset";
+import { ReviewCenterClient } from "./ReviewCenterClient";
 import { revalidatePath } from "next/cache";
 
 export const dynamic = 'force-dynamic';
@@ -100,6 +101,14 @@ export default async function AdminDashboard() {
         select: { id: true, nombre: true, marca: true, imagen: true, precioVenta: true, enPromocion: true },
         orderBy: { precioVenta: 'asc' },
         take: 40
+    });
+
+    // Auditoría Ética: Productos que la IA ha marcado para revisión manual
+    const flaggedProducts = await prisma.product.findMany({
+        where: { needsReview: true },
+        select: { id: true, nombre: true, marca: true, imagen: true, ingredientes: true, descripcion: true, precioVenta: true },
+        orderBy: { updatedAt: 'desc' },
+        take: 100 // Solo mostramos los 100 más recientes para que la página cargue rápido
     });
 
     // Consolidación de Lista de la Compra Mayorista (Basada en pedidos "waiting")
@@ -391,6 +400,21 @@ export default async function AdminDashboard() {
                         </div>
                     </div>
                 </div>
+            </div>
+            
+            {/* 🛡️ CENTRO DE AUDITORÍA VEGANA (NUEVO) */}
+            <div className="mt-8 glass p-8 border-red-500/30 rounded-3xl bg-red-950/5">
+                <div className="flex items-center gap-4 mb-6">
+                    <div className="w-12 h-12 bg-red-500/20 rounded-full flex items-center justify-center text-red-500 animate-pulse">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                    </div>
+                    <div>
+                        <h2 className="text-2xl font-bold text-white">Centro de Auditoría Vegana</h2>
+                        <p className="text-sm text-slate-400">Revisa los productos marcados por IA con posibles ingredientes de origen animal. Valida, oculta o purga rápidamente.</p>
+                    </div>
+                </div>
+
+                <ReviewCenterClient products={flaggedProducts as any} />
             </div>
 
         </div>
