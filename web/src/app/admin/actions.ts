@@ -146,16 +146,19 @@ export async function togglePromotion(productId: string, promote: boolean) {
     }
 }
 
-export async function promoteProductsBulk(productIds: string[], promote: boolean = true) {
+export async function promoteProductsBulk(productIds: string[], promote: boolean) {
     try {
-        await prisma.product.updateMany({
+        console.log(`[ACTION] promoteProductsBulk called: ids=${productIds.length}, promote=${promote} (type ${typeof promote})`);
+        const result = await prisma.product.updateMany({
             where: { id: { in: productIds } },
             data: { enPromocion: promote }
         });
+        console.log(`[ACTION] Prisma updateMany result: ${JSON.stringify(result)}`);
         revalidatePath('/');
         revalidatePath('/admin');
         return { success: true };
     } catch(e: any) {
+        console.error("[ACTION] promoteProductsBulk failed:", e);
         return { success: false, error: e.message };
     }
 }
