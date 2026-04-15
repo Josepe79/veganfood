@@ -13,7 +13,11 @@ export function PromotionToggle({ productId, isPromoted, productName }: { produc
         const result = await togglePromotion(productId, !promoted);
         if (result.success) {
             setPromoted(!promoted);
-            router.refresh(); // Sincroniza el resto de la página
+            router.refresh(); 
+            // Fallback de seguridad: Si en 1 segundo la UI no ha cambiado (caché rebelde), forzamos recarga
+            setTimeout(() => {
+                router.refresh();
+            }, 1000);
         }
         setLoading(false);
     };

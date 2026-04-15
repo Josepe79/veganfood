@@ -138,17 +138,19 @@ export async function togglePromotion(productId: string, promote: boolean) {
         const promoteBool = Boolean(promote);
         console.log(`[ACTION] togglePromotion: ${productId} -> ${promoteBool}`);
         
-        // Operación atómica principal
+        // 1. Operación de base de datos GARANTIZADA
         await prisma.product.update({
             where: { id: productId },
             data: { enPromocion: promoteBool }
         });
         
-        // Revalidación asíncrona "suave" para no bloquear la respuesta
-        revalidatePath('/');
-        revalidatePath('/admin');
+        // 2. Revalidación en segundo plano (sin 'await' para no bloquear si falla el render)
+        Promise.resolve().then(() => {
+            revalidatePath('/');
+            revalidatePath('/admin');
+        }).catch(err => console.error("[NON-BLOCKING] Revalidation failed:", err));
         
-        return { success: true, newValue: promoteBool };
+        return { success: true };
     } catch(e: any) {
         console.error(`[ACTION] togglePromotion failed for ${productId}:`, e);
         return { success: false, error: e.message };
@@ -165,10 +167,12 @@ export async function promoteProductsBulk(productIds: string[], promote: boolean
             data: { enPromocion: promoteBool }
         });
         
-        revalidatePath('/');
-        revalidatePath('/admin');
+        Promise.resolve().then(() => {
+            revalidatePath('/');
+            revalidatePath('/admin');
+        }).catch(err => console.error("[NON-BLOCKING] Bulk revalidation failed:", err));
 
-        return { success: true, count: productIds.length, newValue: promoteBool };
+        return { success: true };
     } catch(e: any) {
         console.error("[ACTION] promoteProductsBulk failed:", e);
         return { success: false, error: e.message };
