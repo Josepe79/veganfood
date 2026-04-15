@@ -30,6 +30,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ q
     const [rawProducts, totalCount] = await Promise.all([
         prisma.product.findMany({
             where: whereClause,
+            select: { id: true, nombre: true, marca: true, precioVenta: true, imagen: true, ean: true, ref: true, agotado: true, enPromocion: true, isNuevo: true },
             orderBy: { nombre: 'asc' },
             skip: (page - 1) * pageSize,
             take: pageSize
@@ -41,12 +42,14 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ q
 
     const rawNovedades = await prisma.product.findMany({
         where: { oculto: false, isNuevo: true },
+        select: { id: true, nombre: true, marca: true, precioVenta: true, imagen: true, ean: true, ref: true, agotado: true, enPromocion: true, isNuevo: true },
         orderBy: { createdAt: 'desc' },
         take: 50 
     });
 
     const rawPromos = await prisma.product.findMany({
-        where: { enPromocion: true, oculto: false }
+        where: { enPromocion: true, oculto: false },
+        select: { id: true, nombre: true, marca: true, precioVenta: true, imagen: true, ean: true, ref: true, agotado: true, enPromocion: true, isNuevo: true }
     });
     
     // SANITIZACIÓN AGRESIVA (POJO) para evitar errores de serialización en el despliegue
@@ -56,6 +59,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ q
         marca: String(p.marca || "Vegan"),
         precioVenta: Number(p.precioVenta || 0),
         imagen: p.imagen ? String(p.imagen) : null,
+        ean: p.ean ? String(p.ean) : null,
         agotado: Boolean(p.agotado),
         enPromocion: Boolean(p.enPromocion),
         isNuevo: Boolean(p.isNuevo)
