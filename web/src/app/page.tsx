@@ -38,16 +38,21 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ q
 
   const totalPages = Math.ceil(totalCount / pageSize);
 
-  const novedades = await prisma.product.findMany({
+  const allNovedades = await prisma.product.findMany({
     where: { oculto: false, isNuevo: true },
     orderBy: { createdAt: 'desc' },
-    take: 8
+    take: 50 // Limitamos la bolsa de extracción por seguridad
   });
+  
+  // Rotación aleatoria en vivo para novedades
+  const novedades = allNovedades.sort(() => 0.5 - Math.random()).slice(0, 8);
 
-  const promos = await prisma.product.findMany({
-    where: { enPromocion: true, oculto: false },
-    orderBy: { nombre: 'asc' }
+  const allPromos = await prisma.product.findMany({
+    where: { enPromocion: true, oculto: false }
   });
+  
+  // Rotación aleatoria en vivo para promociones manuales
+  const promos = allPromos.sort(() => 0.5 - Math.random());
 
   // 2. Obtener lista de marcas únicas reales de la DB para poblar el dropdown
   const uniqueBrands = await prisma.product.findMany({
