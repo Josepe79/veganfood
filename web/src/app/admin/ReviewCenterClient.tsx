@@ -31,10 +31,23 @@ function highlightFlags(text: string | null) {
     return <div dangerouslySetInnerHTML={{ __html: highlightedText }} className="text-xs text-slate-400 line-clamp-3 leading-relaxed" />;
 }
 
-export function ReviewCenterClient({ products }: { products: FlaggedProduct[] }) {
+export function ReviewCenterClient({ 
+    products, 
+    brands = [], 
+    selectedBrand 
+}: { 
+    products: FlaggedProduct[]; 
+    brands?: { marca: string; count: number }[];
+    selectedBrand?: string;
+}) {
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
     const [isPending, startTransition] = useTransition();
     const router = useRouter();
+
+    const handleBrandChange = (brand: string) => {
+        const url = brand ? `/admin?brand=${encodeURIComponent(brand)}` : '/admin';
+        router.push(url);
+    };
 
     const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.checked) {
@@ -94,23 +107,41 @@ export function ReviewCenterClient({ products }: { products: FlaggedProduct[] })
     return (
         <div className="bg-slate-900/50 border border-red-500/20 rounded-2xl overflow-hidden shadow-[0_0_30px_rgba(239,68,68,0.05)]">
             
-            {/* Toolbar Principal */}
-            <div className="bg-red-950/20 p-4 border-b border-red-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-4 sticky top-0 z-20 backdrop-blur-md">
-                <div className="flex items-center gap-3">
-                    <input 
-                        type="checkbox" 
-                        id="selectAllAudit"
-                        className="rounded border-red-500 bg-slate-800 text-red-500 focus:ring-red-500/50 accent-red-500 w-5 h-5 cursor-pointer"
-                        checked={products.length > 0 && selectedIds.size === products.length}
-                        onChange={handleSelectAll}
-                    />
-                    <label htmlFor="selectAllAudit" className="text-sm font-bold text-red-300 cursor-pointer">
-                        Seleccionar todos ({products.length})
-                    </label>
+            <div className="bg-red-950/20 p-4 border-b border-red-500/20 flex flex-col lg:flex-row lg:items-center justify-between gap-4 sticky top-0 z-20 backdrop-blur-md">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                    <div className="flex items-center gap-3">
+                        <input 
+                            type="checkbox" 
+                            id="selectAllAudit"
+                            className="rounded border-red-500 bg-slate-800 text-red-500 focus:ring-red-500/50 accent-red-500 w-5 h-5 cursor-pointer"
+                            checked={products.length > 0 && selectedIds.size === products.length}
+                            onChange={handleSelectAll}
+                        />
+                        <label htmlFor="selectAllAudit" className="text-sm font-bold text-red-300 cursor-pointer whitespace-nowrap">
+                            Todos ({products.length})
+                        </label>
+                    </div>
+
+                    {/* Filtro por Marca */}
+                    <div className="flex items-center gap-2">
+                        <svg className="w-4 h-4 text-red-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                        <select 
+                            value={selectedBrand || ""} 
+                            onChange={(e) => handleBrandChange(e.target.value)}
+                            className="bg-slate-900 border border-red-500/30 text-white text-xs rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-red-500/50 min-w-[200px]"
+                        >
+                            <option value="">Todas las marcas</option>
+                            {brands.map(b => (
+                                <option key={b.marca} value={b.marca}>
+                                    {b.marca} ({b.count})
+                                </option>
+                            ))}
+                        </select>
+                    </div>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-3">
-                    <span className="text-xs text-slate-500 uppercase tracking-widest font-bold">Con la selección ({selectedIds.size}):</span>
+                <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-[10px] text-slate-500 uppercase tracking-widest font-bold">Selección ({selectedIds.size}):</span>
                     
                     <button 
                         disabled={isPending || selectedIds.size === 0}

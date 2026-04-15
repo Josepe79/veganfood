@@ -12,7 +12,10 @@ import { revalidatePath } from "next/cache";
 
 export const dynamic = 'force-dynamic';
 
-export default async function AdminDashboard() {
+export default async function AdminDashboard(props: { searchParams: Promise<{ brand?: string }> }) {
+  const searchParams = await props.searchParams;
+  const filterBrand = searchParams.brand;
+
   try {
     // 1. Pedidos que necesitamos comprar a Feliubadaló (Pagados o pendientes de consolidar)
     const waitingOrders = await prisma.order.findMany({
@@ -105,11 +108,28 @@ export default async function AdminDashboard() {
 
     // Auditoría Ética: Productos que la IA ha marcado para revisión manual
     const flaggedProducts = await prisma.product.findMany({
-        where: { needsReview: true },
+        where: { 
+            needsReview: true,
+            ...(filterBrand ? { marca: filterBrand } : {})
+        },
         select: { id: true, nombre: true, marca: true, imagen: true, ingredientes: true, descripcion: true, precioVenta: true },
         orderBy: { updatedAt: 'desc' },
-        take: 100 // Solo mostramos los 100 más recientes para que la página cargue rápido
+        take: 200 // Subimos un poco el límite si hay filtro, ya que será más específico
     });
+
+    // Obtener lista única de marcas que tienen productos para revisar (para el filtro)
+    const auditBrandsRaw = await prisma.product.groupBy({
+        by: ['marca'],
+        where: { needsReview: true },
+        _count: { id: true },
+        orderBy: { marca: 'asc' }
+    });
+
+    const auditBrands = auditBrandsRaw.map(b => ({
+        marca: String(b.marca),
+        count: b._count.id
+    }));
+
 
     // Consolidación de Lista de la Compra Mayorista (Basada en pedidos "waiting")
     const consolidated = new Map();
@@ -414,7 +434,7 @@ export default async function AdminDashboard() {
                     </div>
                 </div>
 
-                <ReviewCenterClient products={flaggedProducts as any} />
+                <ReviewCenterClient products={flaggedProducts as any} brands={auditBrands} selectedBrand={filterBrand} />
             </div>
 
         </div>
