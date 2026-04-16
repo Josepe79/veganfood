@@ -9,7 +9,8 @@
     "lint": "eslint",
     "sync:stock": "npx tsx prisma/sync_stock.ts",
     "sync:prices": "npx tsx prisma/sync_prices.ts",
-    "sync:descriptions": "npx tsx prisma/sync_descriptions.ts"
+    "sync:descriptions": "npx tsx prisma/sync_descriptions.ts",
+    "sync:master": "npx tsx prisma/sync_full.ts"
   },
   "dependencies": {
     "@google-cloud/text-to-speech": "^6.4.0",

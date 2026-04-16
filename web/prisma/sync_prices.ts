@@ -9,13 +9,14 @@ async function delay(ms: number) {
 async function main() {
     const SERPAPI_KEY = process.env.SERPAPI_KEY;
     const promotedOnly = process.argv.includes('--promoted-only');
+    const newOnly = process.argv.includes('--new-only');
 
     if (!SERPAPI_KEY) {
         console.error("⛔ ERROR CRÍTICO: SERPAPI_KEY no detectada.");
         process.exit(1);
     }
 
-    console.log(`🚀 Iniciando Motor de Inteligencia Competitiva ${promotedOnly ? '(SOLO PROMOCIONES) ' : '(Full Scan - máx 250 créditos)'}...`);
+    console.log(`🚀 Iniciando Motor de Inteligencia Competitiva ${newOnly ? '(SOLO NOVEDADES) ' : promotedOnly ? '(SOLO PROMOCIONES) ' : '(Full Scan - máx 250 créditos)'}...`);
     
     const query: any = { 
         take: 250, // Limitamos al plan gratuito de SerpAPI
@@ -25,7 +26,8 @@ async function main() {
                { ean: { not: null } },
                { ean: { not: "" } }
             ],
-            OR: [
+            // Si hay flag específico, lo usamos. Si no, escaneamos ambos grupos prioritarios.
+            OR: newOnly ? [{ isNuevo: true }] : promotedOnly ? [{ enPromocion: true }] : [
                 { isNuevo: true },
                 { enPromocion: true }
             ]
