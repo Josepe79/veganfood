@@ -8,6 +8,7 @@ import { renderSocialVideo } from "@/lib/social-engine/video-render";
 import { publishToSocial } from "@/lib/social-engine/ayrshare";
 import fs from "fs";
 import path from "path";
+import ffmpegInstaller from "ffmpeg-static";
 
 
 export async function marcarPedidosComoComprados() {
