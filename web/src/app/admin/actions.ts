@@ -151,28 +151,7 @@ export async function recoverProduct(productId: string) {
 }
 
 
-/**
- * Función principal que llama la UI. Detona el trabajo en segundo plano y devuelve OK instantáneo.
- */
-export async function prepareSocialMediaVideo(productId: string) {
-    try {
-        const product = await prisma.product.findUnique({ where: { id: productId } });
-        if (!product) throw new Error("Producto no encontrado");
 
-        // Disparamos la generación pesada en segundo plano de manera asíncrona sin esperar
-        backgroundRenderTask(productId).catch(err => {
-            console.error("Fallo crítico en Worker de Segundo Plano:", err);
-        });
-
-        return { 
-            success: true, 
-            message: "Proceso asíncrono iniciado"
-        };
-    } catch (e: any) {
-        console.error("Error en prepareSocialMediaVideo:", e);
-        return { success: false, error: e.message };
-    }
-}
 
 /**
  * Worker Asíncrono - No bloquea la UI, escribe en Base de Datos cuando termina.
