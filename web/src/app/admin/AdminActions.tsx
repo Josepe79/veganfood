@@ -9,13 +9,23 @@ export function AdminActions({ recordCount }: { recordCount: number }) {
     if (!confirm(`¿Confirmas que ya has comprado estas ${recordCount} referencias en Feliubadaló? Esto moverá los pedidos a la cola de envío.`)) return;
     
     setLoading(true);
-    const result = await marcarPedidosComoComprados();
-    setLoading(false);
-    
-    if (result.success) {
-      alert("¡Pedidos procesados! La lista de pendientes se ha vaciado.");
-    } else {
-      alert("Error procesando los pedidos.");
+    try {
+      const res = await fetch("/api/admin/order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "MARK_PURCHASED" })
+      });
+      const result = await res.json();
+      
+      if (result.status === "success") {
+        alert("¡Pedidos procesados! La lista de pendientes se ha vaciado.");
+      } else {
+        alert("Error: " + result.message);
+      }
+    } catch (e: any) {
+      alert("Error de conexión: " + e.message);
+    } finally {
+      setLoading(false);
     }
   };
 

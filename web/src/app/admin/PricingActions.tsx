@@ -2,7 +2,6 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { hideProduct, updateProductPrice, recoverProduct } from "./actions";
 
 export function PricingActions({ 
     productId, 
@@ -27,11 +26,20 @@ export function PricingActions({
   const handleHide = () => {
       if (confirm("¿Seguro que deseas ocultar este producto indefinidamente de forma manual?")) {
           startTransition(async () => {
-              const res = await hideProduct(productId);
-              if (res.success) {
-                  router.refresh();
-              } else {
-                  alert("Error al ocultar: " + res.error);
+              try {
+                  const res = await fetch("/api/admin/product", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ productId, action: "HIDE" })
+                  });
+                  const result = await res.json();
+                  if (result.status === "success") {
+                      router.refresh();
+                  } else {
+                      alert("Error: " + result.message);
+                  }
+              } catch (e: any) {
+                  alert("Error de conexión: " + e.message);
               }
           });
       }
@@ -39,11 +47,20 @@ export function PricingActions({
 
   const handleRecover = () => {
       startTransition(async () => {
-          const res = await recoverProduct(productId);
-          if (res.success) {
-              router.refresh();
-          } else {
-              alert("Error al recuperar: " + res.error);
+          try {
+              const res = await fetch("/api/admin/product", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ productId, action: "RECOVER" })
+              });
+              const result = await res.json();
+              if (result.status === "success") {
+                  router.refresh();
+              } else {
+                  alert("Error: " + result.message);
+              }
+          } catch (e: any) {
+              alert("Error de conexión: " + e.message);
           }
       });
   };
@@ -72,9 +89,22 @@ export function PricingActions({
       const parsed = parseFloat(newPrice);
       if (!isNaN(parsed)) {
           startTransition(async () => {
-              await updateProductPrice(productId, parsed);
-              setIsEditing(false);
-              router.refresh();
+              try {
+                  const res = await fetch("/api/admin/product", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ productId, action: "UPDATE_PRICE", newPrice: parsed })
+                  });
+                  const result = await res.json();
+                  if (result.status === "success") {
+                      setIsEditing(false);
+                      router.refresh();
+                  } else {
+                      alert("Error: " + result.message);
+                  }
+              } catch (e: any) {
+                  alert("Error de conexión: " + e.message);
+              }
           });
       }
   };

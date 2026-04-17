@@ -10,8 +10,20 @@ export function DeleteOrderButton({ orderId }: { orderId: string }) {
     <button
       onClick={() => {
         if (confirm("¿Seguro que quieres descartar este pedido de pruebas?")) {
-          startTransition(() => {
-            deleteOrder(orderId);
+          startTransition(async () => {
+            try {
+              const res = await fetch("/api/admin/order", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ orderId, action: "DELETE" })
+              });
+              const result = await res.json();
+              if (result.status !== "success") {
+                alert("Error: " + result.message);
+              }
+            } catch (e: any) {
+              alert("Error de conexión: " + e.message);
+            }
           });
         }
       }}

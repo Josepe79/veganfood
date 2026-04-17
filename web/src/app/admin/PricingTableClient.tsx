@@ -138,14 +138,23 @@ export function PricingTableClient({ data }: { data: IntelligenceItem[] }) {
 
     const handleBulkHide = () => {
         if (selectedIds.size === 0) return;
-        if (confirm(`¿Purgar los ${selectedIds.size} productos seleccionados directamente de la tienda?`)) {
+        if (confirm(`¿Segmento que deseas ocultar estos ${selectedIds.size} productos? No se borrarán de la base de datos, solo se ocultarán al público.`)) {
             startTransition(async () => {
-                const res = await hideProductsBulk(Array.from(selectedIds));
-                if (res.success) {
-                    setSelectedIds(new Set());
-                    router.refresh();
-                } else {
-                    alert("Error en la purga masiva: " + res.error);
+                try {
+                    const res = await fetch("/api/admin/product", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ productIds: Array.from(selectedIds), action: "HIDE" })
+                    });
+                    const result = await res.json();
+                    if (result.status === "success") {
+                        setSelectedIds(new Set());
+                        router.refresh();
+                    } else {
+                        alert("Error: " + result.message);
+                    }
+                } catch (e: any) {
+                    alert("Error de conexión: " + e.message);
                 }
             });
         }

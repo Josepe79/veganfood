@@ -15,13 +15,23 @@ export function ShipOrderButton({ orderId }: { orderId: string }) {
         if (!confirm("¿Confirmas que el pedido ha sido entregado al transportista? Se enviará un email al cliente.")) return;
 
         setLoading(true);
-        const result = await shipOrder(orderId, tracking);
-        setLoading(false);
-
-        if (result.success) {
-            alert("¡Pedido marcado como enviado! Email notificado al cliente.");
-        } else {
-            alert("Error al procesar el envío: " + result.error);
+        try {
+            const res = await fetch("/api/admin/order", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ orderId, action: "SHIP", trackingNumber: tracking })
+            });
+            const result = await res.json();
+            
+            if (result.status === "success") {
+                alert("¡Pedido marcado como enviado! Email notificado al cliente.");
+            } else {
+                alert("Error: " + result.message);
+            }
+        } catch (e: any) {
+            alert("Error de conexión: " + e.message);
+        } finally {
+            setLoading(false);
         }
     };
 
