@@ -277,9 +277,22 @@ export function PricingTableClient({ data }: { data: IntelligenceItem[] }) {
                                     if (selectedIds.size === 0) return;
                                     if (confirm(`¿Purgar los ${selectedIds.size} productos seleccionados directamente de la tienda?`)) {
                                         startTransition(async () => {
-                                            await hideProductsBulk(Array.from(selectedIds));
-                                            setSelectedIds(new Set());
-                                            router.refresh();
+                                            try {
+                                                const res = await fetch("/api/admin/product", {
+                                                    method: "POST",
+                                                    headers: { "Content-Type": "application/json" },
+                                                    body: JSON.stringify({ productIds: Array.from(selectedIds), action: "HIDE" })
+                                                });
+                                                const result = await res.json();
+                                                if (result.status === "success") {
+                                                    setSelectedIds(new Set());
+                                                    router.refresh();
+                                                } else {
+                                                    alert("Error: " + result.message);
+                                                }
+                                            } catch (e: any) {
+                                                alert("Error de conexión: " + e.message);
+                                            }
                                         });
                                     }
                                 }}
