@@ -3,9 +3,11 @@ import ffmpegInstaller from "ffmpeg-static";
 import path from "path";
 import fs from "fs";
 
-// Configuramos fluent-ffmpeg para usar el binario estático
-if (ffmpegInstaller) {
-  ffmpeg.setFfmpegPath(ffmpegInstaller);
+// Configuramos fluent-ffmpeg para usar el binario estático con detección de ESM/CJS
+const ffmpegPath = (ffmpegInstaller as any)?.default || ffmpegInstaller;
+if (ffmpegPath) {
+  ffmpeg.setFfmpegPath(ffmpegPath);
+  console.log(`[FFmpeg] Ruta del binario detectada: ${ffmpegPath}`);
 }
 
 export interface VideoAsset {
@@ -46,17 +48,17 @@ export async function renderSocialVideo(assets: VideoAsset): Promise<string> {
     }
 
     const filters: any[] = [
-      // 1. Fondo de video optimizado (480x854) con desenfoque suave
+      // 1. Fondo optimizado (480x854) con desenfoque
       {
         filter: "scale", options: "480:854:force_original_aspect_ratio=increase,crop=480:854,boxblur=10:5",
         inputs: "0:v", outputs: "bg"
       },
-      // 2. Producto frontal dimensionado para 480p
+      // 2. Imagen frontal (centrada)
       {
-        filter: "scale", options: "400:-1",
+        filter: "scale", options: "400:-2", // -2 asegura que la altura sea par para libx264
         inputs: "0:v", outputs: "fg"
       },
-      // 3. Superposición video final centrada
+      // 3. Overlay final
       {
         filter: "overlay", options: "(W-w)/2:(H-h)/2",
         inputs: ["bg", "fg"], outputs: "vout"
@@ -77,21 +79,31 @@ export async function renderSocialVideo(assets: VideoAsset): Promise<string> {
       command.outputOptions(["-map 1:a"]);
     }
 
+    // KILL SWITCH: Si en 120 segundos no ha terminado, matamos el proceso
+    const timeout = setTimeout(() => {
+        console.error("[FFmpeg] !!! TIMEOUT de 120s alcanzado. Matando proceso.");
+        (command as any).kill("SIGKILL");
+        reject(new Error("Timeout de renderizado (120s)"));
+    }, 120000);
+
     command
       .outputOptions([
         "-c:v libx264",
-        "-preset superfast", // Balance ideal entre velocidad y calidad en Railway
+        "-preset superfast",
         "-pix_fmt yuv420p",
-        "-r 24", // 24fps es suficiente para estos vídeos y ahorra ciclos de CPU
-        "-t 12" // Reducimos a 12s para maxima rapidez de entrega
+        "-r 24",
+        "-t 12",
+        "-movflags +faststart" // Optimiza la reproducción inicial en web
       ])
-      .on("start", (cmd) => console.log("[FFmpeg] Iniciando render optimizado:", cmd))
+      .on("start", (cmd) => console.log("[FFmpeg] Comando inyectado:", cmd))
       .on("end", () => {
-          console.log("[FFmpeg] Renderizado completado con éxito.");
+          clearTimeout(timeout);
+          console.log("[FFmpeg] Renderizado exitoso.");
           resolve(outputPath);
       })
       .on("error", (err) => {
-          console.error("[FFmpeg] Error crítico en renderizado:", err);
+          clearTimeout(timeout);
+          console.error("[FFmpeg] Error detectado:", err);
           reject(err);
       })
       .save(outputPath);

@@ -177,10 +177,16 @@ export async function prepareSocialMediaVideo(productId: string) {
 /**
  * Worker Asíncrono - No bloquea la UI, escribe en Base de Datos cuando termina.
  */
+import ffmpegInstaller from "ffmpeg-static";
+
 export async function backgroundRenderTask(productId: string) {
     const startTime = Date.now();
     console.log(`[Worker] --- INICIO PROCESO VÍDEO (${productId}) ---`);
     
+    // Check binario antes de empezar
+    const ffmpegPath = (ffmpegInstaller as any)?.default || ffmpegInstaller;
+    console.log(`[Worker] Pre-flight: Binario FFmpeg en ${ffmpegPath} (${fs.existsSync(ffmpegPath) ? "EXISTE" : "NO EXISTE"})`);
+
     const product = await prisma.product.findUnique({ where: { id: productId } });
     if (!product) {
         console.error(`[Worker] Error: Producto ${productId} no encontrado en DB.`);
