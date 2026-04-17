@@ -94,9 +94,10 @@ export function PricingTableClient({ data }: { data: IntelligenceItem[] }) {
             status = "COMPETITIVO";
         }
 
-        let finalUrl = prod.competenciaUrl || "#";
-        if (finalUrl !== "#" && !finalUrl.startsWith("http")) {
-            finalUrl = `https://www.google.com/search?q=${encodeURIComponent(prod.nombre + " " + prod.marca)}`;
+        let finalUrl = prod.competenciaUrl;
+        if (!finalUrl || finalUrl === "" || finalUrl === "#" || !finalUrl.startsWith("http")) {
+            // Fallback a búsqueda proactiva en Google Shopping si no hay link directo
+            finalUrl = `https://www.google.com/search?q=${encodeURIComponent(prod.nombre + " " + prod.marca)}&tbm=shop`;
         }
 
         const diff = mercado !== null ? mercado - nuestro : null;

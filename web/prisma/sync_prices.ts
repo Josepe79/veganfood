@@ -65,7 +65,7 @@ async function main() {
                 
                 const cleanPrice = parseFloat(cheapest.extracted_price || "0");
                 const competitorName = cheapest.source;
-                const link = cheapest.link || "";
+                const link = cheapest.product_link || cheapest.link || "";
                 
                 if (cleanPrice > 0) {
                     const somosMasBaratos = prod.precioVenta <= cleanPrice;
