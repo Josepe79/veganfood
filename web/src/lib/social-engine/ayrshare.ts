@@ -1,10 +1,10 @@
 import SocialPost from "social-media-api";
 
-const API_KEY = process.env.AYRSHARE_API_KEY || "";
-const social = new SocialPost(API_KEY);
-
 export async function publishToSocial(videoUrl: string, caption: string) {
+  const API_KEY = process.env.AYRSHARE_API_KEY || "";
   if (!API_KEY) throw new Error("Ayrshare API Key no configurada.");
+  
+  const social = new SocialPost(API_KEY);
 
   const postData = {
     post: caption,

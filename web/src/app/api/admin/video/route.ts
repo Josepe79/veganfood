@@ -2,6 +2,8 @@ import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { backgroundRenderTask } from "@/app/admin/actions";
 
+export const dynamic = 'force-dynamic';
+
 /**
  * API para Disparar Generación de Vídeo IA
  */
@@ -21,10 +23,10 @@ export async function POST(req: Request) {
         // Disparamos el trabajo pesado en segundo plano sin esperar a que termine
         // Usamos .catch para registrar errores sin bloquear la respuesta HTTP
         backgroundRenderTask(productId).catch(err => {
-            console.error(`[API VIDEO] Fallo en worker asíncrono para ${productId}:`, err);
+            console.error(`[API VIDEO] Fallo en worker asíncrono para \${productId}:`, err);
         });
 
-        console.log(`[API VIDEO] Generación iniciada asíncronamente para: ${product.nombre}`);
+        console.log(`[API VIDEO] Generación iniciada asíncronamente para: \${product.nombre}`);
 
         return NextResponse.json({ 
             status: "success", 
