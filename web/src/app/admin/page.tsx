@@ -53,6 +53,7 @@ export default async function AdminDashboard(props: { searchParams: Promise<{ br
     const stockAgotado = agotadosList.length;
 
     const priceIntelligence = await prisma.product.findMany({
+        take: 100, // Límite de seguridad para evitar payloads pesados en el cliente
         where: {
             OR: [
                 { precioCompetencia: { not: null } }, 
@@ -75,7 +76,6 @@ export default async function AdminDashboard(props: { searchParams: Promise<{ br
             enPromocion: true, 
             isNuevo: true,
             createdAt: true
-            // Eliminamos videoUrl y captions (Json) para evitar errores de serialización pesados
         },
         orderBy: { createdAt: 'desc' }
     });

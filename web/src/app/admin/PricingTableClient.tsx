@@ -133,10 +133,14 @@ export function PricingTableClient({ data }: { data: IntelligenceItem[] }) {
     const handleBulkHide = () => {
         if (selectedIds.size === 0) return;
         if (confirm(`¿Purgar los ${selectedIds.size} productos seleccionados directamente de la tienda?`)) {
-            startTransition(() => {
-                hideProductsBulk(Array.from(selectedIds)).then(() => {
+            startTransition(async () => {
+                const res = await hideProductsBulk(Array.from(selectedIds));
+                if (res.success) {
                     setSelectedIds(new Set());
-                });
+                    router.refresh();
+                } else {
+                    alert("Error en la purga masiva: " + res.error);
+                }
             });
         }
     };

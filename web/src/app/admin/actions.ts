@@ -79,15 +79,24 @@ export async function deleteOrder(orderId: string) {
 
 export async function hideProduct(productId: string) {
     try {
+        console.log(`[Action] Hiding product: ${productId}`);
         await prisma.product.update({
             where: { id: productId },
             data: { oculto: true }
         });
-        revalidatePath('/');
-        revalidatePath('/admin');
+        
+        // Intentamos revalidar, pero si falla no dejamos que aborte la acción
+        try {
+            revalidatePath('/admin');
+            revalidatePath('/');
+        } catch (revalError) {
+            console.warn(`[Action] Revalidation warn for ${productId}:`, revalError);
+        }
+
         return { success: true };
     } catch (e: any) {
-        return { success: false, error: e.message };
+        console.error(`[Action] Error hiding product ${productId}:`, e);
+        return { success: false, error: e.message || "Error desconocido al ocultar" };
     }
 }
 
@@ -107,15 +116,23 @@ export async function updateProductPrice(productId: string, newPrice: number) {
 
 export async function hideProductsBulk(productIds: string[]) {
     try {
+        console.log(`[Action] Bulk hiding ${productIds.length} products`);
         await prisma.product.updateMany({
             where: { id: { in: productIds } },
             data: { oculto: true }
         });
-        revalidatePath('/');
-        revalidatePath('/admin');
+        
+        try {
+            revalidatePath('/admin');
+            revalidatePath('/');
+        } catch (revalError) {
+            console.warn(`[Action] Bulk revalidation warn:`, revalError);
+        }
+
         return { success: true };
     } catch (e: any) {
-        return { success: false, error: e.message };
+        console.error(`[Action] Error in bulk hide:`, e);
+        return { success: false, error: e.message || "Error en purga masiva" };
     }
 }
 

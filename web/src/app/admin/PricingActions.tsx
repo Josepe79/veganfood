@@ -27,16 +27,24 @@ export function PricingActions({
   const handleHide = () => {
       if (confirm("¿Seguro que deseas ocultar este producto indefinidamente de forma manual?")) {
           startTransition(async () => {
-              await hideProduct(productId);
-              router.refresh();
+              const res = await hideProduct(productId);
+              if (res.success) {
+                  router.refresh();
+              } else {
+                  alert("Error al ocultar: " + res.error);
+              }
           });
       }
   };
 
   const handleRecover = () => {
       startTransition(async () => {
-          await recoverProduct(productId);
-          router.refresh();
+          const res = await recoverProduct(productId);
+          if (res.success) {
+              router.refresh();
+          } else {
+              alert("Error al recuperar: " + res.error);
+          }
       });
   };
 
