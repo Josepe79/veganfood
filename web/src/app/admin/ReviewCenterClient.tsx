@@ -41,6 +41,12 @@ export function ReviewCenterClient({
     selectedBrand?: string;
 }) {
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+
+    const formatPrice = (val: any) => {
+        const n = Number(val);
+        if (isNaN(n) || !isFinite(n)) return "0.00";
+        return n.toFixed(2);
+    };
     const [isPending, startTransition] = useTransition();
     const router = useRouter();
 
@@ -192,7 +198,7 @@ export function ReviewCenterClient({
                                 <h4 className="text-sm font-bold text-slate-200 leading-tight mb-1">{prod.nombre}</h4>
                                 <div className="flex items-center gap-2">
                                     <span className="text-[10px] bg-slate-800 text-slate-400 px-2 py-0.5 rounded font-mono border border-slate-700 uppercase tracking-widest">{prod.marca}</span>
-                                    <span className="text-[10px] font-bold text-white">{prod.precioVenta.toFixed(2)}€</span>
+                                    <span className="text-[10px] font-bold text-white">{formatPrice(prod.precioVenta)}€</span>
                                 </div>
                             </div>
                         </div>

@@ -29,6 +29,12 @@ export function PricingTableClient({ data }: { data: IntelligenceItem[] }) {
     const [socialData, setSocialData] = useState<{ videoUrl: string, captions: any } | null>(null);
     const [generatingSocialId, setGeneratingSocialId] = useState<string | null>(null);
 
+    const formatPrice = (val: any) => {
+        const n = Number(val);
+        if (isNaN(n) || !isFinite(n)) return "0.00";
+        return n.toFixed(2);
+    };
+
     useEffect(() => {
         let interval: NodeJS.Timeout;
         if (generatingSocialId) {
@@ -346,12 +352,12 @@ export function PricingTableClient({ data }: { data: IntelligenceItem[] }) {
                                         </div>
                                         <p className="text-xs text-slate-500">{prod.marca}</p>
                                     </td>
-                                    <td className="py-4 text-center font-mono text-slate-400">{prod.costo.toFixed(2)}€</td>
-                                    <td className="py-4 text-center font-mono text-white bg-slate-800/50 rounded-lg">{prod.nuestro.toFixed(2)}€</td>
+                                    <td className="py-4 text-center font-mono text-slate-400">{formatPrice(prod.costo)}€</td>
+                                    <td className="py-4 text-center font-mono text-white bg-slate-800/50 rounded-lg">{formatPrice(prod.nuestro)}€</td>
                                     <td className="py-4 text-center">
                                         {prod.mercado !== null ? (
                                             <>
-                                                <a href={prod.finalUrl} target="_blank" className="font-mono text-blue-300 hover:underline">{prod.mercado.toFixed(2)}€</a>
+                                                <a href={prod.finalUrl} target="_blank" className="font-mono text-blue-300 hover:underline">{formatPrice(prod.mercado)}€</a>
                                                 {prod.competenciaNombre && <p className="text-[10px] text-slate-500 mt-1 uppercase tracking-wider">{prod.competenciaNombre}</p>}
                                             </>
                                         ) : (
@@ -362,7 +368,7 @@ export function PricingTableClient({ data }: { data: IntelligenceItem[] }) {
                                         <div className="flex flex-col items-end gap-2">
                                             <div className={`inline-flex items-center gap-2 border px-3 py-1 rounded-md ${alertLevel}`}>
                                                 <span className="text-xs uppercase tracking-wide">{statusMsg}</span>
-                                                {prod.diff !== null && <span className="font-mono">{prod.diff > 0 ? "+" : ""}{prod.diff.toFixed(2)}€</span>}
+                                                {prod.diff !== null && <span className="font-mono">{prod.diff > 0 ? "+" : ""}{formatPrice(prod.diff)}€</span>}
                                             </div>
                                             <PricingActions 
                                                 productId={prod.id} 

@@ -189,15 +189,15 @@ export default async function AdminDashboard(props: { searchParams: Promise<{ br
             <div className="flex gap-4">
                 <div className="bg-slate-900/50 border border-slate-700 rounded-xl p-4 min-w-32 text-center">
                     <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Costo Feliu</p>
-                    <p className="text-xl font-mono text-red-400 font-bold">{expectedB2BCost.toFixed(2)}€</p>
+                    <p className="text-xl font-mono text-red-400 font-bold">{(expectedB2BCost || 0).toFixed(2)}€</p>
                 </div>
                 <div className="bg-slate-900/50 border border-slate-700 rounded-xl p-4 min-w-32 text-center">
                     <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Recaudado</p>
-                    <p className="text-xl font-mono text-emerald-400 font-bold">{grossSales.toFixed(2)}€</p>
+                    <p className="text-xl font-mono text-emerald-400 font-bold">{(grossSales || 0).toFixed(2)}€</p>
                 </div>
                 <div className="glass p-4 min-w-32 border-primary/30 text-center">
                     <p className="text-[10px] text-primary font-bold uppercase tracking-wider mb-1">Margen Bruto</p>
-                    <p className="text-xl font-mono text-white font-bold">+{netProfit.toFixed(2)}€</p>
+                    <p className="text-xl font-mono text-white font-bold">+{(netProfit || 0).toFixed(2)}€</p>
                 </div>
             </div>
         </div>
