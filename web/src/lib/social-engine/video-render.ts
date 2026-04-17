@@ -1,6 +1,12 @@
 import ffmpeg from "fluent-ffmpeg";
+import ffmpegInstaller from "ffmpeg-static";
 import path from "path";
 import fs from "fs";
+
+// Configuramos fluent-ffmpeg para usar el binario estático
+if (ffmpegInstaller) {
+  ffmpeg.setFfmpegPath(ffmpegInstaller);
+}
 
 export interface VideoAsset {
   productImage: string;
@@ -11,7 +17,7 @@ export interface VideoAsset {
 }
 
 /**
- * Genera un video vertical (9:16) para TikTok/Instagram
+ * Genera un video vertical optimizado (480x854) para redes sociales
  */
 export async function renderSocialVideo(assets: VideoAsset): Promise<string> {
   const outputDir = path.join(process.cwd(), "public", "temp-videos");
@@ -40,17 +46,17 @@ export async function renderSocialVideo(assets: VideoAsset): Promise<string> {
     }
 
     const filters: any[] = [
-      // 1. Fondo de video HD (720x1280)
+      // 1. Fondo de video optimizado (480x854) con desenfoque suave
       {
-        filter: "scale", options: "720:1280:force_original_aspect_ratio=increase,crop=720:1280,boxblur=20:10",
+        filter: "scale", options: "480:854:force_original_aspect_ratio=increase,crop=480:854,boxblur=10:5",
         inputs: "0:v", outputs: "bg"
       },
-      // 2. Producto frontal más pequeño acorde a 720p
+      // 2. Producto frontal dimensionado para 480p
       {
-        filter: "scale", options: "500:-1",
+        filter: "scale", options: "400:-1",
         inputs: "0:v", outputs: "fg"
       },
-      // 3. Superposición video final
+      // 3. Superposición video final centrada
       {
         filter: "overlay", options: "(W-w)/2:(H-h)/2",
         inputs: ["bg", "fg"], outputs: "vout"
@@ -68,22 +74,24 @@ export async function renderSocialVideo(assets: VideoAsset): Promise<string> {
     command.complexFilter(filters, musicPath ? ["vout", "aout"] : ["vout"]);
 
     if (!musicPath) {
-      // Si no hay música extra, mapear solo voz original (entrada 1)
       command.outputOptions(["-map 1:a"]);
     }
 
     command
       .outputOptions([
         "-c:v libx264",
-        "-preset ultrafast",
+        "-preset superfast", // Balance ideal entre velocidad y calidad en Railway
         "-pix_fmt yuv420p",
-        "-r 30",
-        "-t 15" // Máximo 15 segundos
+        "-r 24", // 24fps es suficiente para estos vídeos y ahorra ciclos de CPU
+        "-t 12" // Reducimos a 12s para maxima rapidez de entrega
       ])
-      .on("start", (cmd) => console.log("Empezando renderizado FFmpeg:", cmd))
-      .on("end", () => resolve(outputPath))
+      .on("start", (cmd) => console.log("[FFmpeg] Iniciando render optimizado:", cmd))
+      .on("end", () => {
+          console.log("[FFmpeg] Renderizado completado con éxito.");
+          resolve(outputPath);
+      })
       .on("error", (err) => {
-          console.error("Fallo grave de FFmpeg:", err);
+          console.error("[FFmpeg] Error crítico en renderizado:", err);
           reject(err);
       })
       .save(outputPath);

@@ -178,18 +178,25 @@ export async function prepareSocialMediaVideo(productId: string) {
  * Worker Asíncrono - No bloquea la UI, escribe en Base de Datos cuando termina.
  */
 export async function backgroundRenderTask(productId: string) {
-    console.log(`[Worker] Iniciando trabajo asíncrono para producto: ${productId}`);
+    const startTime = Date.now();
+    console.log(`[Worker] --- INICIO PROCESO VÍDEO (${productId}) ---`);
+    
     const product = await prisma.product.findUnique({ where: { id: productId } });
-    if (!product) return;
+    if (!product) {
+        console.error(`[Worker] Error: Producto ${productId} no encontrado en DB.`);
+        return;
+    }
 
     try {
-        console.log(`[Worker] Generando guion para: ${product.nombre}`);
+        console.log(`[Worker] 1. Generando guion IA para: ${product.nombre}...`);
         const script = await generateSocialScript(product.nombre, product.marca || "VeganFood", product.descripcion || "");
+        console.log(`[Worker] -> Guion generado con éxito.`);
         
-        console.log(`[Worker] Generando locución...`);
+        console.log(`[Worker] 2. Generando locución OpenAI...`);
         const voicePath = await generateSocialVoice(script.hook + " " + script.mid + " " + script.cta, `voice-${productId}.mp3`);
+        console.log(`[Worker] -> Archivo de voz creado en: ${voicePath}`);
         
-        console.log(`[Worker] Descargando imagen del producto...`);
+        console.log(`[Worker] 3. Procesando imagen del producto...`);
         let localImage = "https://online.feliubadalo.com/media/catalog/product/placeholder/default/2.png";
         const tempDir = path.join(process.cwd(), "tmp");
         if (!fs.existsSync(tempDir)) fs.mkdirSync(tempDir);
@@ -202,12 +209,13 @@ export async function backgroundRenderTask(productId: string) {
             const buffer = Buffer.from(await imgRes.arrayBuffer());
             fs.writeFileSync(safeLocalImagePath, buffer);
             localImage = safeLocalImagePath;
+            console.log(`[Worker] -> Imagen descargada localmente.`);
         } catch (e) {
-            console.warn("[Worker] Fallo descargando la imagen, ffmpeg intentará tirar de red externa.", e);
+            console.warn("[Worker] ! Fallo descargando la imagen, FFmpeg intentará usar URL remota.", e);
             localImage = product.imagen || localImage;
         }
 
-        console.log(`[Worker] Renderizando vídeo vertical FFmpeg...`);
+        console.log(`[Worker] 4. Iniciado Renderizado FFmpeg (Superfast 480p)...`);
         const videoPath = await renderSocialVideo({
             productImage: localImage,
             voiceAudio: voicePath,
@@ -216,9 +224,9 @@ export async function backgroundRenderTask(productId: string) {
         });
 
         const publicUrl = `/temp-videos/${videoPath.split(/[\\/]/).pop()}`;
+        console.log(`[Worker] 5. ¡Vídeo renderizado con éxito! URL: ${publicUrl}`);
 
-        console.log(`[Worker] ¡Vídeo completado! Guardando en Base de Datos permanentemente...`);
-        // Actualizamos la base de datos persistiendo el vídeo
+        console.log(`[Worker] 6. Guardando resultados en Base de Datos...`);
         await prisma.product.update({
             where: { id: productId },
             data: { 
@@ -227,8 +235,12 @@ export async function backgroundRenderTask(productId: string) {
             }
         });
 
+        const duration = ((Date.now() - startTime) / 1000).toFixed(1);
+        console.log(`[Worker] --- FIN PROCESO VÍDEO EXCITOSO (Tiempo total: ${duration}s) ---`);
+
     } catch (e) {
-        console.error(`[Worker] Error FATAL en trabajo de vídeo para ${productId}:`, e);
+        const errorDuration = ((Date.now() - startTime) / 1000).toFixed(1);
+        console.error(`[Worker] !!! ERROR FATAL en generación (${productId}) tras ${errorDuration}s:`, e);
     }
 }
 
