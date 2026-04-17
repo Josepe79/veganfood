@@ -64,24 +64,32 @@ export function PricingTableClient({ data }: { data: IntelligenceItem[] }) {
         });
     };
 
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
     // Enriquecemos los datos calculando su status algorítmico al vuelo para poder filtrarlos
     const enrichedData = data.map(prod => {
         const nuestro = prod.precioVenta;
         const mercado = prod.precioCompetencia; // puede ser null
         const costo = prod.precioOriginal;
+        const isRecent = new Date(prod.createdAt) >= sevenDaysAgo;
         
-        let status: "COMPETITIVO" | "AJUSTABLE" | "CRITICA" | "OCULTO" | "PROMOCION" | "SIN_DATO" = "SIN_DATO";
+        let status: "COMPETITIVO" | "AJUSTABLE" | "CRITICA" | "OCULTO" | "PROMOCION" | "NOVEDAD" | "SIN_DATO" = "SIN_DATO";
         
         if (prod.oculto) {
             status = "OCULTO";
         } else if (prod.enPromocion) {
             status = "PROMOCION";
         } else if (mercado === null) {
-            status = "SIN_DATO";
+            status = isRecent ? "NOVEDAD" : "SIN_DATO";
         } else if (mercado <= costo) {
             status = "CRITICA";
         } else if (mercado < nuestro && mercado > costo) {
             status = "AJUSTABLE";
+        } else if (isRecent) {
+            // Si es reciente, le damos prioridad visual a "Novedad" si el precio ya es competitivo
+            // O podemos dejarlo como competitivo. Vamos a priorizar NOVEDAD si es muy nuevo.
+            status = "NOVEDAD";
         } else {
             status = "COMPETITIVO";
         }
@@ -95,14 +103,14 @@ export function PricingTableClient({ data }: { data: IntelligenceItem[] }) {
         return { ...prod, status, mercado, nuestro, costo, diff, finalUrl };
     });
 
-    const sevenDaysAgo = new Date();
-    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-
     const filteredData = enrichedData.filter(prod => {
         if (filter === "ALL") return true;
         if (filter === "OCULTO") return prod.oculto;
         if (filter === "PROMOCION") return prod.enPromocion;
-        if (filter === "NOVEDADES") return prod.isNuevo;
+        if (filter === "NOVEDADES") {
+            const isRecent = new Date(prod.createdAt) >= sevenDaysAgo;
+            return prod.isNuevo || isRecent;
+        }
         return prod.status === filter;
     });
 
@@ -175,7 +183,7 @@ export function PricingTableClient({ data }: { data: IntelligenceItem[] }) {
                         onClick={() => setFilter("NOVEDADES")}
                         className={`px-4 py-2 text-xs rounded-md whitespace-nowrap transition-colors ${filter === "NOVEDADES" ? "bg-blue-500/20 text-blue-400 border border-blue-500/30" : "text-slate-400 hover:text-blue-300"}`}
                     >
-                        Novedades
+                        Novedades ({enrichedData.filter(p => p.isNuevo || (new Date(p.createdAt) >= sevenDaysAgo)).length})
                     </button>
                     <button onClick={() => setFilter("CRITICA")} className={`px-4 py-2 text-xs rounded-md whitespace-nowrap transition-colors ${filter === "CRITICA" ? "bg-red-500/20 text-red-400 border border-red-500/30" : "text-slate-400 hover:text-red-300"}`}>
                         Críticos ({enrichedData.filter(p => p.status === "CRITICA").length})
@@ -303,6 +311,9 @@ export function PricingTableClient({ data }: { data: IntelligenceItem[] }) {
                             } else if (prod.status === "PROMOCION") {
                                 alertLevel = "bg-purple-500/10 border-purple-500/50 text-purple-400 font-bold shadow-[0_0_10px_purple]";
                                 statusMsg = "En Promoción ✨";
+                            } else if (prod.status === "NOVEDAD") {
+                                alertLevel = "bg-blue-500/10 border-blue-500/50 text-blue-400 font-bold shadow-[0_0_10px_rgba(59,130,246,0.5)]";
+                                statusMsg = "Novedad ✨";
                             } else if (prod.status === "SIN_DATO") {
                                 alertLevel = "bg-slate-700/50 border-slate-600/50 text-slate-400";
                                 statusMsg = "Sin dato";
@@ -322,7 +333,12 @@ export function PricingTableClient({ data }: { data: IntelligenceItem[] }) {
                                         />
                                     </td>
                                     <td className="py-4 pl-2">
-                                        <p className="font-semibold text-slate-200 line-clamp-1">{prod.nombre}</p>
+                                        <div className="flex items-center gap-2">
+                                            <p className="font-semibold text-slate-200 line-clamp-1">{prod.nombre}</p>
+                                            {(prod.isNuevo || (new Date(prod.createdAt) >= sevenDaysAgo)) && (
+                                                <span className="bg-blue-500/10 text-blue-400 text-[10px] px-1.5 py-0.5 rounded border border-blue-500/20 font-bold uppercase tracking-tight">Nuevo</span>
+                                            )}
+                                        </div>
                                         <p className="text-xs text-slate-500">{prod.marca}</p>
                                     </td>
                                     <td className="py-4 text-center font-mono text-slate-400">{prod.costo.toFixed(2)}€</td>

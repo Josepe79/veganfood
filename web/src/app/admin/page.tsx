@@ -15,6 +15,10 @@ export const dynamic = 'force-dynamic';
 export default async function AdminDashboard(props: { searchParams: Promise<{ brand?: string }> }) {
   const searchParams = await props.searchParams;
   const filterBrand = searchParams.brand;
+  
+  const sevenDaysAgo = new Date();
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
 
   try {
     // 1. Pedidos que necesitamos comprar a Feliubadaló (Pagados o pendientes de consolidar)
@@ -54,7 +58,8 @@ export default async function AdminDashboard(props: { searchParams: Promise<{ br
                 { precioCompetencia: { not: null } }, 
                 { oculto: true },                      
                 { enPromocion: true },                 
-                { isNuevo: true }                      
+                { isNuevo: true },
+                { createdAt: { gte: sevenDaysAgo } }
             ]
         },
         select: { 
@@ -98,11 +103,20 @@ export default async function AdminDashboard(props: { searchParams: Promise<{ br
         orderBy: { nombre: 'asc' }
     });
 
-    // Candidatos a destacar (precio bajo, con imagen, disponibles)
+    // Candidatos a destacar (recientes, precio bajo, con imagen, disponibles)
     const candidatos = await prisma.product.findMany({
-        where: { enPromocion: false, oculto: false, agotado: false, imagen: { not: '' } },
+        where: { 
+            enPromocion: false, 
+            oculto: false, 
+            agotado: false, 
+            imagen: { not: '' },
+            OR: [
+                { precioCompetencia: { not: null } },
+                { createdAt: { gte: sevenDaysAgo } }
+            ]
+        },
         select: { id: true, nombre: true, marca: true, imagen: true, precioVenta: true, enPromocion: true },
-        orderBy: { precioVenta: 'asc' },
+        orderBy: { createdAt: 'desc' },
         take: 40
     });
 
@@ -451,7 +465,7 @@ export default async function AdminDashboard(props: { searchParams: Promise<{ br
                     <br />
                     Stack: {error.stack?.slice(0, 300)}...
                 </p>
-                <button onClick={() => window.location.reload()} className="bg-white text-black px-6 py-2 rounded-full font-bold">Reintentar</button>
+                <a href="/admin" className="inline-block bg-white text-black px-6 py-2 rounded-full font-bold">Reintentar</a>
             </div>
         </div>
     )

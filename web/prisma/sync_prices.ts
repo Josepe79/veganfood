@@ -16,6 +16,9 @@ async function main() {
         process.exit(1);
     }
 
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
     console.log(`🚀 Iniciando Motor de Inteligencia Competitiva ${newOnly ? '(SOLO NOVEDADES) ' : promotedOnly ? '(SOLO PROMOCIONES) ' : '(Full Scan - máx 250 créditos)'}...`);
     
     const query: any = { 
@@ -26,10 +29,11 @@ async function main() {
                { ean: { not: null } },
                { ean: { not: "" } }
             ],
-            // Si hay flag específico, lo usamos. Si no, escaneamos ambos grupos prioritarios.
-            OR: newOnly ? [{ isNuevo: true }] : promotedOnly ? [{ enPromocion: true }] : [
+            // Si hay flag específico, lo usamos. Si no, escaneamos ambos grupos prioritarios y creaciones recientes.
+            OR: newOnly ? [{ isNuevo: true }, { createdAt: { gte: sevenDaysAgo } }] : promotedOnly ? [{ enPromocion: true }] : [
                 { isNuevo: true },
-                { enPromocion: true }
+                { enPromocion: true },
+                { createdAt: { gte: sevenDaysAgo } }
             ]
         },
         select: { id: true, ean: true, nombre: true, precioVenta: true }
