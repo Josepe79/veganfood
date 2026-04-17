@@ -2,7 +2,6 @@
 
 import { useState, useTransition, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { hideProductsBulk, prepareSocialMediaVideo } from "./actions";
 import { PricingActions } from "./PricingActions";
 import SocialPreviewModal from "./SocialPreviewModal";
 
@@ -57,14 +56,23 @@ export function PricingTableClient({ data }: { data: IntelligenceItem[] }) {
 
     const handleGenerateSocial = (productId: string) => {
         setGeneratingSocialId(productId);
-        prepareSocialMediaVideo(productId).then(res => {
-            if (!res.success) {
-                alert("Error técnico de servidor: " + (res.error || "Desconocido"));
+        
+        // Uso de API Estándar para evitar errores de red en Server Actions
+        fetch("/api/admin/video", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ productId })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.status !== "success") {
+                alert("Error técnico: " + (data.message || "Desconocido"));
                 setGeneratingSocialId(null);
             }
-            // Si funciona, dejamos que el useEffect haga el Polling del background task.
-        }).catch(err => {
-            alert("Error de red llamando a la IA. Revisa tu conexión a internet.");
+            // Si funciona, el useEffect de Polling ya se encargará de vigilar /api/social-status
+        })
+        .catch(err => {
+            alert("Error de conexión al iniciar generación IA.");
             console.error(err);
             setGeneratingSocialId(null);
         });

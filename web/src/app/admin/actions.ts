@@ -177,7 +177,7 @@ export async function prepareSocialMediaVideo(productId: string) {
 /**
  * Worker Asíncrono - No bloquea la UI, escribe en Base de Datos cuando termina.
  */
-async function backgroundRenderTask(productId: string) {
+export async function backgroundRenderTask(productId: string) {
     console.log(`[Worker] Iniciando trabajo asíncrono para producto: ${productId}`);
     const product = await prisma.product.findUnique({ where: { id: productId } });
     if (!product) return;
