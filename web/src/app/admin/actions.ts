@@ -177,35 +177,45 @@ export async function prepareSocialMediaVideo(productId: string) {
 /**
  * Worker Asíncrono - No bloquea la UI, escribe en Base de Datos cuando termina.
  */
-import ffmpegInstaller from "ffmpeg-static";
-
-export async function backgroundRenderTask(productId: string) {
-    const startTime = Date.now();
-    console.log(`[Worker] --- INICIO PROCESO VÍDEO (${productId}) ---`);
-    
-    // Check binario antes de empezar
-    const ffmpegPath = (ffmpegInstaller as any)?.default || ffmpegInstaller;
-    console.log(`[Worker] Pre-flight: Binario FFmpeg en ${ffmpegPath} (${fs.existsSync(ffmpegPath) ? "EXISTE" : "NO EXISTE"})`);
-
+/**
+ * FASE 1: Generación de Guion y Voz (Esencial y rápido)
+ * Se ejecuta de forma síncrona en la API para asegurar persistencia.
+ */
+export async function generateVideoMetadata(productId: string) {
+    console.log(`[Worker] --- FASE 1: Iniciando Metadata (${productId}) ---`);
     const product = await prisma.product.findUnique({ where: { id: productId } });
-    if (!product) {
-        console.error(`[Worker] Error: Producto ${productId} no encontrado en DB.`);
-        return;
-    }
+    if (!product) throw new Error("Producto no encontrado");
+
+    console.log(`[Worker] 1. Generando guion IA para: ${product.nombre}...`);
+    const script = await generateSocialScript(product.nombre, product.marca || "VeganFood", product.descripcion || "");
+    
+    console.log(`[Worker] 2. Generando locución OpenAI...`);
+    const voicePath = await generateSocialVoice(script.hook + " " + script.mid + " " + script.cta, `voice-${productId}.mp3`);
+
+    console.log(`[Worker] 3. Guardando Captions en DB...`);
+    await prisma.product.update({
+        where: { id: productId },
+        data: { captions: script.captions as any }
+    });
+
+    return { script, voicePath, product };
+}
+
+/**
+ * FASE 2: Renderizado de Vídeo (Pesado)
+ * Se dispara en segundo plano.
+ */
+export async function backgroundRenderTask(productId: string, script: any, voicePath: string, product: any) {
+    const startTime = Date.now();
+    console.log(`[Worker] --- FASE 2: Iniciando Renderizado (${productId}) ---`);
 
     try {
-        console.log(`[Worker] 1. Generando guion IA para: ${product.nombre}...`);
-        const script = await generateSocialScript(product.nombre, product.marca || "VeganFood", product.descripcion || "");
-        console.log(`[Worker] -> Guion generado con éxito.`);
+        const ffmpegPath = (ffmpegInstaller as any)?.default || ffmpegInstaller;
         
-        console.log(`[Worker] 2. Generando locución OpenAI...`);
-        const voicePath = await generateSocialVoice(script.hook + " " + script.mid + " " + script.cta, `voice-${productId}.mp3`);
-        console.log(`[Worker] -> Archivo de voz creado en: ${voicePath}`);
-        
-        console.log(`[Worker] 3. Procesando imagen del producto...`);
+        console.log(`[Worker] 4. Procesando imagen del producto...`);
         let localImage = "https://online.feliubadalo.com/media/catalog/product/placeholder/default/2.png";
         const tempDir = path.join(process.cwd(), "tmp");
-        if (!fs.existsSync(tempDir)) fs.mkdirSync(tempDir);
+        if (!fs.existsSync(tempDir)) fs.mkdirSync(tempDir, { recursive: true });
         
         const safeLocalImagePath = path.join(tempDir, `img-${productId}.jpg`);
         try {
@@ -215,13 +225,12 @@ export async function backgroundRenderTask(productId: string) {
             const buffer = Buffer.from(await imgRes.arrayBuffer());
             fs.writeFileSync(safeLocalImagePath, buffer);
             localImage = safeLocalImagePath;
-            console.log(`[Worker] -> Imagen descargada localmente.`);
         } catch (e) {
-            console.warn("[Worker] ! Fallo descargando la imagen, FFmpeg intentará usar URL remota.", e);
+            console.warn("[Worker] ! Fallo descargando imagen, usando fallback.");
             localImage = product.imagen || localImage;
         }
 
-        console.log(`[Worker] 4. Iniciado Renderizado FFmpeg (Superfast 480p)...`);
+        console.log(`[Worker] 5. Renderizado FFmpeg activo...`);
         const videoPath = await renderSocialVideo({
             productImage: localImage,
             voiceAudio: voicePath,
@@ -230,23 +239,18 @@ export async function backgroundRenderTask(productId: string) {
         });
 
         const publicUrl = `/temp-videos/${videoPath.split(/[\\/]/).pop()}`;
-        console.log(`[Worker] 5. ¡Vídeo renderizado con éxito! URL: ${publicUrl}`);
+        console.log(`[Worker] 6. Finalizado. URL: ${publicUrl}`);
 
-        console.log(`[Worker] 6. Guardando resultados en Base de Datos...`);
         await prisma.product.update({
             where: { id: productId },
-            data: { 
-                videoUrl: publicUrl,
-                captions: script.captions as any
-            }
+            data: { videoUrl: publicUrl }
         });
 
         const duration = ((Date.now() - startTime) / 1000).toFixed(1);
-        console.log(`[Worker] --- FIN PROCESO VÍDEO EXCITOSO (Tiempo total: ${duration}s) ---`);
+        console.log(`[Worker] --- FIN EXITOSO (${duration}s) ---`);
 
     } catch (e) {
-        const errorDuration = ((Date.now() - startTime) / 1000).toFixed(1);
-        console.error(`[Worker] !!! ERROR FATAL en generación (${productId}) tras ${errorDuration}s:`, e);
+        console.error(`[Worker] !!! ERROR FATAL en fase 2 (${productId}):`, e);
     }
 }
 
@@ -255,8 +259,6 @@ export async function backgroundRenderTask(productId: string) {
  */
 export async function executeSocialPost(videoUrl: string, caption: string) {
     try {
-        // Ayrshare requiere una URL absoluta y pública. 
-        // En desarrollo localhost esto fallará si Ayrshare no puede alcanzar el server.
         const DOMAIN = process.env.NEXT_PUBLIC_APP_URL || "https://veganfood.es";
         const absoluteUrl = videoUrl.startsWith('http') ? videoUrl : `${DOMAIN}${videoUrl}`;
 
