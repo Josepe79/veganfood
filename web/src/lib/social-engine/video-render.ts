@@ -77,50 +77,8 @@ export async function renderSocialVideo(assets: VideoAsset): Promise<string> {
       );
     }
 
-    // 4. Subtítulos (Drawtext)
-    // Usamos la fuente Geist que encontramos en node_modules
-    const fontPath = path.join(process.cwd(), "node_modules", "next", "dist", "compiled", "@vercel", "og", "Geist-Regular.ttf");
-    const safeFontPath = fontPath.replace(/\\/g, "/").replace(/:/g, "\\:");
-    
-    // Necesitamos encadenar los textos sobre la salida de video 'vout'
-    let lastOutput = "vout";
-    assets.overlays.forEach((ov, idx) => {
-        const nextOutput = `vtext${idx}`;
-        const startTime = ov.time;
-        const endTime = startTime + 4; // Cada subtítulo dura 4 segundos
-
-        // ESCAPE ROBUSTO PARA FFMPEG DRAWTEXT:
-        // 1. Quitar comillas simples si ya existen para evitar duplicados
-        // 2. Escapar comillas simples internas: ' -> '\''
-        // 3. Escapar dos puntos: : -> \:
-        const escapedText = ov.text
-            .replace(/'/g, "'\\''")
-            .replace(/:/g, "\\:");
-
-        // Construimos las opciones manualmente para evitar que fluent-ffmpeg las ensucie
-        const drawtextOpts = [
-            `fontfile=${fs.existsSync(fontPath) ? safeFontPath : "Arial"}`,
-            `text='${escapedText}'`,
-            `fontcolor=white`,
-            `fontsize=36`,
-            `box=1`,
-            `boxcolor=black@0.6`,
-            `boxborderw=10`,
-            `x=(w-text_w)/2`,
-            `y=h-150`,
-            `enable=between(t,${startTime},${endTime})`
-        ].join(":");
-
-        filters.push({
-            filter: "drawtext",
-            options: drawtextOpts,
-            inputs: lastOutput,
-            outputs: nextOutput
-        });
-        lastOutput = nextOutput;
-    });
-
-    command.complexFilter(filters, musicPath ? [lastOutput, "aout"] : [lastOutput]);
+    // MODO SEGURO: Desactivamos subtítulos visuales para estabilizar producción
+    command.complexFilter(filters, musicPath ? ["vout", "aout"] : ["vout"]);
 
     if (!musicPath) {
       command.outputOptions(["-map 1:a"]);
