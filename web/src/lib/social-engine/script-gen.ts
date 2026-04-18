@@ -24,30 +24,27 @@ export async function generateSocialScript(productName: string, brand: string, d
     - Nombre: ${productName}
     - Marca: ${brand}
     - Descripción: ${description}
-    - Enlace: https://veganfood.es/product/ (añadir el ID al final si es posible)
+    - Enlace: https://veganfood.es/product/
 
     CONTEXTO DE MARCA:
-    - Identidad: Tono fresco, ético y apetecible. Como un experto en nutrición recomendando a un amigo.
-    - Estructura: Gancho (Hook) + Valor + CTA + Hashtags.
-    - Emojis: Con intención (🌱, 🚛, ✨, 😋).
+    - Identidad: Tono fresco y ético.
+    - REQUISITO OBLIGATORIO: Mencionar siempre "VeganFood.es" al menos una vez en el guion de voz.
+    - REQUISITO OBLIGATORIO: Los textos de "overlays" deben ser muy cortos (máx 25 caracteres) para que quepan bien en pantalla.
 
     FORMATO DE RESPUESTA (JSON POST-PROCESABLE):
     {
-      "hook": "Gancho para el vídeo (máx 50 carácteres)",
-      "mid": "Beneficio principal para el vídeo (máx 80 carácteres)",
-      "cta": "Cierre para el vídeo (máx 40 carácteres)",
+      "hook": "Gancho inicial (Voz)",
+      "mid": "Beneficio principal (Voz)",
+      "cta": "Cierre con marca VeganFood.es (Voz)",
       "overlays": [
-        {"text": "Hook", "time": 0},
-        {"text": "Valor", "time": 5},
-        {"text": "CTA", "time": 10}
+        {"text": "GANCHO CORTO", "time": 0},
+        {"text": "BENEFICIO CORTO", "time": 4},
+        {"text": "VeganFood.es", "time": 8}
       ],
       "captions": {
-        "igTikTok": "Texto para Instagram/TikTok (Máx 150 caracteres, directo, beneficio)",
-        "ytShorts": {
-          "title": "[Nombre Producto] - Lo mejor en alimentación vegana 2026",
-          "desc": "Explora las propiedades de ${productName}. Selección exclusiva de VeganFood.es para una dieta saludable."
-        },
-        "whatsapp": "Texto para WhatsApp Business con enfoque en venta directa y urgencia 24h"
+        "igTikTok": "Texto para redes...",
+        "ytShorts": { "title": "...", "desc": "..." },
+        "whatsapp": "..."
       }
     }
 

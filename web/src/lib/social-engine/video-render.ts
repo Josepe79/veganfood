@@ -77,7 +77,41 @@ export async function renderSocialVideo(assets: VideoAsset): Promise<string> {
       );
     }
 
-    command.complexFilter(filters, musicPath ? ["vout", "aout"] : ["vout"]);
+    // 4. Subtítulos (Drawtext)
+    // Usamos la fuente Geist que encontramos en node_modules
+    const fontPath = path.join(process.cwd(), "node_modules", "next", "dist", "compiled", "@vercel", "og", "Geist-Regular.ttf");
+    
+    // Necesitamos encadenar los textos sobre la salida de video 'vout'
+    let lastOutput = "vout";
+    assets.overlays.forEach((ov, idx) => {
+        const nextOutput = `vtext${idx}`;
+        const startTime = ov.time;
+        const endTime = startTime + 4; // Cada subtítulo dura 4 segundos
+        
+        // Escapamos el texto por seguridad de FFmpeg
+        const safeText = ov.text.replace(/'/g, "\\'").replace(/:/g, "\\:");
+
+        filters.push({
+            filter: "drawtext",
+            options: {
+                fontfile: fs.existsSync(fontPath) ? fontPath : "Arial", // Fallback si no existe la fuente
+                text: safeText,
+                fontcolor: "white",
+                fontsize: 36,
+                box: 1,
+                boxcolor: "black@0.6",
+                boxborderw: 10,
+                x: "(w-text_w)/2",
+                y: "h-150", // Posición en la parte inferior
+                enable: `between(t,${startTime},${endTime})`
+            },
+            inputs: lastOutput,
+            outputs: nextOutput
+        });
+        lastOutput = nextOutput;
+    });
+
+    command.complexFilter(filters, musicPath ? [lastOutput, "aout"] : [lastOutput]);
 
     if (!musicPath) {
       command.outputOptions(["-map 1:a"]);
