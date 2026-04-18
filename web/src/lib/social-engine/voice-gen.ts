@@ -1,10 +1,11 @@
 import OpenAI from "openai";
 import fs from "fs";
 import path from "path";
+import { cleanEnvVar } from "./env-cleanup";
 
 export async function generateSocialVoice(text: string, outputFilename: string): Promise<string> {
   const openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY,
+    apiKey: cleanEnvVar(process.env.OPENAI_API_KEY),
   });
 
   try {

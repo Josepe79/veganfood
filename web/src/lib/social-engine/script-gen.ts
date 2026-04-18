@@ -1,4 +1,5 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { cleanEnvVar } from "./env-cleanup";
 
 export interface SocialScript {
   hook: string;
@@ -13,7 +14,7 @@ export interface SocialScript {
 }
 
 export async function generateSocialScript(productName: string, brand: string, description: string): Promise<SocialScript> {
-  const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
+  const genAI = new GoogleGenerativeAI(cleanEnvVar(process.env.GEMINI_API_KEY));
   const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
 
   const prompt = `

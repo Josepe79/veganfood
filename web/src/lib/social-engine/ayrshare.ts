@@ -1,7 +1,8 @@
 import SocialPost from "social-media-api";
+import { cleanEnvVar } from "./env-cleanup";
 
 export async function publishToSocial(videoUrl: string, caption: string) {
-  const API_KEY = process.env.AYRSHARE_API_KEY || "";
+  const API_KEY = cleanEnvVar(process.env.AYRSHARE_API_KEY);
   if (!API_KEY) throw new Error("Ayrshare API Key no configurada.");
   
   const social = new SocialPost(API_KEY);
