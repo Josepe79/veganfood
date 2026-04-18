@@ -85,6 +85,7 @@ export async function renderSocialVideo(assets: VideoAsset): Promise<string> {
     // Necesitamos encadenar los textos sobre la salida de video 'vout'
     let lastOutput = "vout";
     assets.overlays.forEach((ov, idx) => {
+        const nextOutput = `vtext${idx}`;
         const startTime = ov.time;
         const endTime = startTime + 4; // Cada subtítulo dura 4 segundos
 
