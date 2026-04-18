@@ -93,13 +93,16 @@ export async function renderSocialVideo(assets: VideoAsset): Promise<string> {
     command
       .outputOptions([
         "-c:v libx264",
+        "-c:a aac",       // FORZAR AAC: Crucial para compatibilidad en navegadores
         "-preset superfast",
         "-pix_fmt yuv420p",
         "-r 24",
         "-t 12",
         "-movflags +faststart" // Optimiza la reproducción inicial en web
       ])
-      .on("start", (cmd) => console.log("[FFmpeg] Comando inyectado:", cmd))
+      .on("start", (cmd) => {
+          console.log("[FFmpeg] Ejecutando comando:", cmd);
+      })
       .on("end", () => {
           clearTimeout(timeout);
           console.log("[FFmpeg] Renderizado exitoso.");

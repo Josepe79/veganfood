@@ -64,6 +64,8 @@ export async function GET(req: Request) {
                 "Accept-Ranges": "bytes",
                 "Content-Length": chunksize.toString(),
                 "Content-Type": "video/mp4",
+                "X-Video-Exists": "true",
+                "X-Video-Path": filePath
             }
         });
     } else {
@@ -80,6 +82,8 @@ export async function GET(req: Request) {
             headers: {
                 "Content-Length": fileSize.toString(),
                 "Content-Type": "video/mp4",
+                "X-Video-Exists": "true",
+                "X-Video-Path": filePath
             }
         });
     }
