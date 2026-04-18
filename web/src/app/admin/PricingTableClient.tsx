@@ -46,6 +46,10 @@ export function PricingTableClient({ data }: { data: IntelligenceItem[] }) {
                             setSocialData({ videoUrl: data.videoUrl, captions: data.captions });
                             setGeneratingSocialId(null);
                             setGenerationPhase(null);
+                        } else if (data.status === "ERROR") {
+                            alert("Error en el montaje: " + (data.errorMessage || "Fallo técnico en el servidor."));
+                            setGeneratingSocialId(null);
+                            setGenerationPhase(null);
                         } else if (data.status) {
                             setGenerationPhase(data.status);
                         }

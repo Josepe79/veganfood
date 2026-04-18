@@ -190,6 +190,12 @@ export async function backgroundRenderTask(productId: string, script: any, voice
     console.log(`[Worker] --- FASE 2: Iniciando Renderizado (${productId}) ---`);
 
     try {
+        // Marcamos en base de datos que estamos renderizando (para que el UI lo sepa)
+        await prisma.product.update({
+            where: { id: productId },
+            data: { videoUrl: "STATUS:RENDERING" }
+        });
+
         const ffmpegPath = (ffmpegInstaller as any)?.default || ffmpegInstaller;
         
         console.log(`[Worker] 4. Procesando imagen del producto...`);
@@ -229,8 +235,17 @@ export async function backgroundRenderTask(productId: string, script: any, voice
         const duration = ((Date.now() - startTime) / 1000).toFixed(1);
         console.log(`[Worker] --- FIN EXITOSO (${duration}s) ---`);
 
-    } catch (e) {
+    } catch (e: any) {
         console.error(`[Worker] !!! ERROR FATAL en fase 2 (${productId}):`, e);
+        // PERSISTENCIA DEL ERROR: Para que no se quede el bucle de "Montando"
+        try {
+            await prisma.product.update({
+                where: { id: productId },
+                data: { videoUrl: `STATUS:ERROR:${e.message || "Fallo desconocido"}` }
+            });
+        } catch (dbError) {
+            console.error("[Worker] Error crítico intentando guardar estado de error en DB.");
+        }
     }
 }
 

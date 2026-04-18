@@ -22,16 +22,30 @@ export async function GET(request: Request) {
         }
 
         let status = "DRAFTING";
+        let errorMessage = null;
+        let finalVideoUrl = product.videoUrl;
+
         if (product.videoUrl) {
-            status = "COMPLETED";
+            if (product.videoUrl.startsWith("STATUS:RENDERING")) {
+                status = "RENDERING";
+                finalVideoUrl = null; // No es una URL válida aún
+            } else if (product.videoUrl.startsWith("STATUS:ERROR:")) {
+                status = "ERROR";
+                errorMessage = product.videoUrl.replace("STATUS:ERROR:", "");
+                finalVideoUrl = null;
+            } else {
+                status = "COMPLETED";
+            }
         } else if (product.captions) {
+            // Retrocompatibilidad: Si tiene captions pero no videoUrl, asumimos que está en renderizado si fue reciente
             status = "RENDERING";
         }
 
         return NextResponse.json({ 
-            ready: !!product.videoUrl, 
+            ready: status === "COMPLETED", 
             status,
-            videoUrl: product.videoUrl, 
+            errorMessage,
+            videoUrl: finalVideoUrl, 
             captions: product.captions 
         });
     } catch (e: any) {
