@@ -84,6 +84,10 @@ export async function renderSocialVideo(assets: VideoAsset): Promise<string> {
     
     // Necesitamos encadenar los textos sobre la salida de video 'vout'
     let lastOutput = "vout";
+    assets.overlays.forEach((ov, idx) => {
+        const startTime = ov.time;
+        const endTime = startTime + 4; // Cada subtítulo dura 4 segundos
+
         // ESCAPE ROBUSTO PARA FFMPEG DRAWTEXT:
         // 1. Quitar comillas simples si ya existen para evitar duplicados
         // 2. Escapar comillas simples internas: ' -> '\''
