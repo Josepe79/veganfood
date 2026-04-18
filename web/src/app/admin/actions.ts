@@ -202,7 +202,7 @@ export async function backgroundRenderTask(productId: string, script: any, voice
         
         console.log(`[Worker] 4. Procesando imagen del producto...`);
         let localImage = "https://online.feliubadalo.com/media/catalog/product/placeholder/default/2.png";
-        const tempDir = path.join(process.cwd(), "tmp");
+        const tempDir = path.join(/*turbopackIgnore: true*/ process.cwd(), "tmp");
         if (!fs.existsSync(tempDir)) fs.mkdirSync(tempDir, { recursive: true });
         
         const safeLocalImagePath = path.join(tempDir, `img-${productId}.jpg`);

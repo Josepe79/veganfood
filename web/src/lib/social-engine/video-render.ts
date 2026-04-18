@@ -26,7 +26,7 @@ export interface VideoAsset {
  * Genera un video vertical optimizado (480x854) para redes sociales
  */
 export async function renderSocialVideo(assets: VideoAsset): Promise<string> {
-  const outputDir = path.join(process.cwd(), "tmp", "video-out");
+  const outputDir = path.join(/*turbopackIgnore: true*/ process.cwd(), "tmp", "video-out");
   if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir, { recursive: true });
   
   const outputPath = path.join(outputDir, assets.outputName);
@@ -34,7 +34,7 @@ export async function renderSocialVideo(assets: VideoAsset): Promise<string> {
   // Si no hay música proporcionada, intentamos coger una aleatoria de la carpeta stock
   let musicPath = assets.musicAudio;
   if (!musicPath) {
-    const stockDir = path.join(process.cwd(), "public", "audio", "stock");
+    const stockDir = path.join(/*turbopackIgnore: true*/ process.cwd(), "public", "audio", "stock");
     if (fs.existsSync(stockDir)) {
       const files = fs.readdirSync(stockDir).filter(f => f.endsWith(".mp3"));
       if (files.length > 0) {

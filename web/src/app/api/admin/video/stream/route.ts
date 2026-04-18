@@ -16,7 +16,7 @@ export async function GET(req: Request) {
         return new NextResponse("Falta el nombre del archivo", { status: 400 });
     }
 
-    const videoDir = path.join(process.cwd(), "tmp", "video-out");
+    const videoDir = path.join(/*turbopackIgnore: true*/ process.cwd(), "tmp", "video-out");
     const filePath = path.join(videoDir, fileName);
 
     if (!filePath.startsWith(videoDir)) return new NextResponse("Acceso denegado", { status: 403 });
