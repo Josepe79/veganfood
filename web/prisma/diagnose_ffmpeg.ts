@@ -29,7 +29,7 @@ function diagnose() {
             const filters = execSync(`${staticPath} -filters`).toString();
             console.log("Estático tiene 'drawtext':", filters.includes("drawtext"));
         }
-    } catch (e) {
+    } catch (e: any) {
         console.log("Error probando binario estático:", e.message);
     }
 
