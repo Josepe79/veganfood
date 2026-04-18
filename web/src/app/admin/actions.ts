@@ -226,8 +226,9 @@ export async function backgroundRenderTask(productId: string, script: any, voice
             outputName: `social-${productId}-${Date.now()}.mp4`
         });
 
-        const publicUrl = `/temp-videos/${videoPath.split(/[\\/]/).pop()}`;
-        console.log(`[Worker] 6. Finalizado. URL: ${publicUrl}`);
+        const fileName = videoPath.split(/[\\/]/).pop();
+        const publicUrl = `/api/admin/video/stream?file=${fileName}`;
+        console.log(`[Worker] 6. Finalizado. URL de Streaming: ${publicUrl}`);
 
         await prisma.product.update({
             where: { id: productId },

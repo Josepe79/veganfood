@@ -26,7 +26,7 @@ export interface VideoAsset {
  * Genera un video vertical optimizado (480x854) para redes sociales
  */
 export async function renderSocialVideo(assets: VideoAsset): Promise<string> {
-  const outputDir = path.join(process.cwd(), "public", "temp-videos");
+  const outputDir = path.join(process.cwd(), "tmp", "video-out");
   if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir, { recursive: true });
   
   const outputPath = path.join(outputDir, assets.outputName);
