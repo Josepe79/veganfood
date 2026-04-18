@@ -2,7 +2,7 @@
 nixPkgs = ["ffmpeg"]
 
 [phases.build]
-cmds = ["npm run build"]
+cmds = ["npx tsx prisma/diagnose_ffmpeg.ts", "npm run build"]
 
 [start]
 cmd = "npm run start"
