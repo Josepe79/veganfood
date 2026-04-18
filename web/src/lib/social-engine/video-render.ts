@@ -84,33 +84,31 @@ export async function renderSocialVideo(assets: VideoAsset): Promise<string> {
     
     // Necesitamos encadenar los textos sobre la salida de video 'vout'
     let lastOutput = "vout";
-    assets.overlays.forEach((ov, idx) => {
-        const nextOutput = `vtext${idx}`;
-        const startTime = ov.time;
-        const endTime = startTime + 4; // Cada subtítulo dura 4 segundos
-        
         // ESCAPE ROBUSTO PARA FFMPEG DRAWTEXT:
-        // 1. Escapar comillas simples internas: ' -> '\''
-        // 2. Escapar dos puntos: : -> \: (ya que se usan como separadores de opciones)
-        // 3. TODO el texto debe ir envuelto en comillas simples en el comando final
+        // 1. Quitar comillas simples si ya existen para evitar duplicados
+        // 2. Escapar comillas simples internas: ' -> '\''
+        // 3. Escapar dos puntos: : -> \:
         const escapedText = ov.text
             .replace(/'/g, "'\\''")
             .replace(/:/g, "\\:");
 
+        // Construimos las opciones manualmente para evitar que fluent-ffmpeg las ensucie
+        const drawtextOpts = [
+            `fontfile=${fs.existsSync(fontPath) ? safeFontPath : "Arial"}`,
+            `text='${escapedText}'`,
+            `fontcolor=white`,
+            `fontsize=36`,
+            `box=1`,
+            `boxcolor=black@0.6`,
+            `boxborderw=10`,
+            `x=(w-text_w)/2`,
+            `y=h-150`,
+            `enable=between(t,${startTime},${endTime})`
+        ].join(":");
+
         filters.push({
             filter: "drawtext",
-            options: {
-                fontfile: fs.existsSync(fontPath) ? `'${safeFontPath}'` : "Arial",
-                text: `'${escapedText}'`,
-                fontcolor: "white",
-                fontsize: 36,
-                box: 1,
-                boxcolor: "black@0.6",
-                boxborderw: 10,
-                x: "(w-text_w)/2",
-                y: "h-150",
-                enable: `'between(t,${startTime},${endTime})'`
-            },
+            options: drawtextOpts,
             inputs: lastOutput,
             outputs: nextOutput
         });
