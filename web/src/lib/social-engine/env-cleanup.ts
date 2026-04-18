@@ -42,3 +42,11 @@ export function getFfmpegPath(defaultPath: string): string {
 
   return defaultPath;
 }
+
+/**
+ * Elimina comillas y saltos de línea accidentales de las variables de entorno
+ */
+export function cleanEnvVar(val: string | undefined): string {
+  if (!val) return "";
+  return val.replace(/^["']|["']$/g, "").trim();
+}
