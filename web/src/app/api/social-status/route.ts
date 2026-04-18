@@ -21,8 +21,16 @@ export async function GET(request: Request) {
             return NextResponse.json({ error: "Product not found" }, { status: 404 });
         }
 
+        let status = "DRAFTING";
+        if (product.videoUrl) {
+            status = "COMPLETED";
+        } else if (product.captions) {
+            status = "RENDERING";
+        }
+
         return NextResponse.json({ 
             ready: !!product.videoUrl, 
+            status,
             videoUrl: product.videoUrl, 
             captions: product.captions 
         });

@@ -27,6 +27,7 @@ export function PricingTableClient({ data }: { data: IntelligenceItem[] }) {
     const router = useRouter();
     const [socialData, setSocialData] = useState<{ videoUrl: string, captions: any } | null>(null);
     const [generatingSocialId, setGeneratingSocialId] = useState<string | null>(null);
+    const [generationPhase, setGenerationPhase] = useState<"DRAFTING" | "RENDERING" | null>(null);
 
     const formatPrice = (val: any) => {
         const n = Number(val);
@@ -44,6 +45,9 @@ export function PricingTableClient({ data }: { data: IntelligenceItem[] }) {
                         if (data.ready) {
                             setSocialData({ videoUrl: data.videoUrl, captions: data.captions });
                             setGeneratingSocialId(null);
+                            setGenerationPhase(null);
+                        } else if (data.status) {
+                            setGenerationPhase(data.status);
                         }
                     })
                     .catch(err => console.error("Error polling social status:", err));
@@ -68,6 +72,9 @@ export function PricingTableClient({ data }: { data: IntelligenceItem[] }) {
             if (data.status !== "success") {
                 alert("Error técnico: " + (data.message || "Desconocido"));
                 setGeneratingSocialId(null);
+                setGenerationPhase(null);
+            } else {
+                setGenerationPhase("DRAFTING"); // Iniciamos en drafting
             }
             // Si funciona, el useEffect de Polling ya se encargará de vigilar /api/social-status
         })
@@ -75,6 +82,7 @@ export function PricingTableClient({ data }: { data: IntelligenceItem[] }) {
             alert("Error de conexión al iniciar generación IA.");
             console.error(err);
             setGeneratingSocialId(null);
+            setGenerationPhase(null);
         });
     };
 
@@ -407,6 +415,7 @@ export function PricingTableClient({ data }: { data: IntelligenceItem[] }) {
                                                 enPromocion={prod.enPromocion} 
                                                 onGenerateSocial={() => handleGenerateSocial(prod.id)}
                                                 isGeneratingSocial={generatingSocialId === prod.id}
+                                                generationPhase={generatingSocialId === prod.id ? generationPhase : null}
                                             />
                                         </div>
                                     </td>
