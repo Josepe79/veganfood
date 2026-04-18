@@ -35,6 +35,8 @@ export const metadata: Metadata = {
   }
 };
 
+import Script from "next/script";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -45,6 +47,21 @@ export default function RootLayout({
       <body
         className={`${outfit.variable} antialiased font-sans text-gray-200`}
       >
+        {/* Google tag (gtag.js) */}
+        <Script 
+          src="https://www.googletagmanager.com/gtag/js?id=G-97MN0PSVTP" 
+          strategy="afterInteractive" 
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+
+            gtag('config', 'G-97MN0PSVTP');
+          `}
+        </Script>
+
         <CartProvider>
           <Nav />
           <main className="min-h-screen container mx-auto px-4 py-8 mt-16">
