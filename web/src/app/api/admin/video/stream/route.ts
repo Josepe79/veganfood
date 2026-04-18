@@ -16,28 +16,71 @@ export async function GET(req: Request) {
         return new NextResponse("Falta el nombre del archivo", { status: 400 });
     }
 
-    // Carpeta centralizada para videos (usamos tmp por ser área de escritura permitida)
     const videoDir = path.join(process.cwd(), "tmp", "video-out");
     const filePath = path.join(videoDir, fileName);
 
-    // Seguridad: Evitar Directory Traversal
-    if (!filePath.startsWith(videoDir)) {
-        return new NextResponse("Acceso denegado", { status: 403 });
-    }
+    if (!filePath.startsWith(videoDir)) return new NextResponse("Acceso denegado", { status: 403 });
 
     if (!fs.existsSync(filePath)) {
-        console.error(`[Stream API] Archivo no encontrado: ${filePath}`);
-        return new NextResponse("Video no encontrado en el servidor", { status: 404 });
+        console.error(`[Stream API] 404: ${filePath}`);
+        return new NextResponse("Video no encontrado", { status: 404 });
     }
 
-    const fileBuffer = fs.readFileSync(filePath);
-    
-    // Devolvemos el chorro de datos con el MIME type correcto
-    return new NextResponse(fileBuffer, {
-        headers: {
-            "Content-Type": "video/mp4",
-            "Content-Disposition": `inline; filename="${fileName}"`,
-            "Cache-Control": "no-cache"
+    const stats = fs.statSync(filePath);
+    const fileSize = stats.size;
+    const range = req.headers.get("range");
+
+    if (range) {
+        const parts = range.replace(/bytes=/, "").split("-");
+        const start = parseInt(parts[0], 10);
+        const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
+
+        if (start >= fileSize) {
+            return new NextResponse(null, {
+                status: 416,
+                headers: { "Content-Range": `bytes */${fileSize}` }
+            });
         }
-    });
+
+        const chunksize = (end - start) + 1;
+        const file = fs.createReadStream(filePath, { start, end });
+        
+        // Convertimos el stream de Node a un ReadableStream de Web (necesario para NextResponse)
+        const stream = new ReadableStream({
+            start(controller) {
+                file.on("data", (chunk) => controller.enqueue(chunk));
+                file.on("end", () => controller.close());
+                file.on("error", (err) => controller.error(err));
+            },
+            cancel() {
+                file.destroy();
+            }
+        });
+
+        return new NextResponse(stream, {
+            status: 206,
+            headers: {
+                "Content-Range": `bytes ${start}-${end}/${fileSize}`,
+                "Accept-Ranges": "bytes",
+                "Content-Length": chunksize.toString(),
+                "Content-Type": "video/mp4",
+            }
+        });
+    } else {
+        const stream = new ReadableStream({
+            start(controller) {
+                const file = fs.createReadStream(filePath);
+                file.on("data", (chunk) => controller.enqueue(chunk));
+                file.on("end", () => controller.close());
+                file.on("error", (err) => controller.error(err));
+            }
+        });
+
+        return new NextResponse(stream, {
+            headers: {
+                "Content-Length": fileSize.toString(),
+                "Content-Type": "video/mp4",
+            }
+        });
+    }
 }
