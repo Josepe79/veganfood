@@ -9,6 +9,7 @@ import { publishToSocial } from "@/lib/social-engine/ayrshare";
 import fs from "fs";
 import path from "path";
 import ffmpegInstaller from "ffmpeg-static";
+import { getFfmpegPath } from "@/lib/social-engine/env-cleanup";
 
 
 export async function marcarPedidosComoComprados() {
@@ -196,7 +197,8 @@ export async function backgroundRenderTask(productId: string, script: any, voice
             data: { videoUrl: "STATUS:RENDERING" }
         });
 
-        const ffmpegPath = (ffmpegInstaller as any)?.default || ffmpegInstaller;
+        const initialStaticPath = (ffmpegInstaller as any)?.default || ffmpegInstaller;
+        const ffmpegPath = getFfmpegPath(initialStaticPath);
         
         console.log(`[Worker] 4. Procesando imagen del producto...`);
         let localImage = "https://online.feliubadalo.com/media/catalog/product/placeholder/default/2.png";

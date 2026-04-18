@@ -3,11 +3,15 @@ import ffmpegInstaller from "ffmpeg-static";
 import path from "path";
 import fs from "fs";
 
+import { getFfmpegPath } from "./env-cleanup";
+
 // Configuramos fluent-ffmpeg para usar el binario estático con detección de ESM/CJS
-const ffmpegPath = (ffmpegInstaller as any)?.default || ffmpegInstaller;
+const initialStaticPath = (ffmpegInstaller as any)?.default || ffmpegInstaller;
+const ffmpegPath = getFfmpegPath(initialStaticPath);
+
 if (ffmpegPath) {
   ffmpeg.setFfmpegPath(ffmpegPath);
-  console.log(`[FFmpeg] Ruta del binario detectada: ${ffmpegPath}`);
+  console.log(`[FFmpeg] Ruta del binario FINAL detectada: ${ffmpegPath}`);
 }
 
 export interface VideoAsset {
