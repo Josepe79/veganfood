@@ -25,27 +25,32 @@ export function getFfmpegPath(staticPath: string | null): string {
     for (const p of systemPaths) {
         try {
             // Un simple check de existencia no basta para "ffmpeg" a secas, 
-            // pero si es una ruta absoluta sí.
-            if (p.startsWith("/") && fs.existsSync(p)) return p;
-        } catch(e) {}
+ * Detecta y limpia la ruta del binario de FFmpeg para entornos cloud
+ */
+export function getFfmpegPath(defaultPath: string): string {
+  // PRIORIDAD 1: Buscar binario del sistema (instalado vía nixpacks/apt)
+  // En Linux/Railway suele estar en /usr/bin/ffmpeg o simplemente accesible en el PATH
+  try {
+    const { execSync } = require("child_process");
+    const systemPath = execSync("which ffmpeg").toString().trim();
+    if (systemPath && fs.existsSync(systemPath)) {
+      console.log(`[FFmpeg] !!! Binario del SISTEMA detectado: ${systemPath}`);
+      return systemPath;
     }
+  } catch (e) {
+    // Si falla 'which ffmpeg', simplemente seguimos
+  }
 
-    // 2. Intentar el estático detectado, pero saneando la ruta
-    if (staticPath) {
-        // Si la ruta detectada empieza por /ROOT/ (común en errores de build), 
-        // intentamos transformarla a /app/ o relativa
-        let cleanStatic = staticPath.replace(/^["']|["']$/g, "").trim();
-        if (cleanStatic.startsWith("/ROOT/")) {
-            cleanStatic = cleanStatic.replace("/ROOT/", "/app/");
-        }
-        
-        if (fs.existsSync(cleanStatic)) return cleanStatic;
-        
-        // Intentar relativa al proceso actual
-        const relativePath = path.join(process.cwd(), "node_modules", "ffmpeg-static", "ffmpeg");
-        if (fs.existsSync(relativePath)) return relativePath;
-    }
+  // PRIORIDAD 2: Binario estático de node_modules
+  let cleanPath = defaultPath;
+  if (defaultPath.includes("app.asar")) {
+    cleanPath = defaultPath.replace("app.asar", "app.asar.unpacked");
+  }
+  
+  if (fs.existsSync(cleanPath)) {
+    console.log(`[FFmpeg] Usando binario ESTATICO: ${cleanPath}`);
+    return cleanPath;
+  }
 
-    // 3. Fallback final: devolver lo que dio el instalador o simplemente "ffmpeg"
-    return staticPath || "ffmpeg";
+  return defaultPath;
 }
