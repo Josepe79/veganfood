@@ -9,19 +9,27 @@ export function PricingActions({
     oculto, 
     enPromocion,
     onGenerateSocial,
-    isGeneratingSocial = false
+    isGeneratingSocial = false,
+    generationPhase = null
 }: { 
     productId: string, 
     currentPrice: number, 
     oculto: boolean, 
     enPromocion: boolean,
     onGenerateSocial?: () => void,
-    isGeneratingSocial?: boolean
+    isGeneratingSocial?: boolean,
+    generationPhase?: "DRAFTING" | "RENDERING" | null
 }) {
   const [isPending, startTransition] = useTransition();
   const [isEditing, setIsEditing] = useState(false);
   const router = useRouter();
   const [newPrice, setNewPrice] = useState(currentPrice.toString());
+
+  const getGenerationText = () => {
+    if (generationPhase === "DRAFTING") return "Guion IA...";
+    if (generationPhase === "RENDERING") return "Montando...";
+    return "Vídeo IA";
+  };
 
   const handleHide = () => {
       if (confirm("¿Seguro que deseas ocultar este producto indefinidamente de forma manual?")) {
