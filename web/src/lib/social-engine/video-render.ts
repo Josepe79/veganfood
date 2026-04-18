@@ -77,8 +77,40 @@ export async function renderSocialVideo(assets: VideoAsset): Promise<string> {
       );
     }
 
-    // MODO SEGURO: Desactivamos subtítulos visuales para estabilizar producción
-    command.complexFilter(filters, musicPath ? ["vout", "aout"] : ["vout"]);
+    // 4. Subtítulos (Drawtext) - VERSIÓN BLINDADA
+    const fontPath = path.join(/*turbopackIgnore: true*/ process.cwd(), "node_modules", "next", "dist", "compiled", "@vercel", "og", "Geist-Regular.ttf");
+    const safeFontPath = fontPath.replace(/\\/g, "/").replace(/:/g, "\\:");
+    
+    let lastOutput = "vout";
+    assets.overlays.forEach((ov, idx) => {
+        const nextOutput = `vtext${idx}`;
+        const startTime = ov.time;
+        const endTime = startTime + 4;
+        
+        // Escape estricto para FFmpeg Drawtext (Nivel 2)
+        const escapedText = ov.text.replace(/'/g, "'\\''").replace(/:/g, "\\:");
+
+        filters.push({
+            filter: "drawtext",
+            options: {
+                fontfile: fs.existsSync(fontPath) ? safeFontPath : "serif",
+                text: `'${escapedText}'`, // Envoltorio único en comillas simples
+                fontcolor: "white",
+                fontsize: 36,
+                box: 1,
+                boxcolor: "black@0.6",
+                boxborderw: 10,
+                x: "(w-text_w)/2",
+                y: "h-150",
+                enable: `between(t,${startTime},${endTime})` // Sin comillas manuales aquí
+            },
+            inputs: lastOutput,
+            outputs: nextOutput
+        });
+        lastOutput = nextOutput;
+    });
+
+    command.complexFilter(filters, musicPath ? [lastOutput, "aout"] : [lastOutput]);
 
     if (!musicPath) {
       command.outputOptions(["-map 1:a"]);
