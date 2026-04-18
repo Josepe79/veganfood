@@ -80,6 +80,7 @@ export async function renderSocialVideo(assets: VideoAsset): Promise<string> {
     // 4. Subtítulos (Drawtext)
     // Usamos la fuente Geist que encontramos en node_modules
     const fontPath = path.join(process.cwd(), "node_modules", "next", "dist", "compiled", "@vercel", "og", "Geist-Regular.ttf");
+    const safeFontPath = fontPath.replace(/\\/g, "/").replace(/:/g, "\\:");
     
     // Necesitamos encadenar los textos sobre la salida de video 'vout'
     let lastOutput = "vout";
@@ -88,22 +89,27 @@ export async function renderSocialVideo(assets: VideoAsset): Promise<string> {
         const startTime = ov.time;
         const endTime = startTime + 4; // Cada subtítulo dura 4 segundos
         
-        // Escapamos el texto por seguridad de FFmpeg
-        const safeText = ov.text.replace(/'/g, "\\'").replace(/:/g, "\\:");
+        // ESCAPE ROBUSTO PARA FFMPEG DRAWTEXT:
+        // 1. Escapar comillas simples internas: ' -> '\''
+        // 2. Escapar dos puntos: : -> \: (ya que se usan como separadores de opciones)
+        // 3. TODO el texto debe ir envuelto en comillas simples en el comando final
+        const escapedText = ov.text
+            .replace(/'/g, "'\\''")
+            .replace(/:/g, "\\:");
 
         filters.push({
             filter: "drawtext",
             options: {
-                fontfile: fs.existsSync(fontPath) ? fontPath : "Arial", // Fallback si no existe la fuente
-                text: safeText,
+                fontfile: fs.existsSync(fontPath) ? `'${safeFontPath}'` : "Arial",
+                text: `'${escapedText}'`,
                 fontcolor: "white",
                 fontsize: 36,
                 box: 1,
                 boxcolor: "black@0.6",
                 boxborderw: 10,
                 x: "(w-text_w)/2",
-                y: "h-150", // Posición en la parte inferior
-                enable: `between(t,${startTime},${endTime})`
+                y: "h-150",
+                enable: `'between(t,${startTime},${endTime})'`
             },
             inputs: lastOutput,
             outputs: nextOutput
