@@ -44,8 +44,8 @@ RUN adduser --system --uid 1001 nextjs
 # Para máxima simplicidad en Railway sin pre-configuración compleja, usamos el build estándar
 COPY --from=builder /app ./
 
-# Aseguramos permisos para la carpeta temporal de videos
-RUN mkdir -p tmp/video-out && chown -R nextjs:nodejs tmp/video-out
+# Aseguramos permisos para toda la carpeta temporal (voces, música, videos)
+RUN mkdir -p tmp && chown -R nextjs:nodejs /app/tmp
 
 USER nextjs
 
