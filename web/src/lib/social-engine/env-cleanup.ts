@@ -3,13 +3,27 @@ import fs from "fs";
 
 /**
  * Detecta y limpia la ruta del binario de FFmpeg para entornos cloud.
- * PRIORIZA el binario del sistema para asegurar soporte completo de filtros.
- * SANEAMIENTO: Elimina prefijos fantasma como /ROOT/ que causa ENOENT.
+ * PRIORIZA el binario descargado manualmente en bin/ffmpeg para asegurar éxito 100%.
  */
 export function getFfmpegPath(staticPath: string): string {
   const { execSync } = require("child_process");
 
-  // 1. PRIORIDAD: Rutas estándar de Linux (más fiable que 'which')
+  // 1. PRIORIDAD NUCLEAR: El binario que descargamos nosotros en el build
+  const manualBinPath = path.join(/*turbopackIgnore: true*/ process.cwd(), "bin", "ffmpeg");
+  if (fs.existsSync(manualBinPath)) {
+    try {
+      // Verificamos que sea ejecutable y funcione
+      const out = execSync(`${manualBinPath} -version`).toString();
+      if (out.includes("ffmpeg version")) {
+        console.log(`[FFmpeg] !!! Binario MANUAL detectado y verificado: ${manualBinPath}`);
+        return manualBinPath;
+      }
+    } catch (e) {
+      console.warn(`[FFmpeg] Binario manual en ${manualBinPath} existe pero falló al ejecutar.`);
+    }
+  }
+
+  // 2. PRIORIDAD SISTEMA: Rutas estándar de Linux
   const systemPaths = ["/usr/bin/ffmpeg", "/usr/local/bin/ffmpeg", "/nix/var/nix/profiles/default/bin/ffmpeg"];
   for (const p of systemPaths) {
     if (fs.existsSync(p)) {
@@ -18,7 +32,7 @@ export function getFfmpegPath(staticPath: string): string {
     }
   }
 
-  // 2. Intentar llamar a "ffmpeg" directamente (si está en el PATH funciona)
+  // 3. Intentar llamar a "ffmpeg" directamente
   try {
     const versionOut = execSync("ffmpeg -version").toString();
     if (versionOut.includes("ffmpeg version")) {
@@ -27,14 +41,12 @@ export function getFfmpegPath(staticPath: string): string {
     }
   } catch (e) {}
 
-  // 3. FALLBACK y SANEAMIENTO: Binario estático de node_modules
-  // IMPORTANTE: Si la ruta empieza por /ROOT/, es una ruta de build inválida en Railway runtime.
+  // 4. FALLBACK y SANEAMIENTO: Binario estático de node_modules
   let cleanPath = staticPath;
   if (staticPath.startsWith("/ROOT/")) {
-    cleanPath = staticPath.replace("/ROOT/", "/app/"); // Intentamos el mapeo estándar a /app/
+    cleanPath = staticPath.replace("/ROOT/", "/app/");
   }
   
-  // Si aun así no existe, probamos ruta absoluta local al proyecto
   if (!fs.existsSync(cleanPath)) {
       const absoluteLocal = path.join(/*turbopackIgnore: true*/ process.cwd(), "node_modules", "ffmpeg-static", "ffmpeg");
       if (fs.existsSync(absoluteLocal)) {
@@ -47,8 +59,6 @@ export function getFfmpegPath(staticPath: string): string {
     return cleanPath;
   }
 
-  // Fallback final: Devolver lo que diga el instalador pero avisando
-  console.warn(`[FFmpeg] !!! ADVERTENCIA: No se encontró un binario válido. Usando fallback arriesgado: ${staticPath}`);
   return staticPath;
 }
 
