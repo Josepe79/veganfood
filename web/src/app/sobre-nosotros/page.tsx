@@ -25,7 +25,7 @@ export default function SobreNosotros() {
             <div className="bg-white/5 p-6 rounded-2xl border border-white/10">
               <h3 className="text-xl font-bold text-white mb-3">Modelo Just-In-Time</h3>
               <p className="text-sm">
-                A diferencia de los almacenes convencionales donde los productos pueden pasar semanas estancados, nosotros operamos con un modelo <strong>JIT (Just-In-Time)</strong>. Consolidamos los pedidos diariamente y los recogemos directamente de nuestros obradores y distribuidores de confianza (como Feliubadaló) horas antes de enviártelos.
+                A diferencia de los almacenes convencionales donde los productos pueden pasar semanas estancados, nosotros operamos con un modelo <strong>JIT (Just-In-Time)</strong>. Consolidamos los pedidos diariamente y los recogemos directamente de nuestros obradores y distribuidores de confianza horas antes de enviártelos.
               </p>
             </div>
             <div className="bg-emerald-500/10 p-6 rounded-2xl border border-emerald-500/20">
