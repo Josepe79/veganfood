@@ -1,5 +1,5 @@
 [phases.setup]
-nixPkgs = ["ffmpeg"]
+nixPkgs = ["ffmpeg-full", "fontconfig"]
 
 [phases.build]
 cmds = ["npx tsx prisma/diagnose_ffmpeg.ts", "npm run build"]
