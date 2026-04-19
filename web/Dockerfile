@@ -1,12 +1,12 @@
 # 1. Etapa de dependencias
-FROM node:18-slim AS deps
+FROM node:20.12-slim AS deps
 WORKDIR /app
 RUN apt-get update && apt-get install -y openssl ca-certificates && rm -rf /var/lib/apt/lists/*
 COPY package*.json ./
 RUN npm install
 
 # 2. Etapa de construcción
-FROM node:18-slim AS builder
+FROM node:20.12-slim AS builder
 WORKDIR /app
 # IMPORTANTE: Necesitamos openssl también aquí para npx prisma generate
 RUN apt-get update && apt-get install -y openssl ca-certificates && rm -rf /var/lib/apt/lists/*
@@ -21,7 +21,7 @@ ENV NEXT_TELEMETRY_DISABLED 1
 RUN npm run build
 
 # 3. Etapa de ejecución
-FROM node:18-slim AS runner
+FROM node:20.12-slim AS runner
 WORKDIR /app
 
 ENV NODE_ENV production
