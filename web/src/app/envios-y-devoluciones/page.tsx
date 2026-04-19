@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Envíos y Devoluciones | VeganFood.es",
-  description: "Consulta nuestra política de envíos rápidos 24h y el derecho de desistimiento de 14 días para productos veganos.",
+  description: "Consulta nuestra política de envíos rápidos 24-48h y el derecho de desistimiento de 14 días para productos veganos.",
 };
 
 export default function EnviosDevoluciones() {

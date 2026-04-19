@@ -293,7 +293,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ q
             <div className="md:w-2/3">
                 <h2 className="text-2xl font-bold text-white mb-4">Negocio Verificado & 100% Transparente</h2>
                 <p className="text-slate-300 leading-relaxed">
-                   VeganFood.es es un proyecto de <strong>Jepco Consultors SL</strong> enfocado en democratizar el acceso a la alimentación plant-based. Operamos con un modelo directo de red mayorista para asegurar que recibes los productos más frescos del mercado con envíos en 24h. Nuestra identidad y compromiso ético es auditado diariamente por nuestra red logística.
+                   VeganFood.es es un proyecto de <strong>Jepco Consultors SL</strong> enfocado en democratizar el acceso a la alimentación plant-based. Operamos con un modelo directo de red mayorista para asegurar que recibes los productos más frescos del mercado con envíos en 24-48h. Nuestra identidad y compromiso ético es auditado diariamente por nuestra red logística.
                 </p>
             </div>
         </div>
