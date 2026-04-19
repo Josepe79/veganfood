@@ -77,7 +77,7 @@ export async function renderSocialVideo(assets: VideoAsset): Promise<string> {
       );
     }
 
-    // 4. Subtítulos (Drawtext) - VERSIÓN BLINDADA
+    // 4. Subtítulos (Drawtext) - VERSIÓN ULTRA-ROBUSTA
     const fontPath = path.join(/*turbopackIgnore: true*/ process.cwd(), "node_modules", "next", "dist", "compiled", "@vercel", "og", "Geist-Regular.ttf");
     const safeFontPath = fontPath.replace(/\\/g, "/").replace(/:/g, "\\:");
     
@@ -87,23 +87,26 @@ export async function renderSocialVideo(assets: VideoAsset): Promise<string> {
         const startTime = ov.time;
         const endTime = startTime + 4;
         
-        // Escape estricto para FFmpeg Drawtext (Nivel 2)
-        const escapedText = ov.text.replace(/'/g, "'\\''").replace(/:/g, "\\:");
+        // Escape absoluto para FFmpeg Drawtext (Nivel Industrial)
+        const escapedText = ov.text.replace(/'/g, "\\'").replace(/:/g, "\\:");
+
+        // Usamos formato de string para los parámetros del filtro (más estable en Linux)
+        const drawtextOptions = [
+            `fontfile='${fs.existsSync(fontPath) ? safeFontPath : "serif"}'`,
+            `text='${escapedText}'`,
+            `fontcolor=white`,
+            `fontsize=40`,
+            `box=1`,
+            `boxcolor=black@0.7`,
+            `boxborderw=15`,
+            `x=(w-text_w)/2`,
+            `y=h-160`,
+            `enable='between(t,${startTime},${endTime})'`
+        ].join(":");
 
         filters.push({
             filter: "drawtext",
-            options: {
-                fontfile: fs.existsSync(fontPath) ? safeFontPath : "serif",
-                text: `'${escapedText}'`, // Envoltorio único en comillas simples
-                fontcolor: "white",
-                fontsize: 36,
-                box: 1,
-                boxcolor: "black@0.6",
-                boxborderw: 10,
-                x: "(w-text_w)/2",
-                y: "h-150",
-                enable: `between(t,${startTime},${endTime})` // Sin comillas manuales aquí
-            },
+            options: drawtextOptions,
             inputs: lastOutput,
             outputs: nextOutput
         });
