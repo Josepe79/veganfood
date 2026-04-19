@@ -3,44 +3,51 @@ import fs from "fs";
 
 /**
  * Detecta y limpia la ruta del binario de FFmpeg para entornos cloud.
- * PRIORIZA el binario del sistema (instalado vía nixpacks/apt) para asegurar soporte completo de filtros.
+ * PRIORIZA el binario del sistema para asegurar soporte completo de filtros.
  */
-export function getFfmpegPath(defaultPath: string): string {
-  // 1. PRIORIDAD ABSOLUTA: Buscar binario del sistema (instalo vía nixpacks en Railway)
+export function getFfmpegPath(staticPath: string): string {
+  const { execSync } = require("child_process");
+
+  // 1. PRIORIDAD: Intentar llamar a "ffmpeg" directamente (si está en el PATH funciona)
   try {
-    const { execSync } = require("child_process");
-    // 'which' es estándar en Linux para encontrar la ruta de un ejecutable
+    const versionOut = execSync("ffmpeg -version").toString();
+    if (versionOut.includes("ffmpeg version")) {
+      console.log(`[FFmpeg] !!! Binario de SISTEMA detectado vía ejecución directa.`);
+      return "ffmpeg"; // Si funciona a secas, fluent-ffmpeg lo usará bien
+    }
+  } catch (e) {}
+
+  // 2. Intentar localizarlo vía "which"
+  try {
     const systemPath = execSync("which ffmpeg").toString().trim();
-    
     if (systemPath && fs.existsSync(systemPath)) {
-      console.log(`[FFmpeg] !!! Binario del SISTEMA detectado y PRIORIZADO: ${systemPath}`);
+      console.log(`[FFmpeg] !!! Binario de SISTEMA detectado vía 'which': ${systemPath}`);
       return systemPath;
     }
-  } catch (e) {
-    // Si falla 'which' (común en Windows o si no está instalado), seguimos al siguiente paso
+  } catch (e) {}
+
+  // 3. Rutas manuales comunes en Railway/Linux
+  const manualPaths = ["/usr/bin/ffmpeg", "/usr/local/bin/ffmpeg", "/nix/var/nix/profiles/default/bin/ffmpeg"];
+  for (const p of manualPaths) {
+    if (fs.existsSync(p)) {
+      console.log(`[FFmpeg] !!! Binario de SISTEMA detectado vía RUTA MANUAL: ${p}`);
+      return p;
+    }
   }
 
-  // 2. PRIORIDAD SECUNDARIA: Saneamiento del binario estático de node_modules
-  let cleanPath = defaultPath;
-  
-  // En algunos entornos de electron/cloud, la ruta puede estar dentro de un asar
-  if (defaultPath.includes("app.asar")) {
-    cleanPath = defaultPath.replace("app.asar", "app.asar.unpacked");
+  // 4. FALLBACK: Binario estático de node_modules (si todo lo demás falla)
+  let cleanPath = staticPath;
+  if (staticPath.includes("app.asar")) {
+    cleanPath = staticPath.replace("app.asar", "app.asar.unpacked");
   }
 
-  // Verificamos si la ruta estática existe
   if (fs.existsSync(cleanPath)) {
     console.log(`[FFmpeg] Usando binario ESTATICO (fallback): ${cleanPath}`);
     return cleanPath;
   }
 
-  // 3. FALLBACK FINAL: Intentar ruta relativa directa si todo lo demás falla
-  const localFallback = path.join(/*turbopackIgnore: true*/ process.cwd(), "node_modules", "ffmpeg-static", "ffmpeg");
-  if (fs.existsSync(localFallback)) {
-    return localFallback;
-  }
-
-  return defaultPath;
+  // Fallback final: Devolver lo que diga el instalador
+  return staticPath;
 }
 
 /**
