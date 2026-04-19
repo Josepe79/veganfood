@@ -1,5 +1,5 @@
 [phases.setup]
-nixPkgs = ["ffmpeg-full", "fontconfig", "which"]
+aptPkgs = ["ffmpeg", "libfreetype6", "fontconfig", "which"]
 
 [phases.build]
 cmds = ["npx tsx src/lib/social-engine/diagnose_ffmpeg.ts", "npm run build"]
