@@ -8,22 +8,7 @@ import fs from "fs";
 export function getFfmpegPath(staticPath: string): string {
   const { execSync } = require("child_process");
 
-  // 1. PRIORIDAD NUCLEAR: El binario que descargamos nosotros en el build
-  const manualBinPath = path.join(/*turbopackIgnore: true*/ process.cwd(), "bin", "ffmpeg");
-  if (fs.existsSync(manualBinPath)) {
-    try {
-      // Verificamos que sea ejecutable y funcione
-      const out = execSync(`${manualBinPath} -version`).toString();
-      if (out.includes("ffmpeg version")) {
-        console.log(`[FFmpeg] !!! Binario MANUAL detectado y verificado: ${manualBinPath}`);
-        return manualBinPath;
-      }
-    } catch (e) {
-      console.warn(`[FFmpeg] Binario manual en ${manualBinPath} existe pero falló al ejecutar.`);
-    }
-  }
-
-  // 2. PRIORIDAD SISTEMA: Rutas estándar de Linux
+  // 1. PRIORIDAD ABSOLUTA: Binarios estándar de Linux (Donde Docker instala ffmpeg)
   const systemPaths = ["/usr/bin/ffmpeg", "/usr/local/bin/ffmpeg", "/nix/var/nix/profiles/default/bin/ffmpeg"];
   for (const p of systemPaths) {
     if (fs.existsSync(p)) {
@@ -32,7 +17,7 @@ export function getFfmpegPath(staticPath: string): string {
     }
   }
 
-  // 3. Intentar llamar a "ffmpeg" directamente
+  // 2. Intentar llamar a "ffmpeg" directamente
   try {
     const versionOut = execSync("ffmpeg -version").toString();
     if (versionOut.includes("ffmpeg version")) {
@@ -41,23 +26,28 @@ export function getFfmpegPath(staticPath: string): string {
     }
   } catch (e) {}
 
-  // 4. FALLBACK y SANEAMIENTO: Binario estático de node_modules
+  // 3. PRIORIDAD NUCLEAR (Legacy): El binario que descargábamos antes (si aún queda)
+  const manualBinPath = path.join(/*turbopackIgnore: true*/ process.cwd(), "bin", "ffmpeg");
+  if (fs.existsSync(manualBinPath)) {
+    try {
+      const out = execSync(`${manualBinPath} -version`).toString();
+      if (out.includes("ffmpeg version")) {
+        console.log(`[FFmpeg] !!! Binario MANUAL detectado: ${manualBinPath}`);
+        return manualBinPath;
+      }
+    } catch (e) {}
+  }
+
+  // 4. FALLBACK: Binario estático de node_modules (Saneado)
   let cleanPath = staticPath;
   if (staticPath.startsWith("/ROOT/")) {
     cleanPath = staticPath.replace("/ROOT/", "/app/");
   }
-  
-  if (!fs.existsSync(cleanPath)) {
-      const absoluteLocal = path.join(/*turbopackIgnore: true*/ process.cwd(), "node_modules", "ffmpeg-static", "ffmpeg");
-      if (fs.existsSync(absoluteLocal)) {
-          cleanPath = absoluteLocal;
-      }
-  }
 
-  if (fs.existsSync(cleanPath)) {
-    console.log(`[FFmpeg] Usando binario ESTATICO (saneado): ${cleanPath}`);
-    return cleanPath;
-  }
+  if (fs.existsSync(cleanPath)) return cleanPath;
+
+  const absoluteLocal = path.join(/*turbopackIgnore: true*/ process.cwd(), "node_modules", "ffmpeg-static", "ffmpeg");
+  if (fs.existsSync(absoluteLocal)) return absoluteLocal;
 
   return staticPath;
 }
