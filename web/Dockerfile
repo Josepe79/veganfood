@@ -8,16 +8,16 @@ RUN npm install
 # 2. Etapa de construcción
 FROM node:18-slim AS builder
 WORKDIR /app
+# IMPORTANTE: Necesitamos openssl también aquí para npx prisma generate
+RUN apt-get update && apt-get install -y openssl ca-certificates && rm -rf /var/lib/apt/lists/*
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# Generar Prisma Client (importante para el build)
+# Generar Prisma Client
 RUN npx prisma generate
 
-# Next.js colecta datos anónimos, los desactivamos
+# Next.js build (Sin db push, eso se hace en runtime)
 ENV NEXT_TELEMETRY_DISABLED 1
-
-# Construir la aplicación (ignora scripts que intentan descargar FFmpeg manualmente si fallan)
 RUN npm run build
 
 # 3. Etapa de ejecución
@@ -27,11 +27,13 @@ WORKDIR /app
 ENV NODE_ENV production
 ENV NEXT_TELEMETRY_DISABLED 1
 
-# INSTALAR FFMPEG FULL (La clave de todo)
+# INSTALAR FFMPEG FULL Y OPENSSL (Necesario para Prisma en runtime)
 RUN apt-get update && apt-get install -y \
     ffmpeg \
     libfreetype6 \
     fontconfig \
+    openssl \
+    ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
 # Crear usuario para seguridad
@@ -51,4 +53,5 @@ EXPOSE 3000
 
 ENV PORT 3000
 
-CMD ["npm", "start"]
+# Sincronizar base de datos y arrancar
+CMD npx prisma db push && npm start
