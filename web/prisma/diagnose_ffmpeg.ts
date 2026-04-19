@@ -1,39 +1,50 @@
-
 import { execSync } from "child_process";
 import ffmpegInstaller from "ffmpeg-static";
 import fs from "fs";
 
 /**
- * Script de diagnóstico para verificar el entorno de FFmpeg en Railway
+ * Función de diagnóstico para ser llamada desde una API o script
  */
-function diagnose() {
-    console.log("--- DIAGNÓSTICO FFMPEG ---");
+export function runFfmpegDiagnosis() {
+    const results: any = {
+        timestamp: new Date().toISOString(),
+        system: {},
+        static: {}
+    };
     
     // 1. Verificar binario del sistema
     try {
-        const which = execSync("which ffmpeg").toString().trim();
-        console.log("Sistema 'which ffmpeg':", which);
-        if (which) {
+        const whichFound = execSync("which ffmpeg").toString().trim();
+        results.system.path = whichFound;
+        if (whichFound) {
+            const version = execSync("ffmpeg -version").toString().split("\n")[0];
+            results.system.version = version;
             const filters = execSync("ffmpeg -filters").toString();
-            console.log("Sistema tiene 'drawtext':", filters.includes("drawtext"));
+            results.system.hasDrawtext = filters.includes("drawtext");
+            results.system.allFilters = filters.split("\n").filter(f => f.includes("drawtext")).map(f => f.trim());
         }
-    } catch (e) {
-        console.log("Sistema no tiene ffmpeg en PATH");
+    } catch (e: any) {
+        results.system.error = e.message;
     }
 
     // 2. Verificar binario estático
     try {
         const staticPath = (ffmpegInstaller as any)?.default || ffmpegInstaller;
-        console.log("Binario estático path:", staticPath);
+        results.static.path = staticPath;
         if (fs.existsSync(staticPath)) {
+            const version = execSync(`${staticPath} -version`).toString().split("\n")[0];
+            results.static.version = version;
             const filters = execSync(`${staticPath} -filters`).toString();
-            console.log("Estático tiene 'drawtext':", filters.includes("drawtext"));
+            results.static.hasDrawtext = filters.includes("drawtext");
         }
     } catch (e: any) {
-        console.log("Error probando binario estático:", e.message);
+        results.static.error = e.message;
     }
 
-    console.log("--- FIN ---");
+    return results;
 }
 
-diagnose();
+// Para ejecución directa vía tsx
+if (require.main === module) {
+    console.log(JSON.stringify(runFfmpegDiagnosis(), null, 2));
+}
