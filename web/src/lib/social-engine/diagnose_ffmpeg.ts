@@ -27,18 +27,20 @@ export function runFfmpegDiagnosis() {
         results.system.error = e.message;
     }
 
-    // 2. Verificar binario estático
+    // 3. Verificar binario NUCLEAR (Manual)
     try {
-        const staticPath = (ffmpegInstaller as any)?.default || ffmpegInstaller;
-        results.static.path = staticPath;
-        if (fs.existsSync(staticPath)) {
-            const version = execSync(`${staticPath} -version`).toString().split("\n")[0];
-            results.static.version = version;
-            const filters = execSync(`${staticPath} -filters`).toString();
-            results.static.hasDrawtext = filters.includes("drawtext");
+        const manualPath = path.join(process.cwd(), "bin", "ffmpeg");
+        results.nuclear = { path: manualPath };
+        if (fs.existsSync(manualPath)) {
+            const version = execSync(`${manualPath} -version`).toString().split("\n")[0];
+            results.nuclear.version = version;
+            const filters = execSync(`${manualPath} -filters`).toString();
+            results.nuclear.hasDrawtext = filters.includes("drawtext");
+        } else {
+            results.nuclear.exists = false;
         }
     } catch (e: any) {
-        results.static.error = e.message;
+        results.nuclear.error = e.message;
     }
 
     return results;
