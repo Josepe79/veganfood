@@ -173,7 +173,7 @@ function Footer() {
         <div className="border-t border-slate-800 pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-center text-slate-500 text-xs">
           <div className="text-left">
             <p className="font-bold text-slate-400 mb-1">© {new Date().getFullYear()} VeganFood.es - Cruelty-free grocery network</p>
-            <p>Operado por Gepco Consultors SL · NIF: B66150434 · Avda. Salvador Espriu 38, 08213 Sentmenat (Barcelona)</p>
+            <p>Operado por Jepco Consultors SL · NIF: B66150434 · Avda. Salvador Espriu 38, 08181 Sentmenat (Barcelona)</p>
           </div>
           <div className="flex gap-4 items-center">
              <div className="flex items-center gap-1.5 text-emerald-500/80 font-bold border border-emerald-500/20 bg-emerald-500/5 px-3 py-1.5 rounded-full">
