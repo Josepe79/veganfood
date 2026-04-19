@@ -14,6 +14,28 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ q
     const page = parseInt(params.page || "1");
     const pageSize = 24;
 
+    // Organization Schema for Google
+    const orgSchema = {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "VeganFood.es",
+      "alternateName": "VeganFood Spain",
+      "url": "https://veganfood.es",
+      "logo": "https://veganfood.es/favicon.ico",
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "telephone": "+34-931456580",
+        "contactType": "customer service",
+        "areaServed": "ES",
+        "availableLanguage": "Spanish"
+      },
+      "sameAs": [
+        "https://www.instagram.com/veganfoosspain/",
+        "https://www.tiktok.com/@veganfood.es",
+        "https://www.youtube.com/@VeganFoodSpain"
+      ]
+    };
+
     // Construir consulta dinámica Prisma
     const whereClause: any = { oculto: false };
     if (q === "flash") {
@@ -52,7 +74,6 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ q
         select: { id: true, nombre: true, marca: true, precioVenta: true, imagen: true, ean: true, ref: true, agotado: true, enPromocion: true, isNuevo: true }
     });
     
-    // SANITIZACIÓN AGRESIVA (POJO) para evitar errores de serialización en el despliegue
     const sanitize = (p: any) => ({
         id: String(p.id),
         nombre: String(p.nombre || "Producto"),
@@ -69,19 +90,23 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ q
     const novedades = rawNovedades.map(sanitize).sort(() => 0.5 - Math.random()).slice(0, 8);
     const promos = rawPromos.map(sanitize).sort(() => 0.5 - Math.random());
 
-    // 2. Obtener lista de marcas únicas reales de la DB para poblar el dropdown
     const uniqueBrands = await prisma.product.findMany({
         select: { marca: true },
         distinct: ['marca'],
         orderBy: { marca: 'asc' }
     });
 
-    // Texto dinámico para el encabezado del Grid
     const gridTitle = (q || marca) ? `Resultados de búsqueda (${totalCount})` : "Catálogo Destacado";
     const gridSubtitle = q ? `Filtrando por "${q}"` : "Explora nuestra colección de proveedores top";
     
     return (
         <div className="pt-24 pb-10">
+        {/* Organization SEO Schema */}
+        <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(orgSchema) }}
+        />
+
         {/* Hero Header */}
         <div className="relative glass rounded-3xl p-10 mb-12 overflow-hidden flex flex-col md:flex-row items-center justify-between gap-8 shadow-2xl shadow-primary/10">
             <div className="absolute top-0 right-0 w-96 h-96 bg-primary/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
@@ -121,20 +146,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ q
                 <button type="submit" className="bg-primary hover:bg-primary-dark transition-colors text-white font-bold px-8 py-3 rounded-xl shadow-lg mt-2 sm:mt-0">
                 Buscar
                 </button>
-                
-                {(q || marca) && (
-                <Link href="/" className="sm:hidden mt-2 text-center text-xs text-slate-400 underline">Limpiar filtros</Link>
-                )}
             </form>
-            
-            {(q || marca) && (
-                <div className="mt-4 hidden sm:block">
-                <Link href="/" className="text-sm text-slate-400 hover:text-white transition-colors bg-white/5 px-4 py-1.5 rounded-full border border-white/10 flex items-center gap-2 inline-flex">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                    Borrar Filtros
-                </Link>
-                </div>
-            )}
             </div>
             <div className="md:w-1/3 flex justify-center relative">
             <div className="absolute inset-0 bg-gradient-to-br from-emerald-400/20 to-transparent blur-2xl rounded-full"></div>
@@ -148,7 +160,6 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ q
         {!q && !marca && promos.length > 0 && (
             <div className="mb-16">
             <div className="flex items-center gap-3 mb-6">
-                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#a855f7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
                 <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#a855f7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
                 <div>
                 <h2 className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-fuchsia-500 tracking-tight">Lo que estamos probando esta semana</h2>
@@ -184,11 +195,8 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ q
                         <h3 className="text-lg font-bold text-white mb-2 leading-tight group-hover:text-purple-300 transition-colors line-clamp-2">{promo.nombre}</h3>
                     </Link>
                     <div className="mt-auto pt-4 flex items-end justify-between">
-                        <div>
-
-                        <p className="text-3xl font-extrabold text-white tracking-tighter">
+                        <div className="text-3xl font-extrabold text-white tracking-tighter">
                             {promo.precioVenta.toFixed(2)}<span className="text-xl text-purple-400">€</span>
-                        </p>
                         </div>
                         <AddToCartButton product={promo} />
                     </div>
@@ -199,7 +207,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ q
             </div>
         )}
 
-        {/* Grid Menu Title */}
+        {/* Grid Title */}
         <div className="flex items-end justify-between mb-8">
             <div>
             <h2 className="text-3xl font-bold text-white tracking-tight">{gridTitle}</h2>
@@ -253,7 +261,6 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ q
                     <div className="text-2xl font-bold font-sans text-white border-b-2 border-transparent">
                         {product.precioVenta.toFixed(2)}€
                     </div>
-                    
                     {product.agotado ? (
                         <button disabled className="w-10 h-10 rounded-full flex items-center justify-center bg-slate-800 text-slate-600 cursor-not-allowed">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
@@ -265,131 +272,34 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ q
                 </div>
             </div>
             ))}
-            {products.length === 0 && (
-            <div className="col-span-full py-20 text-center text-slate-400 glass rounded-3xl">
-                <svg className="w-16 h-16 mx-auto mb-4 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" /></svg>
-                <p className="text-xl">Catálogo vacío.</p>
-                <p className="text-sm mt-2">No hemos encontrado productos que coincidan con tu búsqueda.</p>
-            </div>
-            )}
         </div>
 
-        {/* Pagination Controls */}
+        {/* Home Pagination */}
         {totalPages > 1 && (
             <div className="mt-12 flex flex-col items-center gap-4">
-            <div className="flex items-center gap-2">
-                <Link 
-                href={`/?${new URLSearchParams({ ...Object.fromEntries(Object.entries(params)), page: (page - 1).toString() })}`}
-                className={`px-6 py-3 rounded-xl border font-bold transition-all ${page <= 1 ? 'pointer-events-none opacity-20 border-white/5 bg-white/5 text-slate-600' : 'bg-slate-800 border-white/10 text-white hover:bg-slate-700 hover:border-primary/50 text-sm'}`}
-                >
-                Anterior
-                </Link>
-                
-                <div className="flex gap-1">
-                <span className="bg-primary/20 text-primary border border-primary/30 px-4 py-3 rounded-xl font-black text-sm">
-                    Página {page} de {totalPages}
-                </span>
-                </div>
-
-                <Link 
-                href={`/?${new URLSearchParams({ ...Object.fromEntries(Object.entries(params)), page: (page + 1).toString() })}`}
-                className={`px-6 py-3 rounded-xl border font-bold transition-all ${page >= totalPages ? 'pointer-events-none opacity-20 border-white/5 bg-white/5 text-slate-600' : 'bg-primary text-white border-primary hover:bg-emerald-500 shadow-lg shadow-emerald-500/20 text-sm'}`}
-                >
-                Siguiente
-                </Link>
-            </div>
-            <p className="text-slate-500 text-[10px] uppercase tracking-widest font-bold">Mostrando {products.length} de {totalCount} productos</p>
+               <div className="flex items-center gap-2">
+                   <Link href={`/?page=${page - 1}`} className={`px-6 py-3 rounded-xl border font-bold ${page <= 1 ? 'pointer-events-none opacity-20' : 'bg-slate-800 text-white hover:bg-slate-700'}`}>Anterior</Link>
+                   <span className="bg-primary/20 text-primary px-4 py-3 rounded-xl font-black">{page} / {totalPages}</span>
+                   <Link href={`/?page=${page + 1}`} className={`px-6 py-3 rounded-xl border font-bold ${page >= totalPages ? 'pointer-events-none opacity-20' : 'bg-primary text-white hover:bg-emerald-500'}`}>Siguiente</Link>
+               </div>
             </div>
         )}
 
-        {/* Trust Block Icons */}
-        {!q && !marca && (
-            <div className="mt-24 mb-16 grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="glass-card p-8 text-center bg-emerald-900/10 border-emerald-500/20 shadow-[0_0_30px_rgba(16,185,129,0.05)] transform hover:-translate-y-1 transition-transform">
-                <div className="w-16 h-16 mx-auto bg-emerald-500/20 text-emerald-400 rounded-full flex items-center justify-center mb-6 shadow-[0_0_15px_rgba(16,185,129,0.2)]">
-                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-                </div>
-                <h3 className="text-xl font-bold text-white mb-3 tracking-tight">Stock Real</h3>
-                <p className="text-slate-400 text-sm leading-relaxed">Sincronizados con el almacén central de nuestro origen. Lo que ves, lo tienes. Sin sorpresas de inventario, te aseguramos el envío.</p>
-            </div>
-            <div className="glass-card p-8 text-center bg-blue-900/10 border-blue-500/20 shadow-[0_0_30px_rgba(59,130,246,0.05)] transform hover:-translate-y-1 transition-transform">
-                <div className="w-16 h-16 mx-auto bg-blue-500/20 text-blue-400 rounded-full flex items-center justify-center mb-6 shadow-[0_0_15px_rgba(59,130,246,0.2)]">
-                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-                </div>
-                <h3 className="text-xl font-bold text-white mb-3 tracking-tight">Frescura Garantizada</h3>
-                <p className="text-slate-400 text-sm leading-relaxed">Logística de rotación altísima. Tu pedido no pasa meses guardado en una estantería, llega directo con máxima fecha de caducidad.</p>
-            </div>
-            <div className="glass-card p-8 text-center bg-amber-900/10 border-amber-500/20 shadow-[0_0_30px_rgba(245,158,11,0.05)] transform hover:-translate-y-1 transition-transform">
-                <div className="w-16 h-16 mx-auto bg-amber-500/20 text-amber-400 rounded-full flex items-center justify-center mb-6 shadow-[0_0_15px_rgba(245,158,11,0.2)]">
-                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"></path></svg>
-                </div>
-                <h3 className="text-xl font-bold text-white mb-3 tracking-tight">100% Ético</h3>
-                <p className="text-slate-400 text-sm leading-relaxed">Auditoría estricta continua. No vendemos trazas ni crueldad animal. Filtramos todos los registros por tu tranquilidad.</p>
-            </div>
-            </div>
-        )}
-
-        {/* Recién Llegados - Carrusel Visual de Novedades */}
-        {!q && !marca && novedades.length > 0 && (
-            <div id="novedades" className="mt-20 scroll-mt-24 mb-10 p-10 bg-slate-800/20 rounded-3xl border border-white/5 relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl pointer-events-none"></div>
-            <div className="mb-8">
-                <h2 className="text-3xl font-extrabold text-white tracking-tight">Recién llegados a la lonja vegana ⛵</h2>
-                <p className="text-slate-400 mt-2">Nuevas incorporaciones procesadas hoy en nuestra base logística.</p>
-            </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {novedades.map((nov) => (
-                    <Link href={`/product/${nov.id}`} key={nov.id} className="block group">
-                    <div className="bg-slate-900/50 border border-slate-700/50 rounded-2xl overflow-hidden shadow-lg p-4 flex flex-col h-full transform transition-all hover:scale-105">
-                        <div className="relative h-32 w-full bg-slate-800 rounded-xl mb-3 p-2 flex items-center justify-center">
-                            {nov.imagen ? (
-                            <Image src={nov.imagen} alt={nov.nombre} fill className="object-contain p-2" sizes="200px" />
-                            ) : (
-                            <span className="text-xs text-slate-500">Sin foto</span>
-                            )}
-                            <span className="absolute -top-2 -right-2 bg-blue-500 text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-lg">New</span>
-                        </div>
-                        <p className="text-xs font-medium text-emerald-400 mb-1 line-clamp-1">{nov.marca}</p>
-                        <h4 className="text-sm text-slate-200 line-clamp-2 leading-tight group-hover:text-emerald-300 transition-colors mb-2 flex-grow">{nov.nombre}</h4>
-                        <p className="font-bold text-white">{nov.precioVenta.toFixed(2)}€</p>
-                    </div>
-                    </Link>
-                ))}
-            </div>
-            </div>
-        )}
-
-        {/* Cómo Lo Hacemos / Transparencia */}
-        {!q && !marca && (
-            <div className="mt-20 glass rounded-3xl p-10 border border-slate-700/50 text-center md:text-left flex flex-col md:flex-row items-center gap-10">
-            <div className="md:w-1/3 flex justify-center">
-                <div className="w-32 h-32 bg-gradient-to-br from-emerald-500/20 to-primary/20 rounded-3xl rotate-12 flex items-center justify-center border border-emerald-500/30 shadow-[0_0_30px_rgba(16,185,129,0.15)]">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-emerald-400 -rotate-12"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-                </div>
+        {/* Transparency / Trust Info */}
+        <div className="mt-20 glass rounded-3xl p-10 border border-slate-700/50 text-center md:text-left flex flex-col md:flex-row items-center gap-10">
+            <div className="md:w-1/3 flex justify-center text-emerald-400">
+                <svg className="w-32 h-32" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.954 0 0112 2.944a11.955 11.954 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
             </div>
             <div className="md:w-2/3">
-                <h2 className="text-2xl font-bold text-white tracking-tight mb-4 text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-white">¿Cómo lo hacemos posible?</h2>
-                <p className="text-slate-300 leading-relaxed text-lg font-light">
-                    Trabajamos con un modelo ético directo <strong>"Just-In-Time"</strong>. Cada mañana seleccionamos algorítmicamente los productos más competitivos de nuestro distribuidor mayorista especializado, y los procesamos en nuestra base central para enviártelo esa misma tarde. <br/><br/>
-                    Esto nos permite aniquilar a los especuladores de precios, garantizarte ofertas dinámicas ultra-rentables cada 24 horas y, sobre todo, despacharte el producto con la <strong>máxima fecha de caducidad posible</strong> directamente desde la cadena de frío del proveedor origen a tu mesa.
+                <h2 className="text-2xl font-bold text-white mb-4">Negocio Verificado & 100% Transparente</h2>
+                <p className="text-slate-300 leading-relaxed">
+                   VeganFood.es es un proyecto de <strong>Jepco Consultors SL</strong> enfocado en democratizar el acceso a la alimentación plant-based. Operamos con un modelo directo de red mayorista para asegurar que recibes los productos más frescos del mercado con envíos en 24h. Nuestra identidad y compromiso ético es auditado diariamente por nuestra red logística.
                 </p>
             </div>
-            </div>
-        )}
-
+        </div>
         </div>
     );
   } catch (error: any) {
-    return (
-        <div className="pt-32 px-4 max-w-7xl mx-auto text-center">
-            <div className="bg-red-500/10 border border-red-500/50 p-12 rounded-3xl">
-                <h1 className="text-3xl font-bold text-red-500 mb-4">Error de Renderizado (Portada)</h1>
-                <p className="text-slate-400 mb-8 font-mono text-xs max-w-2xl mx-auto bg-black/30 p-4 rounded-lg">
-                    {error.message}
-                </p>
-                <Link href="/" className="bg-white text-black px-6 py-2 rounded-full font-bold">Volver a intentar</Link>
-            </div>
-        </div>
-    )
+    return <div className="pt-32 text-center text-red-500">{error.message}</div>;
   }
 }
