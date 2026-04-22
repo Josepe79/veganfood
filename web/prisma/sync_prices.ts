@@ -61,7 +61,27 @@ async function main() {
             }
             
             if (data.shopping_results && data.shopping_results.length > 0) {
-                const cheapest = data.shopping_results.sort((a: any, b: any) => parseFloat(a.extracted_price || 9999) - parseFloat(b.extracted_price || 9999))[0];
+                // Filtro de Seguridad: Evitar tiendas que no son de alimentación (Noise reduction)
+                const blacklist = ['surf', 'pc', 'montajes', 'ebay', 'amazon', 'wallapop', 'milanuncios', 'douglas', 'webcartucho', 'mercatron', 'electronic', 'componentes', 'informatica', 'ink', 'toner'];
+                
+                const validResults = data.shopping_results.filter((res: any) => {
+                    const source = (res.source || "").toLowerCase();
+                    const isBlacklisted = blacklist.some(term => source.includes(term));
+                    
+                    // Verificamos también que el precio no sea absurdamente bajo (posible error de matching)
+                    const p = parseFloat(res.extracted_price || "0");
+                    const tooCheap = p < (prod.precioVenta * 0.3); // Si es menos del 30% de nuestro precio, sospechamos
+                    
+                    return !isBlacklisted && !tooCheap;
+                });
+
+                if (validResults.length === 0) {
+                    sinDato++;
+                    console.log(`   └─ ⚠️ Filtrados resultados no fiables (Tiendas no-food o precios sospechosos).`);
+                    continue;
+                }
+
+                const cheapest = validResults.sort((a: any, b: any) => parseFloat(a.extracted_price || 9999) - parseFloat(b.extracted_price || 9999))[0];
                 
                 const cleanPrice = parseFloat(cheapest.extracted_price || "0");
                 const competitorName = cheapest.source;
