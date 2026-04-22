@@ -66,13 +66,22 @@ async function main() {
                 
                 const validResults = data.shopping_results.filter((res: any) => {
                     const source = (res.source || "").toLowerCase();
+                    const title = (res.title || "").toLowerCase();
+                    const ourName = prod.nombre.toLowerCase();
+                    
                     const isBlacklisted = blacklist.some(term => source.includes(term));
                     
-                    // Verificamos también que el precio no sea absurdamente bajo (posible error de matching)
+                    // Verificamos también que el precio no sea absurdamente bajo O ALTO (posible error de matching o pack)
                     const p = parseFloat(res.extracted_price || "0");
-                    const tooCheap = p < (prod.precioVenta * 0.3); // Si es menos del 30% de nuestro precio, sospechamos
+                    const priceRatio = p / prod.precioVenta;
+                    const isPriceAnomaly = priceRatio < 0.3 || priceRatio > 3.0;
                     
-                    return !isBlacklisted && !tooCheap;
+                    // Verificación de Nombre (Fuzzy basic): Al menos 2 palabras clave de más de 3 letras deben coincidir
+                    const keywords = ourName.split(' ').filter(w => w.length > 3);
+                    const matchCount = keywords.filter(w => title.includes(w)).length;
+                    const isTitleMatch = matchCount >= Math.min(2, keywords.length);
+
+                    return !isBlacklisted && !isPriceAnomaly && isTitleMatch;
                 });
 
                 if (validResults.length === 0) {
