@@ -4,34 +4,49 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 export async function POST() {
   try {
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
+    
+    // Lista de modelos a intentar por orden de preferencia
+    const modelNames = ["gemini-1.5-flash", "gemini-1.5-flash-latest", "gemini-1.5-pro", "gemini-pro"];
+    let model;
+    let result;
+    let lastError;
 
-    // 1. Obtener ingredientes reales de la tienda
-    const products = await prisma.product.findMany({
-      where: { agotado: false },
-      take: 20,
-      select: { id: true, nombre: true, marca: true }
-    });
+    // Intentar con cada modelo hasta que uno funcione
+    for (const modelName of modelNames) {
+      try {
+        console.log(`Intentando generar con modelo: ${modelName}`);
+        model = genAI.getGenerativeModel({ model: modelName });
+        
+        const prompt = `
+          Eres un chef vegano estrella Michelin. Crea 3 recetas exclusivas para mi blog "PlatosVeganos.es".
+          Debes usar obligatoriamente alguno de estos productos reales de mi catálogo:
+          ${JSON.stringify(products)}
 
-    const prompt = `
-      Eres un chef vegano estrella Michelin. Crea 3 recetas exclusivas para mi blog "PlatosVeganos.es".
-      Debes usar obligatoriamente alguno de estos productos reales de mi catálogo:
-      ${JSON.stringify(products)}
+          Devuelve un JSON estrictamente con este formato (array de objetos):
+          [{
+            "nombre": "Nombre sugerente",
+            "slug": "url-unica",
+            "descripcion": "Intro gourmet",
+            "prepTime": 20,
+            "cookTime": 15,
+            "dificultad": "Facil",
+            "instrucciones": ["paso 1", "paso 2"],
+            "ingredientes": [{"name": "Producto", "amount": "1 ud", "productId": "id_del_json_si_corresponde"}]
+          }]
+          
+          IMPORTANTE: Devuelve SOLO el JSON, sin bloques de código ni texto adicional.
+        `;
 
-      Devuelve un JSON estrictamente con este formato (array de objetos):
-      [{
-        "nombre": "Nombre sugerente",
-        "slug": "url-unica",
-        "descripcion": "Intro gourmet",
-        "prepTime": 20,
-        "cookTime": 15,
-        "dificultad": "Facil",
-        "instrucciones": ["paso 1", "paso 2"],
-        "ingredientes": [{"name": "Producto", "amount": "1 ud", "productId": "id_del_json_si_corresponde"}]
-      }]
-    `;
+        result = await model.generateContent(prompt);
+        if (result) break; // Si funciona, salimos del bucle
+      } catch (err: any) {
+        console.warn(`Fallo con modelo ${modelName}:`, err.message);
+        lastError = err;
+      }
+    }
 
-    const result = await model.generateContent(prompt);
+    if (!result) throw lastError || new Error("No se pudo generar contenido con ningún modelo.");
+
     const text = result.response.text().replace(/```json|```/g, "").trim();
     const newRecipes = JSON.parse(text);
 
