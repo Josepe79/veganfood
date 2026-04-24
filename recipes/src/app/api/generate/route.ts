@@ -3,9 +3,13 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 
 export async function POST() {
   try {
-    // Limpieza de la API Key (elimina comillas y espacios accidentales)
+    // Limpieza de la API Key
     const rawKey = process.env.GEMINI_API_KEY || "";
+    if (!rawKey) {
+        return new Response(JSON.stringify({ error: "CRÍTICO: No se ha encontrado la variable GEMINI_API_KEY en este servicio de Railway." }), { status: 500 });
+    }
     const cleanKey = rawKey.replace(/^["']|["']$/g, "").trim();
+    console.log(`[Chef IA] Usando API Key (primeros 4 caracteres): ${cleanKey.substring(0, 4)}...`);
     
     const genAI = new GoogleGenerativeAI(cleanKey);
     
