@@ -75,9 +75,9 @@ export async function POST() {
     const newRecipes = recipesToInsert.filter((r: any) => r.slug);
 
     for (const r of newRecipes) {
-      // Imagen dinámica basada en la keyword o el nombre
-      const keyword = r.imageKeyword || r.nombre.split(" ").pop() || "vegan";
-      const imageUrl = `https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=2000&auto=format&fit=crop&sig=${Math.floor(Math.random() * 1000)}&search=${encodeURIComponent(keyword)}`;
+      // Usamos LoremFlickr que es más fiable para búsquedas dinámicas sin API Key
+      const keyword = r.imageKeyword || r.nombre.split(" ").pop() || "vegan-food";
+      const imageUrl = `https://loremflickr.com/1200/800/vegan,${encodeURIComponent(keyword)}/all?sig=${Math.floor(Math.random() * 1000)}`;
 
       await prisma.recipe.upsert({
         where: { slug: r.slug },
