@@ -65,3 +65,19 @@ model OrderItem {
   quantity  Int
   price     Float    // PVP frozen at purchase time
 }
+
+model Recipe {
+  id            String   @id @default(cuid())
+  nombre        String
+  slug          String   @unique
+  descripcion   String?
+  imagen        String?
+  prepTime      Int?     // minutos
+  cookTime      Int?     // minutos
+  dificultad    String?  // Facil, Media, Alta
+  instrucciones String   @db.Text // Pasos detallados
+  ingredientes  String   @db.Text // JSON string: [{name, amount, productId?}]
+  publicado     Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
