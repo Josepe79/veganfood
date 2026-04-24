@@ -163,7 +163,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ q
                 <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#a855f7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
                 <div>
                 <h2 className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-fuchsia-500 tracking-tight">Lo que estamos probando esta semana</h2>
-                <p className="text-slate-400 mt-1">Filtramos el catálogo mayorista para traerte solo lo que de verdad merece la pena.</p>
+                <p className="text-slate-400 mt-1">Seleccionamos cuidadosamente cada referencia para traerte solo lo mejor de la alimentación plant-based.</p>
                 </div>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
@@ -293,7 +293,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ q
             <div className="md:w-2/3">
                 <h2 className="text-2xl font-bold text-white mb-4">Negocio Verificado & 100% Transparente</h2>
                 <p className="text-slate-300 leading-relaxed">
-                   VeganFood.es es un proyecto de <strong>Jepco Consultors SL</strong> enfocado en democratizar el acceso a la alimentación plant-based. Operamos con un modelo directo de red mayorista para asegurar que recibes los productos más frescos del mercado con envíos en 24-48h. Nuestra identidad y compromiso ético es auditado diariamente por nuestra red logística.
+                   VeganFood.es es un proyecto de <strong>Jepco Consultors SL</strong> enfocado en democratizar el acceso a la alimentación plant-based. Operamos con un modelo directo de red logística profesional para asegurar que recibes los productos más frescos del mercado con envíos en 24-48h. Nuestra identidad y compromiso ético es auditado diariamente por nuestra red logística.
                 </p>
             </div>
         </div>
