@@ -3,7 +3,11 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 
 export async function POST() {
   try {
-    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
+    // Limpieza de la API Key (elimina comillas y espacios accidentales)
+    const rawKey = process.env.GEMINI_API_KEY || "";
+    const cleanKey = rawKey.replace(/^["']|["']$/g, "").trim();
+    
+    const genAI = new GoogleGenerativeAI(cleanKey);
     
     // 1. Obtener ingredientes reales de la tienda
     const products = await prisma.product.findMany({
