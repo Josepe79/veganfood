@@ -25,8 +25,9 @@ export async function POST() {
     // Intentar con cada modelo hasta que uno funcione
     for (const modelName of modelNames) {
       try {
-        console.log(`Intentando generar con modelo: ${modelName}`);
-        model = genAI.getGenerativeModel({ model: modelName });
+        console.log(`Intentando generar con modelo: ${modelName} (v1)`);
+        // Forzamos la versión v1 de la API para mayor estabilidad
+        model = genAI.getGenerativeModel({ model: modelName, apiVersion: "v1" });
         
         const prompt = `
           Eres un chef vegano estrella Michelin. Crea 3 recetas exclusivas para mi blog "PlatosVeganos.es".
