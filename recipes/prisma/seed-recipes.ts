@@ -6,31 +6,33 @@ const prisma = new PrismaClient();
 async function main() {
   console.log('🌱 Iniciando semilla de recetas...');
 
+  const lasagnaData = {
+    nombre: 'Lasaña Vegana de Heura y Bechamel de Almendras',
+    slug: 'lasana-vegana-heura',
+    descripcion: 'Una lasaña cremosa, reconfortante y 100% vegetal. Usamos Heura para una textura perfecta y una bechamel casera de almendras que te sorprenderá.',
+    imagen: 'https://images.unsplash.com/photo-1551183053-bf91a1d81141?q=80&w=2064&auto=format&fit=crop',
+    prepTime: 45,
+    cookTime: 20,
+    dificultad: 'Media',
+    publicado: true,
+    instrucciones: JSON.stringify([
+      "Saltea los Heura Chunks con un poco de aceite de oliva y cebolla picada hasta que estén dorados.",
+      "Para la bechamel: En un cazo, mezcla harina, aceite y añade poco a poco la Bebida de Almendras hasta obtener una textura cremosa.",
+      "Montaje: Capa de láminas de lasaña, capa de relleno, bechamel... y repite.",
+      "Final: Cubre generosamente con el Queso Vegano rallado y hornea a 200ºC durante 20 min."
+    ]),
+    ingredientes: JSON.stringify([
+      { name: "Tofu Sedoso Japonés (sustituto carne)", amount: "300g", productId: "cmny6e74l01ij2oo5pnuqf8h5" },
+      { name: "Levadura Nutricional Sabor Queso", amount: "50g", productId: "cmny65cip002l2oo5n3cr1723" },
+      { name: "Bebida de Avena Barista", amount: "500ml", productId: "cmny65rn6005b2oo5umhee7jk" },
+      { name: "Láminas de Lasaña Sin Huevo", amount: "12 uds" }
+    ])
+  };
+
   const lasagna = await prisma.recipe.upsert({
     where: { slug: 'lasana-vegana-heura' },
-    update: {},
-    create: {
-      nombre: 'Lasaña Vegana de "No-Pollo" y Bechamel de Almendras',
-      slug: 'lasana-vegana-heura',
-      descripcion: 'Una lasaña cremosa, reconfortante y 100% vegetal. Usamos Heura para una textura perfecta y una bechamel casera de almendras que te sorprenderá.',
-      imagen: 'https://images.unsplash.com/photo-1551183053-bf91a1d81141?q=80&w=2064&auto=format&fit=crop',
-      prepTime: 45,
-      cookTime: 20,
-      dificultad: 'Media',
-      publicado: true,
-      instrucciones: JSON.stringify([
-        "Saltea los Heura Chunks con un poco de aceite de oliva y cebolla picada hasta que estén dorados.",
-        "Para la bechamel: En un cazo, mezcla harina, aceite y añade poco a poco la Bebida de Almendras hasta obtener una textura cremosa.",
-        "Montaje: Capa de láminas de lasaña, capa de relleno, bechamel... y repite.",
-        "Final: Cubre generosamente con el Queso Vegano rallado y hornea a 200ºC durante 20 min."
-      ]),
-      ingredientes: JSON.stringify([
-        { name: "Tofu Sedoso Japonés (sustituto carne)", amount: "300g", productId: "cmny6e74l01ij2oo5pnuqf8h5" },
-        { name: "Levadura Nutricional Sabor Queso", amount: "50g", productId: "cmny65cip002l2oo5n3cr1723" },
-        { name: "Bebida de Avena Barista", amount: "500ml", productId: "cmny65rn6005b2oo5umhee7jk" },
-        { name: "Láminas de Lasaña Sin Huevo", amount: "12 uds" }
-      ])
-    }
+    update: lasagnaData,
+    create: lasagnaData
   });
 
   console.log(`✅ Receta creada: ${lasagna.nombre}`);
