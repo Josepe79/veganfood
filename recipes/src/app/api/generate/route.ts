@@ -20,13 +20,13 @@ export async function POST() {
 
     // Intentar con cada modelo hasta que uno funcione (Llamada REST Directa para evitar 404 del SDK)
     const models = ["gemini-1.5-flash", "gemini-1.5-flash-latest", "gemini-pro"];
-    let data;
+    let lastGoogleError = "";
 
     for (const modelName of models) {
       try {
-        console.log(`[Chef IA] Intentando llamada REST con modelo: ${modelName}`);
+        console.log(`[Chef IA] Intentando llamada REST v1 con modelo: ${modelName}`);
         const response = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${cleanKey}`,
+          `https://generativelanguage.googleapis.com/v1/models/${modelName}:generateContent?key=${cleanKey}`,
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -64,7 +64,8 @@ export async function POST() {
 
         if (!response.ok) {
           const errData = await response.json();
-          throw new Error(errData.error?.message || "Error desconocido en la API");
+          lastGoogleError = errData.error?.message || "Error desconocido";
+          throw new Error(lastGoogleError);
         }
 
         const resJson = await response.json();
@@ -73,11 +74,12 @@ export async function POST() {
         data = JSON.parse(text);
         if (data) break;
       } catch (err: any) {
+        lastGoogleError = err.message;
         console.warn(`[Chef IA] Fallo con ${modelName}:`, err.message);
       }
     }
 
-    if (!data) throw new Error("No se pudo generar contenido con ningún modelo (REST).");
+    if (!data) throw new Error(`Google API dice: ${lastGoogleError}`);
 
     const newRecipes = data;
 
