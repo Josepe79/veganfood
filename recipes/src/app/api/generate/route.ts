@@ -5,6 +5,13 @@ export async function POST() {
   try {
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
     
+    // 1. Obtener ingredientes reales de la tienda
+    const products = await prisma.product.findMany({
+      where: { agotado: false },
+      take: 20,
+      select: { id: true, nombre: true, marca: true }
+    });
+
     // Lista de modelos a intentar por orden de preferencia
     const modelNames = ["gemini-1.5-flash", "gemini-1.5-flash-latest", "gemini-1.5-pro", "gemini-pro"];
     let model;
