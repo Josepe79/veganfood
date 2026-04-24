@@ -38,8 +38,8 @@ export async function POST() {
       console.warn("[Chef IA] Falló el auto-descubrimiento, usando por defecto.");
     }
 
-    // Intentar con cada modelo hasta que uno funcione (Mimetizando la tienda principal)
-    const models = ["gemini-1.5-flash-latest", "gemini-1.5-flash", "gemini-pro"];
+    // Intentar con cada modelo hasta que uno funcione (Añadimos el nuevo Flash 8B por si acaso)
+    const models = ["gemini-1.5-flash-8b", "gemini-1.5-flash-latest", "gemini-1.5-flash", "gemini-pro"];
     let data: any;
     let lastGoogleError = "";
 
