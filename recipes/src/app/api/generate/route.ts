@@ -45,7 +45,8 @@ export async function POST() {
 
             Devuelve un JSON (array de objetos) con:
             nombre, slug, descripcion, prepTime (int), cookTime (int), dificultad (Facil/Media), 
-            instrucciones (array strings), ingredientes (array de {name, amount, productId}).
+            instrucciones (array strings), ingredientes (array de {name, amount, productId}),
+            imageKeyword (un término en inglés para buscar una foto apetitosa en Unsplash).
             
             NO menciones "Packs". Responde SOLO el JSON.
           `
@@ -62,21 +63,22 @@ export async function POST() {
     const resJson = await response.json();
     const data = JSON.parse(resJson.choices[0].message.content);
     
-    // Lógica robusta para encontrar el array de recetas (buscamos cualquier key que sea un array)
+    // Lógica robusta para encontrar el array de recetas
     let recipesToInsert = [];
     if (Array.isArray(data)) {
       recipesToInsert = data;
     } else {
-      // Buscamos dentro de claves como 'recipes', 'recetas', 'newRecipes', etc.
       const arrayKey = Object.keys(data).find(key => Array.isArray(data[key]));
       recipesToInsert = arrayKey ? data[arrayKey] : [data];
     }
 
-    const newRecipes = recipesToInsert.filter((r: any) => r.slug); // Solo las que tienen slug
-
-    console.log(`[Chef IA] Insertando ${newRecipes.length} recetas en la base de datos...`);
+    const newRecipes = recipesToInsert.filter((r: any) => r.slug);
 
     for (const r of newRecipes) {
+      // Imagen dinámica basada en la keyword o el nombre
+      const keyword = r.imageKeyword || r.nombre.split(" ").pop() || "vegan";
+      const imageUrl = `https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=2000&auto=format&fit=crop&sig=${Math.floor(Math.random() * 1000)}&search=${encodeURIComponent(keyword)}`;
+
       await prisma.recipe.upsert({
         where: { slug: r.slug },
         update: {
@@ -87,6 +89,7 @@ export async function POST() {
           dificultad: r.dificultad,
           instrucciones: JSON.stringify(r.instrucciones),
           ingredientes: JSON.stringify(r.ingredientes),
+          imagen: imageUrl
         },
         create: {
           nombre: r.nombre,
@@ -98,7 +101,7 @@ export async function POST() {
           instrucciones: JSON.stringify(r.instrucciones),
           ingredientes: JSON.stringify(r.ingredientes),
           publicado: true,
-          imagen: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?q=80&w=2070&auto=format&fit=crop"
+          imagen: imageUrl
         }
       });
     }

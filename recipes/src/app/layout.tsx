@@ -8,8 +8,12 @@ const outfit = Outfit({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://platosveganos.es'),
   title: "PlatosVeganos.es | Recetas Saludables y Sostenibles",
   description: "Descubre las mejores recetas veganas paso a paso. Cocina con ingredientes de calidad de VeganFood.es y transforma tu alimentación.",
+  alternates: {
+    canonical: '/',
+  }
 };
 
 export default function RootLayout({
