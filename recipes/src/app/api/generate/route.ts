@@ -61,15 +61,40 @@ export async function POST() {
 
     const resJson = await response.json();
     const data = JSON.parse(resJson.choices[0].message.content);
-    const recipesToInsert = data.recipes || data.newRecipes || data; // Manejar diferentes estructuras de GPT
-    const newRecipes = Array.isArray(recipesToInsert) ? recipesToInsert : [recipesToInsert];
+    
+    // Lógica robusta para encontrar el array de recetas (buscamos cualquier key que sea un array)
+    let recipesToInsert = [];
+    if (Array.isArray(data)) {
+      recipesToInsert = data;
+    } else {
+      // Buscamos dentro de claves como 'recipes', 'recetas', 'newRecipes', etc.
+      const arrayKey = Object.keys(data).find(key => Array.isArray(data[key]));
+      recipesToInsert = arrayKey ? data[arrayKey] : [data];
+    }
+
+    const newRecipes = recipesToInsert.filter((r: any) => r.slug); // Solo las que tienen slug
+
+    console.log(`[Chef IA] Insertando ${newRecipes.length} recetas en la base de datos...`);
 
     for (const r of newRecipes) {
       await prisma.recipe.upsert({
         where: { slug: r.slug },
-        update: {},
+        update: {
+          nombre: r.nombre,
+          descripcion: r.descripcion,
+          prepTime: r.prepTime,
+          cookTime: r.cookTime,
+          dificultad: r.dificultad,
+          instrucciones: JSON.stringify(r.instrucciones),
+          ingredientes: JSON.stringify(r.ingredientes),
+        },
         create: {
-          ...r,
+          nombre: r.nombre,
+          slug: r.slug,
+          descripcion: r.descripcion,
+          prepTime: r.prepTime,
+          cookTime: r.cookTime,
+          dificultad: r.dificultad,
           instrucciones: JSON.stringify(r.instrucciones),
           ingredientes: JSON.stringify(r.ingredientes),
           publicado: true,
