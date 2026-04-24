@@ -124,10 +124,10 @@ export default async function RecipeDetail({ params }: { params: Promise<{ slug:
 
           <div className="mt-12 pt-12 border-t border-white/5">
             <div className="bg-gradient-to-br from-emerald-500/20 to-transparent p-8 rounded-3xl border border-emerald-500/20 text-center">
-              <h3 className="text-xl font-bold text-white mb-2">¿Quieres cocinar este plato hoy?</h3>
-              <p className="text-slate-400 mb-6 text-sm">Añade los ingredientes clave de esta receta a tu carrito y recíbelos mañana.</p>
+              <h3 className="text-xl font-bold text-white mb-2">¿Te falta algún ingrediente?</h3>
+              <p className="text-slate-400 mb-6 text-sm">Pide los ingredientes clave de esta receta y recíbelos en 24/48h.</p>
               <a href="https://veganfood.es" className="inline-block bg-primary text-white font-bold px-8 py-3 rounded-xl hover:scale-105 transition-transform">
-                Ver Pack de la Receta en VeganFood.es
+                Ver Ingredientes en VeganFood.es
               </a>
             </div>
           </div>
