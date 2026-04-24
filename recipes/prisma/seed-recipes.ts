@@ -25,9 +25,9 @@ async function main() {
         "Final: Cubre generosamente con el Queso Vegano rallado y hornea a 200ºC durante 20 min."
       ]),
       ingredientes: JSON.stringify([
-        { name: "Heura Chunks (No-Pollo)", amount: "320g", productId: "cmny6i7c402122oo50c33h44x" },
-        { name: "Queso Vegano Rallado (Violife)", amount: "150g", productId: "cmny6i7c402122oo50c33h44y" },
-        { name: "Bebida de Almendras Bio", amount: "500ml", productId: "cmny6i7c402122oo50c33h44z" },
+        { name: "Tofu Sedoso Japonés (sustituto carne)", amount: "300g", productId: "cmny6e74l01ij2oo5pnuqf8h5" },
+        { name: "Levadura Nutricional Sabor Queso", amount: "50g", productId: "cmny65cip002l2oo5n3cr1723" },
+        { name: "Bebida de Avena Barista", amount: "500ml", productId: "cmny65rn6005b2oo5umhee7jk" },
         { name: "Láminas de Lasaña Sin Huevo", amount: "12 uds" }
       ])
     }
