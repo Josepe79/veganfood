@@ -17,26 +17,25 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: route === '' ? 1 : 0.5,
   }));
 
-  // 2. Páginas de recetas dinámicas (Solo si estamos en un entorno con base de datos)
-  let recipePages: any[] = [];
-  
-  if (process.env.DATABASE_URL) {
-    try {
-      const recipes = await prisma.recipe.findMany({
-        where: { publicado: true },
-        select: { slug: true, updatedAt: true },
-      });
+  // 2. Páginas de recetas dinámicas (Forzamos ejecución siempre para evitar caché de build)
+  try {
+    const recipes = await prisma.recipe.findMany({
+      where: { publicado: true },
+      select: { slug: true, updatedAt: true },
+    });
 
-      recipePages = recipes.map((recipe) => ({
-        url: `${baseUrl}/receta/${recipe.slug}`,
-        lastModified: recipe.updatedAt,
-        changeFrequency: 'weekly' as const,
-        priority: 0.8,
-      }));
-    } catch (e) {
-      console.warn('Sitemap: No se pudieron cargar las recetas dinámicas durante el build.');
-    }
+    const recipePages = recipes.map((recipe) => ({
+      url: `${baseUrl}/receta/${recipe.slug}`,
+      lastModified: recipe.updatedAt,
+      changeFrequency: 'weekly' as const,
+      priority: 0.8,
+    }));
+    
+    return [...staticPages, ...recipePages];
+  } catch (e) {
+    console.warn('Sitemap: Fallo dinámico, devolviendo estáticas.');
+    return staticPages;
   }
-
-  return [...staticPages, ...recipePages];
 }
+
+export const revalidate = 0; // Forzar regeneración en cada visita al sitemap

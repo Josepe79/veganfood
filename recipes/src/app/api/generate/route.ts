@@ -75,9 +75,18 @@ export async function POST() {
     const newRecipes = recipesToInsert.filter((r: any) => r.slug);
 
     for (const r of newRecipes) {
-      // Usamos LoremFlickr que es más fiable para búsquedas dinámicas sin API Key
-      const keyword = r.imageKeyword || r.nombre.split(" ").pop() || "vegan-food";
-      const imageUrl = `https://loremflickr.com/1200/800/vegan,${encodeURIComponent(keyword)}/all?sig=${Math.floor(Math.random() * 1000)}`;
+      // Galería de imágenes Premium (Selección curada para PlatosVeganos.es)
+      const premiumImages = [
+        "https://images.unsplash.com/photo-1512621776951-a57141f2eefd", // Ensalada/Bowl
+        "https://images.unsplash.com/photo-1546069901-ba9599a7e63c", // Bowl gourmet
+        "https://images.unsplash.com/photo-1490645935967-10de6ba17061", // Plato saludable
+        "https://images.unsplash.com/photo-1540914124281-342729441458", // Postre/Smoothie
+        "https://images.unsplash.com/photo-1565557623262-b51c2513a641", // Pasta/Lasaña
+        "https://images.unsplash.com/photo-1504674900247-0877df9cc836", // Carne vegetal/Gourmet
+        "https://images.unsplash.com/photo-149485981460c-38d4c942da1c", // Desayuno
+      ];
+      const randomIdx = Math.floor(Math.random() * premiumImages.length);
+      const imageUrl = `${premiumImages[randomIdx]}?q=80&w=2000&auto=format&fit=crop`;
 
       await prisma.recipe.upsert({
         where: { slug: r.slug },
