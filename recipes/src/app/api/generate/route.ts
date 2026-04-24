@@ -45,12 +45,15 @@ export async function POST() {
 
     for (const modelName of models) {
       try {
-        console.log(`[Chef IA] Intentando llamada v1beta con modelo: ${modelName}`);
+        console.log(`[Chef IA] Intentando llamada REST (Header Auth) con modelo: ${modelName}`);
         const response = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${cleanKey}`,
+          `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent`,
           {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: { 
+              "Content-Type": "application/json",
+              "x-goog-api-key": cleanKey 
+            },
             body: JSON.stringify({
               contents: [{
                 parts: [{
