@@ -20,6 +20,7 @@ export async function POST() {
 
     // Intentar con cada modelo hasta que uno funcione (Llamada REST Directa para evitar 404 del SDK)
     const models = ["gemini-1.5-flash", "gemini-1.5-flash-latest", "gemini-pro"];
+    let data: any;
     let lastGoogleError = "";
 
     for (const modelName of models) {
