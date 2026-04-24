@@ -11,6 +11,13 @@ export async function POST() {
     const cleanKey = rawKey.replace(/^["']|["']$/g, "").trim();
     console.log(`[Chef IA] Usando API Key (primeros 4 caracteres): ${cleanKey.substring(0, 4)}...`);
     
+    // 1. Obtener ingredientes reales de la tienda
+    const products = await prisma.product.findMany({
+      where: { agotado: false },
+      take: 20,
+      select: { id: true, nombre: true, marca: true }
+    });
+
     // Intentar con cada modelo hasta que uno funcione (Llamada REST Directa para evitar 404 del SDK)
     const models = ["gemini-1.5-flash", "gemini-1.5-flash-latest", "gemini-pro"];
     let data;
