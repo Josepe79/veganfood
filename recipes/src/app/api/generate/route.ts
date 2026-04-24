@@ -38,16 +38,16 @@ export async function POST() {
       console.warn("[Chef IA] Falló el auto-descubrimiento, usando por defecto.");
     }
 
-    // Intentar con el modelo detectado
-    const models = [modelToUse, "gemini-1.5-flash", "gemini-1.5-flash-latest", "gemini-pro"];
+    // Intentar con cada modelo hasta que uno funcione (Mimetizando la tienda principal)
+    const models = ["gemini-1.5-flash-latest", "gemini-1.5-flash", "gemini-pro"];
     let data: any;
     let lastGoogleError = "";
 
     for (const modelName of models) {
       try {
-        console.log(`[Chef IA] Intentando llamada REST con: ${modelName}`);
+        console.log(`[Chef IA] Intentando llamada v1beta con modelo: ${modelName}`);
         const response = await fetch(
-          `https://generativelanguage.googleapis.com/v1/models/${modelName}:generateContent?key=${cleanKey}`,
+          `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${cleanKey}`,
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
