@@ -18,14 +18,34 @@ export async function POST() {
       select: { id: true, nombre: true, marca: true }
     });
 
-    // Intentar con cada modelo hasta que uno funcione (Llamada REST Directa para evitar 404 del SDK)
-    const models = ["gemini-1.5-flash", "gemini-1.5-flash-latest", "gemini-pro"];
+    // 2. Auto-descubrimiento de modelos disponibles
+    let modelToUse = "gemini-1.5-flash"; // Por defecto
+    try {
+      const listRes = await fetch(`https://generativelanguage.googleapis.com/v1/models?key=${cleanKey}`);
+      if (listRes.ok) {
+        const listData = await listRes.json();
+        // Buscamos el mejor modelo disponible que soporte generateContent
+        const bestModel = listData.models?.find((m: any) => 
+          m.supportedGenerationMethods.includes("generateContent") && 
+          (m.name.includes("gemini-1.5-flash") || m.name.includes("gemini-1.5-pro"))
+        );
+        if (bestModel) {
+          modelToUse = bestModel.name.split("/").pop(); // Quitamos el "models/" si lo tiene
+          console.log(`[Chef IA] Modelo auto-detectado y seleccionado: ${modelToUse}`);
+        }
+      }
+    } catch (e) {
+      console.warn("[Chef IA] Falló el auto-descubrimiento, usando por defecto.");
+    }
+
+    // Intentar con el modelo detectado
+    const models = [modelToUse, "gemini-1.5-flash", "gemini-1.5-flash-latest", "gemini-pro"];
     let data: any;
     let lastGoogleError = "";
 
     for (const modelName of models) {
       try {
-        console.log(`[Chef IA] Intentando llamada REST v1 con modelo: ${modelName}`);
+        console.log(`[Chef IA] Intentando llamada REST con: ${modelName}`);
         const response = await fetch(
           `https://generativelanguage.googleapis.com/v1/models/${modelName}:generateContent?key=${cleanKey}`,
           {
@@ -80,7 +100,7 @@ export async function POST() {
       }
     }
 
-    if (!data) throw new Error(`Google API dice: ${lastGoogleError}`);
+    if (!data) throw new Error(`Google API dice: ${lastGoogleError}. Modelos probados: ${models.join(", ")}`);
 
     const newRecipes = data;
 
