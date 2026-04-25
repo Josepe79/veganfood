@@ -32,6 +32,15 @@ export async function GET() {
       const availability = p.agotado ? "out of stock" : "in stock";
       const description = `Comprar ${p.nombre} de la marca ${p.marca || 'Vegan'}. Producto 100% vegetal con envío express.`;
       
+      // Intentar extraer el peso del nombre (ej: "250g", "1kg")
+      let shippingWeight = "0.25 kg"; // Valor por defecto para Google
+      const weightMatch = p.nombre.match(/(\d+)\s*(g|kg|ml|l)/i);
+      if (weightMatch) {
+        const value = weightMatch[1];
+        const unit = weightMatch[2].toLowerCase();
+        shippingWeight = `${value} ${unit === 'g' || unit === 'ml' ? 'g' : 'kg'}`;
+      }
+
       xml += `
     <item>
       <g:id>${p.id}</g:id>
@@ -43,6 +52,7 @@ export async function GET() {
       <g:availability>${availability}</g:availability>
       <g:price>${p.precioVenta.toFixed(2)} EUR</g:price>
       <g:brand><![CDATA[${p.marca || 'VeganFood'}]]></g:brand>
+      <g:shipping_weight>${shippingWeight}</g:shipping_weight>
       <g:google_product_category>Food, Beverages &amp; Tobacco &gt; Food Items</g:google_product_category>
     </item>`;
     }
