@@ -34,6 +34,9 @@ export const metadata: Metadata = {
     index: true,
     follow: true,
     nocache: true,
+  },
+  verification: {
+    google: "BYQHLBfGBlPNRzwq1g8yKJ7crReS8d1Pge-hpYg5zV0",
   }
 };
 
