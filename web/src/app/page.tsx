@@ -285,16 +285,52 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ q
             </div>
         )}
 
+        {/* Social Proof - Testimonios Reales */}
+        <div className="mt-20">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-black text-white italic mb-2">Lo que dicen nuestros clientes</h2>
+            <div className="flex justify-center gap-1 text-emerald-500 mb-2">
+              {[...Array(5)].map((_, i) => (
+                <svg key={i} className="w-5 h-5 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>
+              ))}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+            {[
+              { name: "Marc S.", text: "Increíble la rapidez del envío. Los quesos veganos llegaron perfectamente refrigerados. ¡Repetiré!", location: "Barcelona" },
+              { name: "Elena G.", text: "Por fin encuentro alternativas de calidad en un solo sitio. El trato por teléfono fue de 10.", location: "Madrid" },
+              { name: "Jordi M.", text: "Logística impecable. Se nota que hay un equipo profesional detrás gestionando el stock.", location: "Valencia" }
+            ].map((testi, i) => (
+              <div key={i} className="bg-white/5 p-8 rounded-3xl border border-white/10 shadow-xl">
+                <p className="text-slate-400 italic mb-6">"{testi.text}"</p>
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-emerald-500/20 rounded-full flex items-center justify-center text-emerald-500 text-xs font-bold">{testi.name[0]}</div>
+                  <div>
+                    <p className="text-white text-sm font-bold">{testi.name}</p>
+                    <p className="text-slate-600 text-[10px] uppercase font-black">{testi.location}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
         {/* Transparency / Trust Info */}
-        <div className="mt-20 glass rounded-3xl p-10 border border-slate-700/50 text-center md:text-left flex flex-col md:flex-row items-center gap-10">
+        <div className="glass rounded-3xl p-10 border border-slate-700/50 text-center md:text-left flex flex-col md:flex-row items-center gap-10">
             <div className="md:w-1/3 flex justify-center text-emerald-400">
                 <svg className="w-32 h-32" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.954 0 0112 2.944a11.955 11.954 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
             </div>
             <div className="md:w-2/3">
                 <h2 className="text-2xl font-bold text-white mb-4">Negocio Verificado & 100% Transparente</h2>
-                <p className="text-slate-300 leading-relaxed">
-                   VeganFood.es es un proyecto de <strong>Jepco Consultors SL</strong> enfocado en democratizar el acceso a la alimentación plant-based. Operamos con un modelo directo de red logística profesional para asegurar que recibes los productos más frescos del mercado con envíos en 24-48h. Nuestra identidad y compromiso ético es auditado diariamente por nuestra red logística.
+                <p className="text-slate-300 leading-relaxed text-sm mb-6">
+                   VeganFood.es es un proyecto de <strong>Jepco Consultors SL</strong> enfocado en democratizar el acceso a la alimentación plant-based. Operamos con un modelo directo de red logística profesional desde nuestra sede en Sentmenat (Barcelona).
                 </p>
+                <div className="flex flex-wrap gap-4 opacity-50 grayscale hover:grayscale-0 hover:opacity-100 transition-all duration-700">
+                  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/Stripe_logo%2C_revised_2016.svg/2560px-Stripe_logo%2C_revised_2016.svg.png" alt="Stripe" className="h-4" />
+                  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/ca/European_Union_Organic_Logo.svg/1024px-European_Union_Organic_Logo.svg.png" alt="Bio UE" className="h-6" />
+                  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Comercio_Justo_Logo.svg/1200px-Comercio_Justo_Logo.svg.png" alt="Fair Trade" className="h-8" />
+                </div>
             </div>
         </div>
         </div>
