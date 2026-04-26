@@ -22,6 +22,7 @@ model Product {
   urlOriginal     String?
   descripcion     String?
   ingredientes    String?
+  formato         String?  // Ej: 400ml, 1kg, 200g
 
   precioCompetencia Float?
   competenciaUrl    String?

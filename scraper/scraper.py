@@ -78,6 +78,9 @@ def extraer_catalogo_vegano():
                     stock_txt = stock_tag.text.strip() if stock_tag else ""
                     agotado = True if 'agotado' in stock_txt.lower() or 'sin stock' in stock_txt.lower() else False
                     
+                    nuevo_tag = item.select_one('.product-badge.new')
+                    is_nuevo = True if nuevo_tag else False
+                    
                     price_tag = item.select_one('.price')
                     precio_b2b = price_tag.text.strip() if price_tag else "0,00"
                     
@@ -92,6 +95,7 @@ def extraer_catalogo_vegano():
                         "precio_b2b": precio_b2b,
                         "pvpr": pvpr,
                         "agotado": agotado,
+                        "is_nuevo": is_nuevo,
                         "imagen": imagen,
                         "url_original": url_original
                     })

@@ -91,10 +91,17 @@ async def main():
                                 ingredientes = val.text.strip()
                                 break
 
+                # EXTRACCIÓN DE FORMATO / PESO
+                formato = ""
+                format_tag = soup.select_one('.format')
+                if format_tag:
+                    formato = format_tag.text.replace('Formato:', '').strip()
+
                 # Clonar dict y ampliar
                 nuevo_prod = dict(prod)
                 nuevo_prod['descripcion'] = descripcion
                 nuevo_prod['ingredientes'] = ingredientes
+                nuevo_prod['formato'] = formato
                 productos_completos.append(nuevo_prod)
 
                 # Guardamos periódicamente para no perder datos si crashea

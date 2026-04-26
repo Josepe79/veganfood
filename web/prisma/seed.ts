@@ -75,7 +75,8 @@ async function main() {
                     precioOriginal: originalCost,
                     pvpr: item.pvpr || "",
                     agotado: agotado,
-                    isNuevo: item.is_nuevo || false
+                    isNuevo: item.is_nuevo || false,
+                    formato: item.formato || ""
                 }
             });
             actualizados++;
@@ -97,7 +98,8 @@ async function main() {
                 isNuevo: item.is_nuevo || false,
                 // Insertamos descripciones vírgenes (B2B) para que luego la IA las reescriba
                 descripcion: item.descripcion || null,
-                ingredientes: item.ingredientes || null
+                ingredientes: item.ingredientes || null,
+                formato: item.formato || null
               }
             });
             insertados++;

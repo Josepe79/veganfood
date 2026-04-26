@@ -14,6 +14,7 @@ export async function GET() {
         precioVenta: true,
         imagen: true,
         agotado: true,
+        formato: true,
       }
     });
 
@@ -32,13 +33,18 @@ export async function GET() {
       const availability = p.agotado ? "out of stock" : "in stock";
       const description = `Comprar ${p.nombre} de la marca ${p.marca || 'Vegan'}. Producto 100% vegetal con envío express.`;
       
-      // Intentar extraer el peso del nombre (ej: "250g", "1kg")
-      let shippingWeight = "0.25 kg"; // Valor por defecto para Google
-      const weightMatch = p.nombre.match(/(\d+)\s*(g|kg|ml|l)/i);
-      if (weightMatch) {
-        const value = weightMatch[1];
-        const unit = weightMatch[2].toLowerCase();
-        shippingWeight = `${value} ${unit === 'g' || unit === 'ml' ? 'g' : 'kg'}`;
+      // Priorizar el campo 'formato' de la BBDD, si no, intentar extraer del nombre
+      let shippingWeight = "0.25 kg"; // Fallback final
+      
+      if (p.formato && p.formato.trim() !== "") {
+        shippingWeight = p.formato;
+      } else {
+        const weightMatch = p.nombre.match(/(\d+)\s*(g|kg|ml|l)/i);
+        if (weightMatch) {
+          const value = weightMatch[1];
+          const unit = weightMatch[2].toLowerCase();
+          shippingWeight = `${value} ${unit === 'g' || unit === 'ml' ? 'g' : 'kg'}`;
+        }
       }
 
       xml += `
