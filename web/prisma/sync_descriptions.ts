@@ -26,28 +26,63 @@ async function main() {
         continue;
     }
 
+    // LIMPIEZA B2B PREVENTIVA
+    let cleanDesc = item.descripcion || "";
+    const B2B_PATTERNS = [
+        /En Feliubadal.*/gi,
+        /excelente opci[óo]n para que tiendas.*/gi,
+        /punto de venta/gi,
+        /canal profesional/gi,
+        /precios profesionales/gi,
+        /tiendas especializadas/gi,
+        /alta rotaci[óo]n/gi,
+        /distribuci[óo]n/gi
+    ];
+    for (const pattern of B2B_PATTERNS) {
+        cleanDesc = cleanDesc.replace(pattern, "");
+    }
+    cleanDesc = cleanDesc.trim();
+
     try {
-        // En lugar de borrar todo y crear de cero, hacemos update cruzando por 'ean' o 'ref' si ean no existe.
-        // Asumiendo que Prisma permite findFirst para ean
-        const targetTarget = await prisma.product.findFirst({
+        const existing = await prisma.product.findFirst({
             where: item.ean ? { ean: item.ean } : { ref: item.ref }
         });
 
-        if (targetTarget) {
-            if (targetTarget.isAiGenerated) {
-                // Protección: No sobreescribir la magia de la IA con el gris texto del distribuidor
-                continue;
-            }
-
+        if (existing) {
+            // ACTUALIZAR SEGURA: Solo tocamos precios base y stock. No tocamos descripciones de IA ni precios de venta manuales.
             await prisma.product.update({
-                where: { id: targetTarget.id },
+                where: { id: existing.id },
                 data: {
-                    descripcion: item.descripcion,
-                    ingredientes: item.ingredientes || null
+                    precioOriginal: item.precioOriginal,
+                    pvpr: item.pvpr || "",
+                    agotado: item.agotado,
+                    isNuevo: item.is_nuevo || false,
+                    formato: item.formato || ""
                 }
             });
             inyectados++;
         } else {
+            // INSERCIÓN NUEVA: Producto recién detectado en Feliubadaló
+            await prisma.product.create({
+              data: {
+                nombre: item.nombre,
+                marca: item.marca,
+                ean: item.ean || "",
+                ref: item.ref || "",
+                precioOriginal: item.precioOriginal,
+                margen: item.margen,
+                precioVenta: item.precioVenta,
+                pvpr: item.pvpr || "",
+                agotado: item.agotado,
+                imagen: item.imagen || "",
+                urlOriginal: item.url_original || null,
+                isNuevo: item.is_nuevo || false,
+                // Insertamos descripciones saneadas (B2C)
+                descripcion: cleanDesc || null,
+                ingredientes: item.ingredientes || null,
+                formato: item.formato || null
+              }
+            });
             no_encontrados++;
         }
     } catch (e) {
