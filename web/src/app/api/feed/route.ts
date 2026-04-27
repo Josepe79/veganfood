@@ -33,17 +33,23 @@ export async function GET() {
       const availability = p.agotado ? "out of stock" : "in stock";
       const description = `Comprar ${p.nombre} de la marca ${p.marca || 'Vegan'}. Producto 100% vegetal con envío express.`;
       
-      // Priorizar el campo 'formato' de la BBDD, si no, intentar extraer del nombre
+      // Normalizador de Pesos para Google Merchant (Acepta g, kg, lb, oz)
       let shippingWeight = "0.25 kg"; // Fallback final
       
-      if (p.formato && p.formato.trim() !== "") {
-        shippingWeight = p.formato;
-      } else {
-        const weightMatch = p.nombre.match(/(\d+)\s*(g|kg|ml|l)/i);
-        if (weightMatch) {
-          const value = weightMatch[1];
-          const unit = weightMatch[2].toLowerCase();
-          shippingWeight = `${value} ${unit === 'g' || unit === 'ml' ? 'g' : 'kg'}`;
+      const rawFormato = (p.formato || p.nombre).toLowerCase();
+      
+      // Buscamos números seguidos de unidades (g, gr, kg, ml, l, litro)
+      const weightMatch = rawFormato.match(/(\d+(?:\.\d+)?)\s*(g|gr|kg|ml|l|litro)/i);
+      
+      if (weightMatch) {
+        const value = weightMatch[1];
+        const unit = weightMatch[2].toLowerCase();
+        
+        if (unit === 'kg' || unit === 'l' || unit === 'litro') {
+          shippingWeight = `${value} kg`;
+        } else {
+          // Para g, gr, ml usamos 'g'
+          shippingWeight = `${value} g`;
         }
       }
 
