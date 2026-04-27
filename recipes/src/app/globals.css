@@ -15,6 +15,12 @@
     --foreground: #f8fafc;
   }
 
+  html, body {
+    overflow-x: hidden;
+    width: 100%;
+    position: relative;
+  }
+
   body {
     background: radial-gradient(circle at top, #1e293b 0%, #0f172a 100%);
     color: var(--foreground);
