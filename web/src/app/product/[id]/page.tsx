@@ -54,7 +54,7 @@ export default async function ProductDetail({ params }: { params: Promise<{ id: 
       "@type": "Offer",
       "url": `https://veganfood.es/product/${product.id}`,
       "priceCurrency": "EUR",
-      "price": product.precioVenta,
+      "price": product.precioVenta.toFixed(2),
       "availability": product.agotado ? "https://schema.org/OutOfStock" : "https://schema.org/InStock",
       "itemCondition": "https://schema.org/NewCondition"
     }
