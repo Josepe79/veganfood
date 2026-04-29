@@ -8,7 +8,7 @@ export default async function Home() {
   const recipes = await prisma.recipe.findMany({
     where: { publicado: true },
     orderBy: { createdAt: 'desc' },
-    take: 12
+    take: 24
   });
 
   return (

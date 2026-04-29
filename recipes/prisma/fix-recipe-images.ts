@@ -18,18 +18,12 @@ async function main() {
     
     // Si la imagen sugerida (ignorando el parámetro aleatorio de la URL) es distinta de la base
     const baseNewImage = newImageUrl.split('?')[0];
-    const baseOldImage = recipe.imagen ? recipe.imagen.split('?')[0] : '';
-
-    if (baseNewImage !== baseOldImage) {
-      await prisma.recipe.update({
-        where: { id: recipe.id },
-        data: { imagen: newImageUrl }
-      });
-      console.log(`✅ [${recipe.nombre}] -> Nueva imagen asignada.`);
-      actualizadas++;
-    } else {
-      console.log(`➖ [${recipe.nombre}] -> Imagen mantenida (ya era correcta).`);
-    }
+    await prisma.recipe.update({
+      where: { id: recipe.id },
+      data: { imagen: newImageUrl }
+    });
+    console.log(`✅ [${recipe.nombre}] -> Imagen procesada.`);
+    actualizadas++;
   }
 
   console.log(`\n🎉 ¡Proceso completado! Se han actualizado ${actualizadas} recetas con imágenes semánticas.`);
