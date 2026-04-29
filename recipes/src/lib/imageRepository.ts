@@ -20,9 +20,12 @@ export const IMAGE_REPOSITORY: RecipeImage[] = [
   { id: 'photo-1504674900247-0877df9cc836', tags: ['crema', 'pure', 'verde', 'espinacas', 'calabacin'] },
   
   // 🍪 POSTRES & DULCES
-  { id: 'photo-1499636136210-6f4ee915583e', tags: ['galletas', 'cookies', 'horno', 'dulce', 'merienda', 'postre'] },
+  { id: 'photo-1499636136210-6f4ee915583e', tags: ['galletas', 'cookies', 'horno', 'dulce', 'merienda', 'postre', 'cacahuete'] },
   { id: 'photo-1476718406336-bb5a9690ee2a', tags: ['chocolate', 'cacao', 'brownie', 'tarta', 'pastel', 'dulce'] },
   { id: 'photo-1550617931-e17a7b70dce2', tags: ['tarta', 'pastel', 'frutas', 'fresa', 'arandanos', 'bizcocho'] },
+  { id: 'photo-1604382354936-07c5d9983bd3', tags: ['chocolate', 'cacao', 'crema', 'postre', 'dulce', 'trufas'] },
+  { id: 'photo-1558961363-fa8fdf82db35', tags: ['galletas', 'mermelada', 'desayuno', 'dulce', 'horno'] },
+  { id: 'photo-1543353071-873f17a7a088', tags: ['postre', 'yogur', 'vainilla', 'almendras', 'dulce'] },
   
   // 🥤 BEBIDAS & SMOOTHIES
   { id: 'photo-1505252585461-04db1eb84625', tags: ['batido', 'smoothie', 'fruta', 'vaso', 'fresco', 'desayuno', 'liquido'] },
@@ -63,28 +66,19 @@ export function getBestImageForRecipe(title: string, ingredientsRaw: string): st
       }
     }
 
+    // Añadimos ruido aleatorio (0 a 1.5) para romper empates y dar variedad
+    if (score > 0) {
+      score += Math.random() * 1.5;
+    }
+
     if (score > maxScore) {
       maxScore = score;
       bestMatchId = img.id;
     }
   }
 
-  // Si hay empate o puntuación muy baja, elegimos aleatoriamente entre los mejores para dar variedad
-  if (maxScore > 0) {
-    const topMatches = IMAGE_REPOSITORY.filter(img => {
-       let score = 0;
-       for(const tag of img.tags) {
-         if (normalizedTitle.includes(tag)) score += 3;
-         else if (combinedText.includes(tag)) score += 1;
-       }
-       return score === maxScore;
-    });
-    
-    if (topMatches.length > 0) {
-      bestMatchId = topMatches[Math.floor(Math.random() * topMatches.length)].id;
-    }
-  } else {
-      // Total random fallback si no hay coincidencias de nada
+  // Si no hubo ningún match en absoluto, elegimos aleatorio puro
+  if (maxScore === 0) {
       bestMatchId = IMAGE_REPOSITORY[Math.floor(Math.random() * IMAGE_REPOSITORY.length)].id;
   }
 
