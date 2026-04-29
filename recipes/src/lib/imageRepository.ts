@@ -6,8 +6,8 @@ export interface RecipeImage {
 export const IMAGE_REPOSITORY: RecipeImage[] = [
   // 🍝 PASTA & FIDEOS
   { id: 'photo-1473093295043-cdd812d0e601', tags: ['pasta', 'fideos', 'espaguetis', 'macarrones', 'italiano', 'tallarines', 'noodles'] },
-  { id: 'photo-1551183053-8d6d7e2e58c8', tags: ['pasta', 'tomate', 'boloñesa', 'salsa', 'penne'] },
-  { id: 'photo-1621996316220-4384a6c42171', tags: ['lasaña', 'horno', 'gratinado', 'capas', 'queso'] },
+  { id: 'photo-1606313564200-e75d5e30476c', tags: ['pasta', 'tomate', 'boloñesa', 'salsa', 'penne'] },
+  { id: 'photo-1533134242443-d4fd215305ad', tags: ['lasaña', 'horno', 'gratinado', 'capas', 'queso'] },
   
   // 🥗 ENSALADAS & BOWLS
   { id: 'photo-1512621776951-a57141f2eefd', tags: ['ensalada', 'bowl', 'fresco', 'verde', 'lechuga', 'espinacas', 'aguacate', 'salad'] },
@@ -16,12 +16,12 @@ export const IMAGE_REPOSITORY: RecipeImage[] = [
   
   // 🍲 GUISOS, SOPAS & CURRYS
   { id: 'photo-1547592166-23ac45744acd', tags: ['sopa', 'crema', 'caldo', 'cuchara', 'caliente', 'invierno', 'calabaza'] },
-  { id: 'photo-1540914124281-342729441458', tags: ['curry', 'guiso', 'estofado', 'salsa', 'picante', 'arroz', 'asiatico', 'leche de coco'] },
-  { id: 'photo-1548943487-a2e4f43b4850', tags: ['crema', 'pure', 'verde', 'espinacas', 'calabacin'] },
+  { id: 'photo-1546069901-ba9599a7e63c', tags: ['curry', 'guiso', 'estofado', 'salsa', 'picante', 'arroz', 'asiatico', 'leche de coco'] },
+  { id: 'photo-1504674900247-0877df9cc836', tags: ['crema', 'pure', 'verde', 'espinacas', 'calabacin'] },
   
   // 🍪 POSTRES & DULCES
   { id: 'photo-1499636136210-6f4ee915583e', tags: ['galletas', 'cookies', 'horno', 'dulce', 'merienda', 'postre'] },
-  { id: 'photo-1495147466023-0650b25e1eb9', tags: ['chocolate', 'cacao', 'brownie', 'tarta', 'pastel', 'dulce'] },
+  { id: 'photo-1476718406336-bb5a9690ee2a', tags: ['chocolate', 'cacao', 'brownie', 'tarta', 'pastel', 'dulce'] },
   { id: 'photo-1550617931-e17a7b70dce2', tags: ['tarta', 'pastel', 'frutas', 'fresa', 'arandanos', 'bizcocho'] },
   
   // 🥤 BEBIDAS & SMOOTHIES
