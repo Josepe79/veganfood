@@ -159,7 +159,7 @@ function Footer() {
 
         <div className="pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6">
           <p className="text-slate-500 text-[10px] uppercase tracking-widest font-medium">
-            © {new Date().getFullYear()} VeganFood.es - Cruelty-Free Grocery Network
+            © 2026 Operado por <a href="https://www.jepco.es" target="_blank" className="hover:text-emerald-400 transition-colors">Jepco</a>
           </p>
           <div className="flex items-center gap-6 opacity-30 grayscale hover:grayscale-0 hover:opacity-100 transition-all duration-500">
             <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Visa_Inc._logo.svg/2560px-Visa_Inc._logo.svg.png" alt="Visa" className="h-3" />

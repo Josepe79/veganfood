@@ -70,7 +70,7 @@ export default function RootLayout({
               </div>
             </div>
             <div className="mt-12 pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-4">
-              <p className="text-slate-500 text-xs">© {new Date().getFullYear()} Jepco Consutors SL. Todos los derechos reservados.</p>
+              <p className="text-slate-500 text-xs">© 2026 Operado por <a href="https://www.jepco.es" target="_blank" className="hover:text-primary transition-colors">Jepco</a></p>
               <div className="flex gap-6">
                 <span className="text-[10px] font-bold text-slate-600 uppercase tracking-tighter">Powered by VeganFood Technology</span>
               </div>
