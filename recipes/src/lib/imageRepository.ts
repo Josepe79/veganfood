@@ -49,12 +49,10 @@ export function getBestImageForRecipe(title: string, ingredientsRaw: string): st
   const normalizedIngredients = ingredientsRaw.toLowerCase();
   const combinedText = `${normalizedTitle} ${normalizedIngredients}`;
 
-  let bestMatchId = 'photo-1512621776951-a57141f2eefd'; // Ensalada default si no hay match
-  let maxScore = 0;
+  const scoredImages: { id: string, score: number }[] = [];
 
   for (const img of IMAGE_REPOSITORY) {
     let score = 0;
-    
     for (const tag of img.tags) {
       // Puntos dobles si el tag está en el título
       if (normalizedTitle.includes(tag)) {
@@ -65,21 +63,27 @@ export function getBestImageForRecipe(title: string, ingredientsRaw: string): st
         score += 1;
       }
     }
-
-    // Añadimos ruido aleatorio (0 a 1.5) para romper empates y dar variedad
     if (score > 0) {
-      score += Math.random() * 1.5;
-    }
-
-    if (score > maxScore) {
-      maxScore = score;
-      bestMatchId = img.id;
+      scoredImages.push({ id: img.id, score });
     }
   }
 
-  // Si no hubo ningún match en absoluto, elegimos aleatorio puro
-  if (maxScore === 0) {
-      bestMatchId = IMAGE_REPOSITORY[Math.floor(Math.random() * IMAGE_REPOSITORY.length)].id;
+  let bestMatchId = 'photo-1512621776951-a57141f2eefd'; // Ensalada default
+
+  if (scoredImages.length === 0) {
+    // Total random fallback si no hay coincidencias de nada
+    bestMatchId = IMAGE_REPOSITORY[Math.floor(Math.random() * IMAGE_REPOSITORY.length)].id;
+  } else {
+    // Ordenar por score descendente
+    scoredImages.sort((a, b) => b.score - a.score);
+    const maxScore = scoredImages[0].score;
+
+    // Coger TODAS las imágenes que tengan un score muy cercano al mejor (maxScore - 1)
+    // Esto asegura que si una imagen tiene 4 puntos y otra 3, ambas entren en el bombo, garantizando VARIEDAD TOTAL.
+    const topCandidates = scoredImages.filter(img => img.score >= Math.max(1, maxScore - 1));
+
+    // Elegir una al azar de los mejores candidatos
+    bestMatchId = topCandidates[Math.floor(Math.random() * topCandidates.length)].id;
   }
 
   return `https://images.unsplash.com/${bestMatchId}?q=80&w=2000&auto=format&fit=crop&sig=${Math.floor(Math.random() * 9999)}`;
