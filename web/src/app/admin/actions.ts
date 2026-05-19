@@ -75,7 +75,7 @@ export async function deleteOrder(orderId: string) {
     return { success: true };
   } catch(error: any) {
     console.error("Error deleting order:", error);
-    return { success: false, error: error.message };\
+    return { success: false, error: error.message };
   }
 }
 
