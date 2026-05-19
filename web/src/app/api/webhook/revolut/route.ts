@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { sendOrderConfirmationEmail } from "@/lib/mailer";
+import { sendOrderConfirmationEmail, sendAdminNewOrderEmail } from "@/lib/mailer";
 import { createPacklinkDraft } from "@/lib/packlink";
 
 export async function POST(req: Request) {
@@ -11,8 +11,16 @@ export async function POST(req: Request) {
     
     // Revolut sends various events. We only care when the order is successfully paid.
     if (eventType === "ORDER_COMPLETED") {
+      // Cargamos el pedido junto con sus items y el nombre del producto
       const order = await prisma.order.findFirst({
-        where: { revolutOrderId }
+        where: { revolutOrderId },
+        include: {
+          items: {
+            include: {
+              product: { select: { nombre: true } }
+            }
+          }
+        }
       });
 
       if (order) {
@@ -23,9 +31,25 @@ export async function POST(req: Request) {
         });
         console.log(`✅ Orden ${order.id} marcada como PAGADA exitosamente.`);
 
-        // Disparamos correo asíncrono al cliente (sin bloquear la API)
+        // Email de confirmación al cliente
         sendOrderConfirmationEmail(order.customerEmail, order.id, order.customerName, order.totalAmount)
             .catch(err => console.error("Error disparando promise de email transaccional:", err));
+
+        // 🔔 Email de notificación al admin con todos los datos del cliente y productos
+        const itemsForAdmin = order.items.map(item => ({
+          productName: item.product.nombre,
+          quantity: item.quantity,
+          price: item.price
+        }));
+        sendAdminNewOrderEmail(
+          order.id,
+          order.customerName,
+          order.customerEmail,
+          order.customerPhone,
+          order.address,
+          order.totalAmount,
+          itemsForAdmin
+        ).catch(err => console.error("Error enviando notificación al admin:", err));
 
         // Transmitimos Payload a Packlink silenciosamente (Opción A JIT)
         const packlinkDetails = {

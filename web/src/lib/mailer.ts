@@ -118,3 +118,86 @@ export async function sendOrderShippedEmail(emailTo: string, orderId: string, cu
         return false;
     }
 }
+
+export interface OrderItemDetail {
+    productName: string;
+    quantity: number;
+    price: number;
+}
+
+export async function sendAdminNewOrderEmail(
+    orderId: string,
+    customerName: string,
+    customerEmail: string,
+    customerPhone: string | null | undefined,
+    address: string | null | undefined,
+    totalAmount: number,
+    items: OrderItemDetail[]
+) {
+    const adminEmail = process.env.SMTP_USER || "veganfood@jepco.es";
+
+    const itemsRows = items.map(item => `
+        <tr>
+            <td style="padding: 8px 12px; border-bottom: 1px solid #eee; color: #333;">${item.productName}</td>
+            <td style="padding: 8px 12px; border-bottom: 1px solid #eee; text-align: center; color: #333;">${item.quantity}</td>
+            <td style="padding: 8px 12px; border-bottom: 1px solid #eee; text-align: right; color: #333; font-weight: bold;">${(item.price * item.quantity).toFixed(2)}€</td>
+        </tr>
+    `).join("");
+
+    try {
+        const mailOptions = {
+            from: `"VeganFood Sistema" <${adminEmail}>`,
+            to: adminEmail,
+            subject: `🛒 NUEVO PEDIDO #${orderId.substring(0, 8).toUpperCase()} — ${customerName} — ${totalAmount.toFixed(2)}€`,
+            html: `
+                <div style="font-family: Arial, sans-serif; padding: 30px; max-width: 650px; margin: 0 auto; border: 2px solid #2e7d32; border-radius: 10px; background-color: #f9fff9;">
+                    <h2 style="color: #2e7d32; margin-top: 0;">🛒 Nuevo Pedido Recibido y Pagado</h2>
+                    <p style="color: #555; font-size: 15px;">Se ha confirmado el pago del siguiente pedido. Entra al <a href="https://veganfood.es/admin" style="color: #2e7d32;">panel de admin</a> para gestionarlo en Feliubadaló.</p>
+
+                    <div style="background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 20px; margin: 20px 0;">
+                        <h3 style="margin-top: 0; color: #1b5e20; border-bottom: 2px solid #e8f5e9; padding-bottom: 10px;">📦 Pedido #${orderId.substring(0, 8).toUpperCase()}</h3>
+
+                        <h4 style="color: #555; margin-bottom: 8px;">👤 Datos del Cliente</h4>
+                        <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+                            <tr><td style="padding: 5px 10px; color: #888; width: 130px;"><strong>Nombre:</strong></td><td style="padding: 5px 10px; color: #333;">${customerName}</td></tr>
+                            <tr><td style="padding: 5px 10px; color: #888;"><strong>Email:</strong></td><td style="padding: 5px 10px; color: #333;"><a href="mailto:${customerEmail}" style="color: #2e7d32;">${customerEmail}</a></td></tr>
+                            <tr><td style="padding: 5px 10px; color: #888;"><strong>Teléfono:</strong></td><td style="padding: 5px 10px; color: #333;">${customerPhone || "—"}</td></tr>
+                            <tr><td style="padding: 5px 10px; color: #888;"><strong>Dirección:</strong></td><td style="padding: 5px 10px; color: #333;">${address || "—"}</td></tr>
+                        </table>
+
+                        <h4 style="color: #555; margin-bottom: 8px;">🛍️ Productos</h4>
+                        <table style="width: 100%; border-collapse: collapse;">
+                            <thead>
+                                <tr style="background-color: #e8f5e9;">
+                                    <th style="padding: 8px 12px; text-align: left; color: #2e7d32;">Producto</th>
+                                    <th style="padding: 8px 12px; text-align: center; color: #2e7d32;">Uds.</th>
+                                    <th style="padding: 8px 12px; text-align: right; color: #2e7d32;">Subtotal</th>
+                                </tr>
+                            </thead>
+                            <tbody>${itemsRows}</tbody>
+                            <tfoot>
+                                <tr style="background-color: #f1f8e9;">
+                                    <td colspan="2" style="padding: 10px 12px; font-weight: bold; color: #1b5e20;">TOTAL PAGADO</td>
+                                    <td style="padding: 10px 12px; text-align: right; font-size: 18px; font-weight: bold; color: #1b5e20;">${totalAmount.toFixed(2)}€</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+
+                    <p style="text-align: center; margin-top: 20px;">
+                        <a href="https://veganfood.es/admin" style="display: inline-block; padding: 12px 28px; background-color: #2e7d32; color: white; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 15px;">👉 Ir al Panel Admin</a>
+                    </p>
+
+                    <p style="color: #bbb; font-size: 11px; text-align: center; margin-top: 20px;">VeganFood Sistema — Notificación automática</p>
+                </div>
+            `
+        };
+
+        await transporter.sendMail(mailOptions);
+        console.log(`📧 Email de nuevo pedido enviado al admin (${adminEmail})`);
+        return true;
+    } catch (e) {
+        console.error("Error enviando email de notificación al admin:", e);
+        return false;
+    }
+}
