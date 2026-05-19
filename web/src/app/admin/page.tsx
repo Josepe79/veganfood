@@ -8,6 +8,7 @@ import { ShipOrderButton } from "./ShipOrderButton";
 import { PromotionToggle } from "./PromotionToggle";
 import { PromotionReset } from "./PromotionReset";
 import { ReviewCenterClient } from "./ReviewCenterClient";
+import { OrdersPanel } from "./OrdersPanel";
 import { revalidatePath } from "next/cache";
 
 export const dynamic = 'force-dynamic';
@@ -45,6 +46,39 @@ export default async function AdminDashboard(props: { searchParams: Promise<{ br
         },
         orderBy: { updatedAt: 'desc' }
     });
+
+    // Todos los pedidos agrupados por cliente para el panel de gestión
+    const allOrders = await prisma.order.findMany({
+        include: { items: { include: { product: { select: { nombre: true } } } } },
+        orderBy: { createdAt: 'desc' }
+    });
+    const customerMap = new Map<string, any>();
+    for (const order of allOrders) {
+        const key = order.customerEmail;
+        if (!customerMap.has(key)) {
+            customerMap.set(key, {
+                customerName: order.customerName,
+                customerEmail: order.customerEmail,
+                customerPhone: order.customerPhone,
+                orders: []
+            });
+        }
+        customerMap.get(key).orders.push({
+            id: order.id,
+            status: order.status,
+            totalAmount: order.totalAmount,
+            createdAt: order.createdAt.toISOString(),
+            address: order.address,
+            trackingNumber: order.trackingNumber,
+            items: order.items.map(i => ({
+                id: i.id,
+                quantity: i.quantity,
+                price: i.price,
+                product: { nombre: i.product.nombre }
+            }))
+        });
+    }
+    const customerList = Array.from(customerMap.values());
 
     const agotadosList = await prisma.product.findMany({
         where: { agotado: true },
@@ -313,6 +347,20 @@ export default async function AdminDashboard(props: { searchParams: Promise<{ br
                     )}
                 </div>
             </div>
+            </div>
+        </div>
+
+        {/* PANEL DE PEDIDOS POR CLIENTE */}
+        <div className="mt-12">
+            <div className="glass p-8 border-primary/20">
+                <div className="flex items-center gap-4 mb-8">
+                    <div className="w-12 h-12 bg-primary/20 rounded-full flex items-center justify-center text-primary text-xl">👤</div>
+                    <div>
+                        <h2 className="text-2xl font-bold text-white">Gestión de Pedidos por Cliente</h2>
+                        <p className="text-sm text-slate-400">Consulta, edita la dirección y cambia el estado de cada pedido.</p>
+                    </div>
+                </div>
+                <OrdersPanel customers={customerList} />
             </div>
         </div>
 

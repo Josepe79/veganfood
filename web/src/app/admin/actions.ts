@@ -75,6 +75,32 @@ export async function deleteOrder(orderId: string) {
     return { success: true };
   } catch(error: any) {
     console.error("Error deleting order:", error);
+    return { success: false, error: error.message };\
+  }
+}
+
+export async function updateOrderStatus(orderId: string, status: string) {
+  try {
+    await prisma.order.update({
+      where: { id: orderId },
+      data: { status }
+    });
+    revalidatePath("/admin");
+    return { success: true };
+  } catch(error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
+export async function updateOrderAddress(orderId: string, address: string) {
+  try {
+    await prisma.order.update({
+      where: { id: orderId },
+      data: { address }
+    });
+    revalidatePath("/admin");
+    return { success: true };
+  } catch(error: any) {
     return { success: false, error: error.message };
   }
 }
