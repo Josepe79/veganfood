@@ -3,9 +3,22 @@ import { prisma } from "@/lib/prisma";
 import { sendOrderConfirmationEmail, sendAdminNewOrderEmail } from "@/lib/mailer";
 import { createPacklinkDraft } from "@/lib/packlink";
 
+// GET handler: Revolut o cualquier sistema puede hacer un ping de validación
+export async function GET() {
+  return NextResponse.json({ status: "ok", service: "VeganFood Webhook" }, { status: 200 });
+}
+
 export async function POST(req: Request) {
+  let rawBody: any = {};
   try {
-    const rawBody = await req.json();
+    const text = await req.text();
+    if (text) rawBody = JSON.parse(text);
+  } catch {
+    // Body vacío o malformado — devolvemos 200 para no bloquear a Revolut
+    return NextResponse.json({ received: true }, { status: 200 });
+  }
+
+  try {
     const eventType = rawBody.event;
     const revolutOrderId = rawBody.order_id;
     
