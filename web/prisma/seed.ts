@@ -41,7 +41,7 @@ async function main() {
     }
 
     let calculatedSalePrice = 0;
-    let finalMargin = 0.10;
+    let finalMargin = 0.30;
 
     if (pvprVal > 0) {
        calculatedSalePrice = pvprVal;
@@ -49,7 +49,7 @@ async function main() {
           finalMargin = (calculatedSalePrice - originalCost) / originalCost;
        }
     } else {
-       calculatedSalePrice = originalCost * (1 + finalMargin);
+       calculatedSalePrice = originalCost * (1 + finalMargin) * 1.10;
     }
 
     const agotado = item.agotado === true

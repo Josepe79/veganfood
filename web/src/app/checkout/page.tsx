@@ -14,6 +14,9 @@ export default function CheckoutPage() {
     email: "",
     telefono: "",
     direccion: "",
+    codigoPostal: "",
+    municipio: "",
+    provincia: "",
   });
 
   if (items.length === 0) {
@@ -35,12 +38,20 @@ export default function CheckoutPage() {
     setLoading(true);
 
     try {
+      // Combinar la dirección de forma estructurada para que se guarde limpia en la base de datos
+      const direccionCompleta = `${formData.direccion}, ${formData.codigoPostal} ${formData.municipio}, ${formData.provincia}`;
+
       // Create Database Order & Revolut Session via Next.js API
       const res = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          customer: formData,
+          customer: {
+            nombre: formData.nombre,
+            email: formData.email,
+            telefono: formData.telefono,
+            direccion: direccionCompleta,
+          },
           cartItems: items.map(item => ({
             productId: item.product.id,
             quantity: item.quantity,
@@ -96,21 +107,55 @@ export default function CheckoutPage() {
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-slate-400 mb-2">Dirección de Envío Completa</label>
+                  <label className="block text-sm font-medium text-slate-400 mb-2">Dirección (Calle, número, piso...)</label>
                   <input required
                     type="text" 
                     value={formData.direccion} 
                     onChange={e => setFormData({...formData, direccion: e.target.value})}
-                    className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3 text-white focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
+                    placeholder="Ej: Calle Gran Vía 45, 3º B"
+                    className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3 text-white focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all placeholder:text-slate-600"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-400 mb-2">Teléfono</label>
+                  <label className="block text-sm font-medium text-slate-400 mb-2">Código Postal</label>
+                  <input required
+                    type="text" 
+                    maxLength={5}
+                    pattern="[0-9]{5}"
+                    value={formData.codigoPostal} 
+                    onChange={e => setFormData({...formData, codigoPostal: e.target.value.replace(/\D/g, '')})}
+                    placeholder="Ej: 28013"
+                    className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3 text-white focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all placeholder:text-slate-600"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-400 mb-2">Población / Municipio</label>
+                  <input required
+                    type="text" 
+                    value={formData.municipio} 
+                    onChange={e => setFormData({...formData, municipio: e.target.value})}
+                    placeholder="Ej: Madrid"
+                    className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3 text-white focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all placeholder:text-slate-600"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-400 mb-2">Provincia</label>
+                  <input required
+                    type="text" 
+                    value={formData.provincia} 
+                    onChange={e => setFormData({...formData, provincia: e.target.value})}
+                    placeholder="Ej: Madrid"
+                    className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3 text-white focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all placeholder:text-slate-600"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-400 mb-2">Teléfono de Contacto</label>
                   <input required
                     type="tel" 
                     value={formData.telefono} 
                     onChange={e => setFormData({...formData, telefono: e.target.value})}
-                    className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3 text-white focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
+                    placeholder="Ej: 600123456"
+                    className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3 text-white focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all placeholder:text-slate-600"
                   />
                 </div>
               </div>
