@@ -35,6 +35,8 @@ export async function GET() {
       
       // Normalizador de Pesos para Google Merchant (Acepta g, kg, lb, oz)
       let shippingWeight = "0.25 kg"; // Fallback final
+      let unitPricingMeasure = "1 ct";
+      let unitPricingBaseMeasure = "1 ct";
       
       const rawFormato = (p.formato || p.nombre).toLowerCase();
       
@@ -45,11 +47,22 @@ export async function GET() {
         const value = weightMatch[1];
         const unit = weightMatch[2].toLowerCase();
         
-        if (unit === 'kg' || unit === 'l' || unit === 'litro') {
+        if (unit === 'kg') {
           shippingWeight = `${value} kg`;
-        } else {
-          // Para g, gr, ml usamos 'g'
+          unitPricingMeasure = `${value} kg`;
+          unitPricingBaseMeasure = "1 kg";
+        } else if (unit === 'g' || unit === 'gr') {
           shippingWeight = `${value} g`;
+          unitPricingMeasure = `${value} g`;
+          unitPricingBaseMeasure = "1 kg";
+        } else if (unit === 'l' || unit === 'litro') {
+          shippingWeight = `${value} kg`; // Shipping weight is usually weight, treating 1L as 1kg for shipping
+          unitPricingMeasure = `${value} l`;
+          unitPricingBaseMeasure = "1 l";
+        } else if (unit === 'ml') {
+          shippingWeight = `${value} g`; // 1ml ~ 1g for shipping
+          unitPricingMeasure = `${value} ml`;
+          unitPricingBaseMeasure = "1 l";
         }
       }
 
@@ -65,6 +78,8 @@ export async function GET() {
       <g:price>${p.precioVenta.toFixed(2)} EUR</g:price>
       <g:brand><![CDATA[${p.marca || 'VeganFood'}]]></g:brand>
       <g:shipping_weight>${shippingWeight}</g:shipping_weight>
+      <g:unit_pricing_measure>${unitPricingMeasure}</g:unit_pricing_measure>
+      <g:unit_pricing_base_measure>${unitPricingBaseMeasure}</g:unit_pricing_base_measure>
       <g:google_product_category>Food, Beverages &amp; Tobacco &gt; Food Items</g:google_product_category>
     </item>`;
     }
