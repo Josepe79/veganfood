@@ -1,6 +1,6 @@
 "use client";
 import { useState, useTransition } from "react";
-import { updateOrderStatus, updateOrderAddress } from "./actions";
+import { updateOrderStatus, updateOrderAddress, captureRevolutOrder, cancelRevolutOrderAction } from "./actions";
 
 const STATUS_LABELS: Record<string, { label: string; color: string }> = {
   PENDING:    { label: "Pendiente",   color: "bg-yellow-500/20 text-yellow-400 border-yellow-500/30" },
@@ -41,6 +41,22 @@ function OrderCard({ order, onUpdated }: { order: Order; onUpdated: () => void }
     startTransition(async () => {
       await updateOrderAddress(order.id, address);
       setEditingAddress(false);
+      onUpdated();
+    });
+  };
+
+  const handleCapture = () => {
+    if (!confirm(`¿Capturar los fondos de este pedido en Revolut? Haz esto SOLO si ya has confirmado stock con Feliubadaló.`)) return;
+    startTransition(async () => {
+      await captureRevolutOrder(order.id);
+      onUpdated();
+    });
+  };
+
+  const handleCancelRevolut = () => {
+    if (!confirm(`¿Cancelar la retención en Revolut? El dinero se liberará a la tarjeta del cliente.`)) return;
+    startTransition(async () => {
+      await cancelRevolutOrderAction(order.id);
       onUpdated();
     });
   };
@@ -104,9 +120,23 @@ function OrderCard({ order, onUpdated }: { order: Order; onUpdated: () => void }
         <p className="text-[11px] text-emerald-400 mb-3">🚚 Tracking: {order.trackingNumber}</p>
       )}
 
+      {/* Acciones de Revolut (Solo si está pagado/retenido o pendiente) */}
+      {(order.status === "PAID" || order.status === "PENDING") && (
+        <div className="flex gap-2 mb-3">
+          <button onClick={handleCapture} disabled={isPending}
+            className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-3 py-2 rounded transition-all">
+            💰 Capturar (Cobrar)
+          </button>
+          <button onClick={handleCancelRevolut} disabled={isPending}
+            className="flex-1 bg-red-600 hover:bg-red-500 text-white text-xs font-bold px-3 py-2 rounded transition-all">
+            ❌ Cancelar Retención
+          </button>
+        </div>
+      )}
+
       {/* Cambiar estado */}
       <div className="flex flex-wrap gap-1 pt-3 border-t border-slate-700/50">
-        {ALL_STATUSES.filter(s => s !== order.status).map(st => (
+        {ALL_STATUSES.filter(st => st !== order.status).map(st => (
           <button key={st} onClick={() => handleStatusChange(st)} disabled={isPending}
             className="text-[10px] font-bold px-2 py-1 rounded border border-slate-700 text-slate-400 hover:border-primary/50 hover:text-primary transition-all">
             → {STATUS_LABELS[st]?.label}

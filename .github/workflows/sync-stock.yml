@@ -1,0 +1,47 @@
+name: Sync Stock from Wholesaler
+
+on:
+  schedule:
+    - cron: '0 */4 * * *' # Every 4 hours
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  scrape-and-sync:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+
+    - name: Install Python dependencies
+      run: |
+        cd scraper
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        playwright install chromium
+
+    - name: Run Scraper
+      env:
+        FELIUBADALO_EMAIL: ${{ secrets.FELIUBADALO_EMAIL }}
+        FELIUBADALO_PASSWORD: ${{ secrets.FELIUBADALO_PASSWORD }}
+      run: |
+        cd scraper
+        python scraper.py
+
+    - name: Send data to Webhook
+      env:
+        SYNC_SECRET: ${{ secrets.SYNC_SECRET }}
+        WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }} # e.g. https://veganfood.es/api/webhook/sync-stock
+      run: |
+        cd scraper
+        echo "Enviando datos al webhook..."
+        curl -X POST -H "Content-Type: application/json" \
+             -H "Authorization: Bearer $SYNC_SECRET" \
+             -d @productos_veganos.json \
+             $WEBHOOK_URL

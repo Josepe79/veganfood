@@ -22,8 +22,8 @@ export async function POST(req: Request) {
     const eventType = rawBody.event;
     const revolutOrderId = rawBody.order_id;
     
-    // Revolut sends various events. We only care when the order is successfully paid.
-    if (eventType === "ORDER_COMPLETED") {
+    // Revolut sends various events. We only care when the order is successfully paid or authorised.
+    if (eventType === "ORDER_COMPLETED" || eventType === "ORDER_AUTHORISED") {
       // Cargamos el pedido junto con sus items y el nombre del producto
       const order = await prisma.order.findFirst({
         where: { revolutOrderId },
@@ -37,12 +37,12 @@ export async function POST(req: Request) {
       });
 
       if (order) {
-        // Marcamos el pedido como PAGADO y oficial para activar logística JIT
+        // Marcamos el pedido como PAGADO (retenido en caso de AUTHORISED) para activar logística JIT
         await prisma.order.update({
           where: { id: order.id },
           data: { status: "PAID" }
         });
-        console.log(`✅ Orden ${order.id} marcada como PAGADA exitosamente.`);
+        console.log(`✅ Orden ${order.id} marcada como PAGADA/RETENIDA exitosamente.`);
 
         // Email de confirmación al cliente
         sendOrderConfirmationEmail(order.customerEmail, order.id, order.customerName, order.totalAmount)

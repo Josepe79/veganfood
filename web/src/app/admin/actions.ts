@@ -294,3 +294,71 @@ export async function executeSocialPost(videoUrl: string, caption: string) {
         return { success: false, error: e.message };
     }
 }
+
+export async function captureRevolutOrder(orderId: string) {
+  try {
+    const order = await prisma.order.findUnique({ where: { id: orderId } });
+    if (!order || !order.revolutOrderId) throw new Error("Order not found or no Revolut ID");
+
+    const isSandbox = process.env.REVOLUT_SECRET_KEY?.startsWith('sand_');
+    const baseUrl = isSandbox ? "https://sandbox-merchant.revolut.com" : "https://merchant.revolut.com";
+
+    const revolutResponse = await fetch(`${baseUrl}/api/1.0/orders/${order.revolutOrderId}/capture`, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${process.env.REVOLUT_SECRET_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ amount: Math.round(order.totalAmount * 100) })
+    });
+
+    if (!revolutResponse.ok) {
+      throw new Error(`Revolut capture failed: ${await revolutResponse.text()}`);
+    }
+
+    await prisma.order.update({
+      where: { id: orderId },
+      data: { status: "PAID" }
+    });
+
+    revalidatePath("/admin");
+    return { success: true };
+  } catch(error: any) {
+    console.error("Capture Error:", error);
+    return { success: false, error: error.message };
+  }
+}
+
+export async function cancelRevolutOrderAction(orderId: string) {
+  try {
+    const order = await prisma.order.findUnique({ where: { id: orderId } });
+    if (!order || !order.revolutOrderId) throw new Error("Order not found or no Revolut ID");
+
+    const isSandbox = process.env.REVOLUT_SECRET_KEY?.startsWith('sand_');
+    const baseUrl = isSandbox ? "https://sandbox-merchant.revolut.com" : "https://merchant.revolut.com";
+
+    const revolutResponse = await fetch(`${baseUrl}/api/1.0/orders/${order.revolutOrderId}/cancel`, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${process.env.REVOLUT_SECRET_KEY}`,
+        "Content-Type": "application/json",
+      }
+    });
+
+    if (!revolutResponse.ok) {
+        const errorText = await revolutResponse.text();
+        console.warn(`Revolut cancel returned: ${errorText}`);
+    }
+
+    await prisma.order.update({
+      where: { id: orderId },
+      data: { status: "CANCELLED" }
+    });
+
+    revalidatePath("/admin");
+    return { success: true };
+  } catch(error: any) {
+    console.error("Cancel Error:", error);
+    return { success: false, error: error.message };
+  }
+}

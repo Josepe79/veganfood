@@ -49,6 +49,7 @@ export async function POST(req: Request) {
       body: JSON.stringify({
         amount: Math.round(totalAmount * 100), // En céntimos
         currency: "EUR",
+        capture_mode: "MANUAL", // Retener fondos en lugar de cobrarlos inmediatamente
         merchant_order_ext_ref: order.id,
         customer_email: customer.email,
         description: `VeganFood - Compra #${order.id.slice(-6)}`,
