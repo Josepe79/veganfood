@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build && npx --yes tsx prisma/fix-recipe-images.ts",
+    "build": "next build",
     "start": "next start",
     "lint": "eslint"
   },
