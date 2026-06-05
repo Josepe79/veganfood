@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { getBestImageForRecipe } from "@/lib/imageRepository";
 
 export async function POST() {
   try {
@@ -75,11 +76,7 @@ export async function POST() {
     const newRecipes = recipesToInsert.filter((r: any) => r.slug);
 
     for (const r of newRecipes) {
-      const keywordsToUse = r.imageKeywords || "vegan,food,recipe";
-      const encodedKeywords = encodeURIComponent(keywordsToUse.replace(/ /g, ''));
-      // Utilizamos lock con un hash simple del slug para que la imagen sea aleatoria pero permanente para cada receta
-      const lockId = Math.floor(Math.random() * 10000); 
-      const imageUrl = `https://loremflickr.com/1200/800/${encodedKeywords}?lock=${lockId}`;
+      const imageUrl = getBestImageForRecipe(r.nombre, JSON.stringify(r.ingredientes));
 
       await prisma.recipe.upsert({
         where: { slug: r.slug },
