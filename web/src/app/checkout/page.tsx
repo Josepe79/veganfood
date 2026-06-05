@@ -139,14 +139,65 @@ export default function CheckoutPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-400 mb-2">Provincia</label>
-                  <input required
-                    type="text" 
+                  <label className="block text-sm font-medium text-slate-400 mb-2">
+                    Provincia
+                    <span className="block text-[10px] text-emerald-400 mt-1">Solo envíos a Península y Baleares</span>
+                  </label>
+                  <select required
                     value={formData.provincia} 
                     onChange={e => setFormData({...formData, provincia: e.target.value})}
-                    placeholder="Ej: Madrid"
-                    className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3 text-white focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all placeholder:text-slate-600"
-                  />
+                    className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3 text-white focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all appearance-none"
+                  >
+                    <option value="" disabled>Selecciona una provincia</option>
+                    <option value="A Coruña">A Coruña</option>
+                    <option value="Álava">Álava</option>
+                    <option value="Albacete">Albacete</option>
+                    <option value="Alicante">Alicante</option>
+                    <option value="Almería">Almería</option>
+                    <option value="Asturias">Asturias</option>
+                    <option value="Ávila">Ávila</option>
+                    <option value="Badajoz">Badajoz</option>
+                    <option value="Baleares">Baleares</option>
+                    <option value="Barcelona">Barcelona</option>
+                    <option value="Burgos">Burgos</option>
+                    <option value="Cáceres">Cáceres</option>
+                    <option value="Cádiz">Cádiz</option>
+                    <option value="Cantabria">Cantabria</option>
+                    <option value="Castellón">Castellón</option>
+                    <option value="Ciudad Real">Ciudad Real</option>
+                    <option value="Córdoba">Córdoba</option>
+                    <option value="Cuenca">Cuenca</option>
+                    <option value="Girona">Girona</option>
+                    <option value="Granada">Granada</option>
+                    <option value="Guadalajara">Guadalajara</option>
+                    <option value="Gipuzkoa">Gipuzkoa</option>
+                    <option value="Huelva">Huelva</option>
+                    <option value="Huesca">Huesca</option>
+                    <option value="Jaén">Jaén</option>
+                    <option value="La Rioja">La Rioja</option>
+                    <option value="León">León</option>
+                    <option value="Lleida">Lleida</option>
+                    <option value="Lugo">Lugo</option>
+                    <option value="Madrid">Madrid</option>
+                    <option value="Málaga">Málaga</option>
+                    <option value="Murcia">Murcia</option>
+                    <option value="Navarra">Navarra</option>
+                    <option value="Ourense">Ourense</option>
+                    <option value="Palencia">Palencia</option>
+                    <option value="Pontevedra">Pontevedra</option>
+                    <option value="Salamanca">Salamanca</option>
+                    <option value="Segovia">Segovia</option>
+                    <option value="Sevilla">Sevilla</option>
+                    <option value="Soria">Soria</option>
+                    <option value="Tarragona">Tarragona</option>
+                    <option value="Teruel">Teruel</option>
+                    <option value="Toledo">Toledo</option>
+                    <option value="Valencia">Valencia</option>
+                    <option value="Valladolid">Valladolid</option>
+                    <option value="Bizkaia">Bizkaia</option>
+                    <option value="Zamora">Zamora</option>
+                    <option value="Zaragoza">Zaragoza</option>
+                  </select>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-slate-400 mb-2">Teléfono de Contacto</label>

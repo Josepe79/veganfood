@@ -56,7 +56,13 @@ export default function EnviosDevoluciones() {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-emerald-400 mb-4">4. Gastos de Envío</h2>
+            <h2 className="text-xl font-semibold text-emerald-400 mb-4">4. Gastos de Envío y Zonas Excluidas</h2>
+            
+            <div className="bg-red-500/10 border border-red-500/20 p-4 rounded-xl mb-6 text-sm text-red-200">
+              <span className="font-bold text-red-400 uppercase tracking-widest block mb-1">Restricción Geográfica Obligatoria</span>
+              Por motivos de conservación de la cadena de frío y costes aduaneros, <strong>solo realizamos envíos a España Peninsular y las Islas Baleares</strong>. Lamentablemente, no realizamos envíos a las Islas Canarias, Ceuta ni Melilla.
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="border border-white/5 p-4 rounded-xl">
                 <h3 className="font-bold text-white mb-2 underline">Cambio de opinión</h3>

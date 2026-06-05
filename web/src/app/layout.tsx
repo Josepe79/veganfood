@@ -150,7 +150,8 @@ function Footer() {
               <p className="text-slate-400 text-[11px] leading-relaxed italic">
                 Avda. Salvador Espriu 38, <br />
                 08181 Sentmenat (Barcelona)<br />
-                Telf: 93.145.65.80
+                Telf: <a href="tel:931456580" className="hover:text-emerald-400">93.145.65.80</a><br />
+                Email: <a href="mailto:veganfood@jepco.es" className="hover:text-emerald-400">veganfood@jepco.es</a>
               </p>
             </div>
           </div>
