@@ -81,8 +81,8 @@ export async function POST() {
       
       let imageUrl = "";
       try {
-        console.log(`[Chef IA] Generando imagen en Hugging Face (SDXL) para: ${r.nombre}`);
-        const imageRes = await fetch("https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-xl-base-1.0", {
+        console.log(`[Chef IA] Generando imagen en Hugging Face (FLUX.1) para: ${r.nombre}`);
+        const imageRes = await fetch("https://router.huggingface.co/hf-inference/models/black-forest-labs/FLUX.1-schnell", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
