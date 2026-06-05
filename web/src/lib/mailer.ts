@@ -201,3 +201,33 @@ export async function sendAdminNewOrderEmail(
         return false;
     }
 }
+
+export async function sendOrderCancelledEmail(emailTo: string, orderId: string, customerName: string) {
+    try {
+        const mailOptions = {
+            from: `"VeganFood Team" <${process.env.SMTP_USER}>`,
+            to: emailTo,
+            subject: `Información sobre tu pedido #${orderId.substring(0, 8).toUpperCase()}`,
+            html: `
+                <div style="font-family: Arial, sans-serif; padding: 30px; max-width: 600px; margin: 0 auto; border: 1px solid #e0e0e0; border-radius: 10px; background-color: #fafafa;">
+                    <div style="text-align: center; margin-bottom: 20px;">
+                        <img src="https://veganfood.es/logo.png" alt="VeganFood Logo" style="max-width: 150px;">
+                    </div>
+                    <h2 style="color: #d32f2f;">Hola, ${customerName}</h2>
+                    <p style="color: #424242; font-size: 16px;">
+                        Lamentamos informarte de que tu pedido <strong>#${orderId.substring(0, 8).toUpperCase()}</strong> ha sido cancelado debido a falta de stock u otras incidencias logísticas.
+                    </p>
+                    <p style="color: #424242; font-size: 16px;">
+                        La retención de fondos en tu tarjeta ha sido <strong>liberada inmediatamente</strong>. Dependiendo de tu banco, es posible que el cargo desaparezca de tus movimientos en las próximas horas. No se te ha cobrado ninguna cantidad.
+                    </p>
+                    <p style="color: #757575; font-size: 14px;">Si tienes cualquier duda, responde directamente a este correo. Disculpa las molestias.</p>
+                </div>
+            `
+        };
+        await transporter.sendMail(mailOptions);
+        return true;
+    } catch (e) {
+        console.error('Error enviando email de cancelación:', e);
+        return false;
+    }
+}

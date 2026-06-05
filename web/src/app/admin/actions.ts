@@ -1,7 +1,7 @@
 "use server";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
-import { sendOrderPreparingEmail, sendOrderShippedEmail } from "@/lib/mailer";
+import { sendOrderPreparingEmail, sendOrderShippedEmail, sendOrderCancelledEmail } from "@/lib/mailer";
 import { generateSocialScript } from "@/lib/social-engine/script-gen";
 import { generateSocialVoice } from "@/lib/social-engine/voice-gen";
 import { renderSocialVideo } from "@/lib/social-engine/video-render";
@@ -354,6 +354,9 @@ export async function cancelRevolutOrderAction(orderId: string) {
       where: { id: orderId },
       data: { status: "CANCELLED" }
     });
+
+    sendOrderCancelledEmail(order.customerEmail, order.id, order.customerName)
+        .catch(err => console.error("Error enviando email de cancelación:", err));
 
     revalidatePath("/admin");
     return { success: true };
