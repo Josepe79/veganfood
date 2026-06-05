@@ -1,6 +1,5 @@
 import { prisma } from "@/lib/prisma";
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { getBestImageForRecipe } from "@/lib/imageRepository";
 
 export async function POST() {
   try {
@@ -47,7 +46,7 @@ export async function POST() {
             Devuelve un JSON (array de objetos) con:
             nombre, slug, descripcion, prepTime (int), cookTime (int), dificultad (Facil/Media), 
             instrucciones (array strings), ingredientes (array de {name, amount, productId}),
-            imageKeywords (2 o 3 palabras clave en inglés separadas por coma para buscar la imagen, ej: 'vegan,brownie,chocolate').
+            imagePrompt (un prompt muy descriptivo en inglés para generar una imagen fotorrealista de esta receta, ej: 'A professional food photography top-down view of a delicious vegan white chocolate brownie with peanut butter drizzle, wooden table background').
             
             NO menciones "Packs". Responde SOLO el JSON.
           `
@@ -75,8 +74,42 @@ export async function POST() {
 
     const newRecipes = recipesToInsert.filter((r: any) => r.slug);
 
+    const hfToken = process.env.HF_TOKEN;
+
     for (const r of newRecipes) {
-      const imageUrl = getBestImageForRecipe(r.nombre, JSON.stringify(r.ingredientes));
+      const promptToUse = r.imagePrompt || `A professional food photography top-down view of ${r.nombre}, vegan food, highly detailed, 4k resolution`;
+      
+      let imageUrl = "";
+      try {
+        console.log(`[Chef IA] Generando imagen en Hugging Face (SDXL) para: ${r.nombre}`);
+        const imageRes = await fetch("https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-xl-base-1.0", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${hfToken}`
+          },
+          body: JSON.stringify({
+            inputs: promptToUse
+          })
+        });
+
+        if (imageRes.ok) {
+          const arrayBuffer = await imageRes.arrayBuffer();
+          const buffer = Buffer.from(arrayBuffer);
+          const base64Str = buffer.toString('base64');
+          // Guardamos como Data URI
+          imageUrl = `data:image/jpeg;base64,${base64Str}`;
+        } else {
+          console.error("Error en Hugging Face:", await imageRes.text());
+        }
+      } catch (imgErr) {
+        console.error("Error llamando a Hugging Face:", imgErr);
+      }
+
+      // Si falló, dejamos el pixel transparente como fallback
+      if (!imageUrl) {
+        imageUrl = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=";
+      }
 
       await prisma.recipe.upsert({
         where: { slug: r.slug },

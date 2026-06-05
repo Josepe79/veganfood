@@ -54,7 +54,7 @@ export default async function RecipeDetail({ params }: { params: Promise<{ slug:
         <div>
           <div className="relative aspect-square rounded-3xl overflow-hidden shadow-2xl border border-white/10 mb-8">
             {recipe.imagen && (
-              <Image src={recipe.imagen} alt={recipe.nombre} fill className="object-cover" />
+              <Image src={recipe.imagen.startsWith("data:") ? `/api/image/${recipe.id}` : recipe.imagen} alt={recipe.nombre} fill className="object-cover" />
             )}
           </div>
           

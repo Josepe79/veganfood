@@ -20,7 +20,7 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
       <Link href={`/receta/${recipe.slug}`} className="block relative aspect-video overflow-hidden">
         {recipe.imagen ? (
           <Image 
-            src={recipe.imagen} 
+            src={recipe.imagen.startsWith("data:") ? `/api/image/${recipe.id}` : recipe.imagen} 
             alt={recipe.nombre} 
             fill 
             className="object-cover transition-transform duration-500 group-hover:scale-110"
