@@ -1,5 +1,4 @@
 import { PrismaClient } from '@prisma/client';
-import { getBestImageForRecipe } from '../src/lib/imageRepository';
 
 const prisma = new PrismaClient();
 
