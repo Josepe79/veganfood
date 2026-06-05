@@ -1,6 +1,5 @@
 import { prisma } from "@/lib/prisma";
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { getBestImageForRecipe } from "@/lib/imageRepository";
 
 export async function POST() {
   try {
@@ -47,7 +46,7 @@ export async function POST() {
             Devuelve un JSON (array de objetos) con:
             nombre, slug, descripcion, prepTime (int), cookTime (int), dificultad (Facil/Media), 
             instrucciones (array strings), ingredientes (array de {name, amount, productId}),
-            imageKeyword (un término en inglés para buscar una foto apetitosa en Unsplash).
+            imagePrompt (un prompt muy descriptivo en inglés para generar una imagen fotorrealista de esta receta, ej: 'A professional food photography top-down view of a delicious vegan white chocolate brownie with peanut butter drizzle, wooden table background').
             
             NO menciones "Packs". Responde SOLO el JSON.
           `
@@ -76,7 +75,9 @@ export async function POST() {
     const newRecipes = recipesToInsert.filter((r: any) => r.slug);
 
     for (const r of newRecipes) {
-      const imageUrl = getBestImageForRecipe(r.nombre, JSON.stringify(r.ingredientes));
+      const promptToUse = r.imagePrompt || `${r.nombre} vegan food professional photography`;
+      const encodedPrompt = encodeURIComponent(promptToUse);
+      const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=1200&height=800&nologo=true`;
 
       await prisma.recipe.upsert({
         where: { slug: r.slug },
@@ -101,22 +102,6 @@ export async function POST() {
           ingredientes: JSON.stringify(r.ingredientes),
           publicado: true,
           imagen: imageUrl
-        }
-      });
-    }
-
-    return new Response(JSON.stringify({ success: true, count: newRecipes.length }), { status: 200 });
-
-    for (const r of newRecipes) {
-      await prisma.recipe.upsert({
-        where: { slug: r.slug },
-        update: {},
-        create: {
-          ...r,
-          instrucciones: JSON.stringify(r.instrucciones),
-          ingredientes: JSON.stringify(r.ingredientes),
-          publicado: true,
-          imagen: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?q=80&w=2070&auto=format&fit=crop"
         }
       });
     }

@@ -14,15 +14,15 @@ async function main() {
   let actualizadas = 0;
 
   for (const recipe of recipes) {
-    const newImageUrl = getBestImageForRecipe(recipe.nombre, recipe.ingredientes);
+    const prompt = `${recipe.nombre}, vegan food, professional food photography, top-down view, highly detailed, 4k resolution`;
+    const encodedPrompt = encodeURIComponent(prompt);
+    const newImageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=1200&height=800&nologo=true`;
     
-    // Si la imagen sugerida (ignorando el parámetro aleatorio de la URL) es distinta de la base
-    const baseNewImage = newImageUrl.split('?')[0];
     await prisma.recipe.update({
       where: { id: recipe.id },
       data: { imagen: newImageUrl }
     });
-    console.log(`✅ [${recipe.nombre}] -> Imagen procesada.`);
+    console.log(`✅ [${recipe.nombre}] -> Imagen generativa asignada.`);
     actualizadas++;
   }
 
