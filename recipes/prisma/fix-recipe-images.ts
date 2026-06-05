@@ -13,9 +13,14 @@ async function main() {
   let actualizadas = 0;
 
   for (const recipe of recipes) {
-    const prompt = `${recipe.nombre}, vegan food, professional food photography, top-down view, highly detailed, 4k resolution`;
-    const encodedPrompt = encodeURIComponent(prompt);
-    const newImageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=1200&height=800&nologo=true`;
+    // Extraer palabras clave simples (eliminando preposiciones y conectores)
+    const stopWords = ['de', 'y', 'con', 'en', 'al', 'la', 'el', 'las', 'los', 'un', 'una', 'para', 'estilo', 'vegana', 'vegano'];
+    const words = recipe.nombre.toLowerCase().split(' ').filter(w => !stopWords.includes(w) && w.length > 3).slice(0, 3);
+    const keywords = ['vegan', ...words].join(',');
+    
+    const encodedKeywords = encodeURIComponent(keywords);
+    const lockId = Math.floor(Math.random() * 10000);
+    const newImageUrl = `https://loremflickr.com/1200/800/${encodedKeywords}?lock=${lockId}`;
     
     await prisma.recipe.update({
       where: { id: recipe.id },

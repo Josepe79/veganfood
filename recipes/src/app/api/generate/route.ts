@@ -46,7 +46,7 @@ export async function POST() {
             Devuelve un JSON (array de objetos) con:
             nombre, slug, descripcion, prepTime (int), cookTime (int), dificultad (Facil/Media), 
             instrucciones (array strings), ingredientes (array de {name, amount, productId}),
-            imagePrompt (un prompt muy descriptivo en inglés para generar una imagen fotorrealista de esta receta, ej: 'A professional food photography top-down view of a delicious vegan white chocolate brownie with peanut butter drizzle, wooden table background').
+            imageKeywords (2 o 3 palabras clave en inglés separadas por coma para buscar la imagen, ej: 'vegan,brownie,chocolate').
             
             NO menciones "Packs". Responde SOLO el JSON.
           `
@@ -75,9 +75,11 @@ export async function POST() {
     const newRecipes = recipesToInsert.filter((r: any) => r.slug);
 
     for (const r of newRecipes) {
-      const promptToUse = r.imagePrompt || `${r.nombre} vegan food professional photography`;
-      const encodedPrompt = encodeURIComponent(promptToUse);
-      const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=1200&height=800&nologo=true`;
+      const keywordsToUse = r.imageKeywords || "vegan,food,recipe";
+      const encodedKeywords = encodeURIComponent(keywordsToUse.replace(/ /g, ''));
+      // Utilizamos lock con un hash simple del slug para que la imagen sea aleatoria pero permanente para cada receta
+      const lockId = Math.floor(Math.random() * 10000); 
+      const imageUrl = `https://loremflickr.com/1200/800/${encodedKeywords}?lock=${lockId}`;
 
       await prisma.recipe.upsert({
         where: { slug: r.slug },
