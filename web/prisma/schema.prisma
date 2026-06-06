@@ -80,6 +80,7 @@ model Recipe {
   ingredientes  String   @db.Text // JSON string: [{name, amount, productId?}]
   publicado     Boolean  @default(false)
   socialCopy    String?  @db.Text // Texto generado para Instagram/FB
+  videoUrl      String?  @db.Text // URL o ruta del vídeo MP4 renderizado
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 }

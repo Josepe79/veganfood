@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
-import { Sparkles, Loader2, CheckCircle, ChefHat, Send } from "lucide-react";
-import { publishRecipeAction } from "./actions";
+import { Sparkles, Loader2, CheckCircle, ChefHat, Send, Video, PlaySquare } from "lucide-react";
+import { publishRecipeAction, startRecipeVideoRender, publishRecipeVideoAction } from "./actions";
 import { useRouter } from "next/navigation";
 
 export function ChefConsoleClient({ initialRecipes = [] }: { initialRecipes?: any[] }) {
@@ -82,29 +82,79 @@ export function ChefConsoleClient({ initialRecipes = [] }: { initialRecipes?: an
                 <div className="flex-1">
                   <h4 className="text-white font-bold">{recipe.nombre}</h4>
                   {recipe.socialCopy ? (
-                    <p className="text-xs text-slate-400 mt-2 line-clamp-2 italic">"{recipe.socialCopy}"</p>
+                    <p className="text-xs text-slate-400 mt-2 line-clamp-2 italic mb-3">"{recipe.socialCopy}"</p>
                   ) : (
                     <p className="text-xs text-red-400 mt-2">Sin texto para redes.</p>
                   )}
+                  <div className="flex gap-2 flex-wrap">
+                      <button
+                        className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-lg font-medium text-sm transition-colors flex items-center gap-2"
+                        onClick={async () => {
+                          setPublishingId(recipe.id);
+                          const res = await publishRecipeAction(recipe.id);
+                          console.log("Respuesta Ayrshare (Foto):", res);
+                          if(res.success) {
+                              alert("¡Foto publicada en Ayrshare (Instagram)! IDs: " + JSON.stringify(res.result?.postIds || []));
+                          } else {
+                              alert("Error de Ayrshare: " + res.error);
+                          }
+                          setPublishingId(null);
+                        }}
+                        disabled={publishingId === recipe.id || !recipe.socialCopy}
+                      >
+                        {publishingId === recipe.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                        Publicar Foto (IG)
+                      </button>
+                      
+                      {!recipe.videoUrl && (
+                        <button
+                          className="px-4 py-2 bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white rounded-lg font-medium text-sm transition-colors flex items-center gap-2"
+                          onClick={async () => {
+                            await startRecipeVideoRender(recipe.id);
+                            alert("Renderizado de vídeo iniciado en segundo plano. Recarga en unos segundos.");
+                            router.refresh();
+                          }}
+                        >
+                          <Video className="w-4 h-4" />
+                          Crear Vídeo
+                        </button>
+                      )}
+
+                      {recipe.videoUrl && recipe.videoUrl.startsWith("STATUS:RENDERING") && (
+                        <span className="text-orange-500 font-medium animate-pulse flex items-center gap-2 text-sm"><Loader2 className="w-4 h-4 animate-spin"/> Renderizando...</span>
+                      )}
+
+                      {recipe.videoUrl && recipe.videoUrl.startsWith("STATUS:ERROR") && (
+                        <span className="text-red-500 font-medium text-sm">Error Vídeo</span>
+                      )}
+
+                      {recipe.videoUrl && recipe.videoUrl.startsWith("/api/admin/") && (
+                        <>
+                          <a href={recipe.videoUrl} target="_blank" className="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-800 rounded-lg font-medium text-sm transition-colors flex items-center gap-2">
+                             <PlaySquare className="w-4 h-4" /> Ver Vídeo
+                          </a>
+                          <button
+                            className="px-4 py-2 bg-pink-600 hover:bg-pink-700 disabled:opacity-50 text-white rounded-lg font-medium text-sm transition-colors flex items-center gap-2"
+                            onClick={async () => {
+                              setPublishingId("vid-" + recipe.id);
+                              const res = await publishRecipeVideoAction(recipe.id);
+                              console.log("Respuesta Ayrshare (Vídeo):", res);
+                              if(res.success) {
+                                  alert("¡Vídeo publicado en IG/TikTok/YT!");
+                              } else {
+                                  alert("Error de Ayrshare: " + res.error);
+                              }
+                              setPublishingId(null);
+                            }}
+                            disabled={publishingId === "vid-" + recipe.id || !recipe.socialCopy}
+                          >
+                            {publishingId === "vid-" + recipe.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                            Publicar Vídeo
+                          </button>
+                        </>
+                      )}
+                  </div>
                 </div>
-                <button
-                  onClick={async () => {
-                    setPublishingId(recipe.id);
-                    const res = await publishRecipeAction(recipe.id);
-                    console.log("Respuesta Ayrshare:", res);
-                    if(res.success) {
-                        alert("¡Publicado en Ayrshare! Revisa la consola o tu cuenta de Ayrshare para confirmar. IDs: " + JSON.stringify(res.result?.postIds || []));
-                    } else {
-                        alert("Error de Ayrshare: " + res.error);
-                    }
-                    setPublishingId(null);
-                  }}
-                  disabled={publishingId === recipe.id || !recipe.socialCopy}
-                  className="bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white font-bold py-2 px-4 rounded-lg flex items-center gap-2 transition-all"
-                >
-                  {publishingId === recipe.id ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
-                  Publicar
-                </button>
               </div>
             ))}
           </div>

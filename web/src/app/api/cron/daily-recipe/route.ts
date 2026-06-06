@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { publishRecipeToSocial } from "@/lib/social-engine/ayrshare-recipes";
+import { backgroundRecipeRenderTask } from "@/app/admin/actions";
 
 export const dynamic = 'force-dynamic';
 
@@ -117,23 +117,16 @@ export async function GET(request: Request) {
       }
     });
 
-    console.log(`[Daily Cron] Receta guardada en DB. Lanzando a Ayrshare...`);
-    let socialSuccess = false;
-    try {
-        const DOMAIN = process.env.NEXT_PUBLIC_APP_URL || "https://veganfood.es";
-        const publicImageUrl = `${DOMAIN}/api/image/${savedRecipe.id}.jpg`;
-
-        await publishRecipeToSocial(publicImageUrl, r.socialCopy);
-        socialSuccess = true;
-        console.log(`[Daily Cron] ¡Publicado en Redes con éxito!`);
-    } catch(err) {
-        console.error(`[Daily Cron] Error publicando en redes (Ayrshare):`, err);
-    }
+    console.log(`[Daily Cron] Receta guardada en DB. Lanzando a FFmpeg y Ayrshare...`);
+    const voiceScript = `¡Hoy preparamos un increíble ${r.nombre}! Totalmente vegano y súper fácil. La receta paso a paso está en la descripción, y puedes comprar todos los ingredientes frescos en la tienda online de veganfood punto es. ¡Haz click en el enlace de nuestra biografía!`;
+    
+    // Disparo "Fire and Forget" con auto-publish = true
+    backgroundRecipeRenderTask(savedRecipe.id, voiceScript, true).catch(console.error);
 
     return new Response(JSON.stringify({ 
         success: true, 
         recipeId: savedRecipe.id,
-        socialSuccess 
+        socialSuccess: "Pendiente de renderizado en background"
     }), { status: 200 });
   } catch (error: any) {
     console.error(error);

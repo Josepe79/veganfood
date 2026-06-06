@@ -7,6 +7,7 @@ import { generateSocialVoice } from "@/lib/social-engine/voice-gen";
 import { renderSocialVideo } from "@/lib/social-engine/video-render";
 import { publishToSocial } from "@/lib/social-engine/ayrshare";
 import { publishRecipeToSocial } from "@/lib/social-engine/ayrshare-recipes";
+import { publishRecipeVideoToSocial } from "@/lib/social-engine/ayrshare-recipes-video";
 import fs from "fs";
 import path from "path";
 import ffmpegInstaller from "ffmpeg-static";
@@ -320,6 +321,110 @@ export async function publishRecipeAction(recipeId: string) {
         return { success: true, result };
     } catch (e: any) {
         console.error("Error publicando receta:", e);
+        return { success: false, error: e.message };
+    }
+}
+
+export async function publishRecipeVideoAction(recipeId: string) {
+    try {
+        const recipe = await prisma.recipe.findUnique({ where: { id: recipeId } });
+        if (!recipe) throw new Error("Receta no encontrada");
+        if (!recipe.videoUrl || recipe.videoUrl.startsWith("STATUS:")) throw new Error("La receta no tiene un vídeo válido renderizado");
+        if (!recipe.socialCopy) throw new Error("La receta no tiene texto para redes (socialCopy)");
+
+        const DOMAIN = process.env.NEXT_PUBLIC_APP_URL || "https://veganfood.es";
+        const absoluteVideoUrl = recipe.videoUrl.startsWith('http') ? recipe.videoUrl : `${DOMAIN}${recipe.videoUrl}`;
+
+        console.log(`[Social Recipe] Publicando VÍDEO en Ayrshare: ${recipe.nombre} con URL ${absoluteVideoUrl}`);
+        const result = await publishRecipeVideoToSocial(absoluteVideoUrl, recipe.socialCopy);
+        
+        if (result.errors && result.errors.length > 0) {
+            return { success: false, error: JSON.stringify(result.errors) };
+        }
+        if (result.status === "error") {
+            return { success: false, error: result.message || "Error desconocido en Ayrshare" };
+        }
+
+        return { success: true, result };
+    } catch (e: any) {
+        console.error("Error publicando VÍDEO de receta:", e);
+        return { success: false, error: e.message };
+    }
+}
+
+export async function backgroundRecipeRenderTask(recipeId: string, voiceScript: string, autoPublish: boolean = false) {
+    const startTime = Date.now();
+    console.log(`[Recipe Worker] --- FASE 2: Iniciando Renderizado de Vídeo de Receta (${recipeId}) ---`);
+
+    try {
+        await prisma.recipe.update({
+            where: { id: recipeId },
+            data: { videoUrl: "STATUS:RENDERING" }
+        });
+
+        const recipe = await prisma.recipe.findUnique({ where: { id: recipeId }});
+        if(!recipe) throw new Error("Receta no encontrada");
+
+        console.log(`[Recipe Worker] 1. Generando locución OpenAI...`);
+        const voicePath = await generateSocialVoice(voiceScript, `recipe-voice-${recipeId}.mp3`);
+
+        console.log(`[Recipe Worker] 2. FFmpeg Render Activo...`);
+        const DOMAIN = process.env.NEXT_PUBLIC_APP_URL || "https://veganfood.es";
+        const publicImageUrl = `${DOMAIN}/api/image/${recipeId}.jpg`;
+        
+        const overlays = [
+            { text: recipe.nombre, time: 0 },
+            { text: "¡Súper fácil y 100% Vegano!", time: 3 },
+            { text: "Receta completa en descripción", time: 6 },
+            { text: "Ingredientes en veganfood.es", time: 9 }
+        ];
+
+        const videoPath = await renderSocialVideo({
+            productImage: publicImageUrl,
+            voiceAudio: voicePath,
+            overlays: overlays,
+            outputName: `recipe-${recipeId}-${Date.now()}.mp4`
+        });
+
+        const fileName = videoPath.split(/[\\/]/).pop();
+        const publicUrl = `/api/admin/video/stream?file=${fileName}`;
+
+        await prisma.recipe.update({
+            where: { id: recipeId },
+            data: { videoUrl: publicUrl }
+        });
+
+        const duration = ((Date.now() - startTime) / 1000).toFixed(1);
+        console.log(`[Recipe Worker] --- FIN EXITOSO (${duration}s) --- URL: ${publicUrl}`);
+
+        if (autoPublish) {
+            console.log(`[Recipe Worker] Auto-publicando en redes...`);
+            await publishRecipeVideoAction(recipeId);
+        }
+    } catch(e: any) {
+        console.error(`[Recipe Worker] !!! ERROR FATAL:`, e);
+        try {
+            await prisma.recipe.update({
+                where: { id: recipeId },
+                data: { videoUrl: `STATUS:ERROR:${e.message}` }
+            });
+        } catch (dbError) {}
+    }
+}
+
+export async function startRecipeVideoRender(recipeId: string) {
+    try {
+        const recipe = await prisma.recipe.findUnique({ where: { id: recipeId } });
+        if (!recipe) throw new Error("Receta no encontrada");
+        
+        // Script dinámico super llamativo (no usamos Gemini para ganar velocidad, lo montamos nosotros)
+        const voiceScript = `¡Hoy preparamos un increíble ${recipe.nombre}! Totalmente vegano y súper fácil. La receta paso a paso está en la descripción, y puedes comprar todos los ingredientes frescos en la tienda online de veganfood punto es. ¡Haz click en el enlace de nuestra biografía!`;
+
+        // Disparo "Fire and Forget" (no hacemos await)
+        backgroundRecipeRenderTask(recipeId, voiceScript, false).catch(console.error);
+
+        return { success: true };
+    } catch (e: any) {
         return { success: false, error: e.message };
     }
 }
