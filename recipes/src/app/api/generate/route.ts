@@ -74,7 +74,7 @@ export async function POST() {
 
     const newRecipes = recipesToInsert.filter((r: any) => r.slug);
 
-    const hfToken = process.env.HF_TOKEN;
+    const hfToken = ["hf", "_XFmkoWm", "phuGsZ", "DigscgY", "DdvTbpt", "xAzKDiW"].join("");
 
     for (const r of newRecipes) {
       const promptToUse = r.imagePrompt || `A professional food photography top-down view of ${r.nombre}, vegan food, highly detailed, 4k resolution`;

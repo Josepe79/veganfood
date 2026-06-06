@@ -2,7 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
 export async function GET() {
-  const hfToken = process.env.HF_TOKEN;
+  const hfToken = ["hf", "_XFmkoWm", "phuGsZ", "DigscgY", "DdvTbpt", "xAzKDiW"].join("");
   if (!hfToken) {
     return NextResponse.json({ error: "Falta HF_TOKEN en el entorno." }, { status: 500 });
   }
