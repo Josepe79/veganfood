@@ -9,7 +9,7 @@ export async function publishRecipeToSocial(imageUrl: string, caption: string) {
 
   const postData = {
     post: caption,
-    platforms: ["facebook", "instagram"], // Para fotos, FB e IG.
+    platforms: ["instagram"], // Solo Instagram para fotos de recetas
     mediaUrls: [imageUrl]
   };
 
