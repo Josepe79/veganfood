@@ -6,6 +6,7 @@ import { generateSocialScript } from "@/lib/social-engine/script-gen";
 import { generateSocialVoice } from "@/lib/social-engine/voice-gen";
 import { renderSocialVideo } from "@/lib/social-engine/video-render";
 import { publishToSocial } from "@/lib/social-engine/ayrshare";
+import { publishRecipeToSocial } from "@/lib/social-engine/ayrshare-recipes";
 import fs from "fs";
 import path from "path";
 import ffmpegInstaller from "ffmpeg-static";
@@ -291,6 +292,24 @@ export async function executeSocialPost(videoUrl: string, caption: string) {
         
         return { success: true, result };
     } catch (e: any) {
+        return { success: false, error: e.message };
+    }
+}
+
+export async function publishRecipeAction(recipeId: string) {
+    try {
+        const recipe = await prisma.recipe.findUnique({ where: { id: recipeId } });
+        if (!recipe) throw new Error("Receta no encontrada");
+        if (!recipe.imagen) throw new Error("La receta no tiene imagen generada");
+        if (!recipe.socialCopy) throw new Error("La receta no tiene texto para redes (socialCopy)");
+
+        console.log(`[Social Recipe] Publicando receta en Ayrshare: ${recipe.nombre}`);
+        const result = await publishRecipeToSocial(recipe.imagen, recipe.socialCopy);
+        
+        // Opcional: Marcar como publicado en redes
+        return { success: true, result };
+    } catch (e: any) {
+        console.error("Error publicando receta:", e);
         return { success: false, error: e.message };
     }
 }

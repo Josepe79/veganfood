@@ -79,6 +79,7 @@ model Recipe {
   instrucciones String   @db.Text // Pasos detallados
   ingredientes  String   @db.Text // JSON string: [{name, amount, productId?}]
   publicado     Boolean  @default(false)
+  socialCopy    String?  @db.Text // Texto generado para Instagram/FB
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 }

@@ -10,6 +10,7 @@ import { PromotionReset } from "./PromotionReset";
 import { ReviewCenterClient } from "./ReviewCenterClient";
 import { OrdersPanel } from "./OrdersPanel";
 import { revalidatePath } from "next/cache";
+import { ChefConsoleClient } from "./ChefConsoleClient";
 
 export const dynamic = 'force-dynamic';
 
@@ -208,6 +209,13 @@ export default async function AdminDashboard(props: { searchParams: Promise<{ br
 
     const shoppingList = Array.from(consolidated.values());
     const netProfit = grossSales - expectedB2BCost;
+
+    // Recetas recientes generadas por IA
+    const latestRecipes = await prisma.recipe.findMany({
+        orderBy: { createdAt: 'desc' },
+        take: 5,
+        select: { id: true, nombre: true, imagen: true, socialCopy: true, createdAt: true }
+    });
 
     return (
         <div className="pt-20 pb-10 px-4 max-w-7xl mx-auto">
@@ -484,6 +492,11 @@ export default async function AdminDashboard(props: { searchParams: Promise<{ br
                 </div>
             </div>
             
+            {/* CONSOLA DEL CHEF IA (NUEVO HUB CENTRALIZADO) */}
+            <div className="mt-8">
+                <ChefConsoleClient initialRecipes={latestRecipes as any} />
+            </div>
+
             {/* 🛡️ CENTRO DE AUDITORÍA VEGANA (NUEVO) */}
             <div className="mt-8 glass p-8 border-red-500/30 rounded-3xl bg-red-950/5">
                 <div className="flex items-center gap-4 mb-6">
