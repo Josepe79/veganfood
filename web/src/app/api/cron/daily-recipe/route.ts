@@ -120,7 +120,10 @@ export async function GET(request: Request) {
     console.log(`[Daily Cron] Receta guardada en DB. Lanzando a Ayrshare...`);
     let socialSuccess = false;
     try {
-        await publishRecipeToSocial(imageUrl, r.socialCopy);
+        const DOMAIN = process.env.NEXT_PUBLIC_APP_URL || "https://veganfood.es";
+        const publicImageUrl = `${DOMAIN}/api/image/${savedRecipe.id}.jpg`;
+
+        await publishRecipeToSocial(publicImageUrl, r.socialCopy);
         socialSuccess = true;
         console.log(`[Daily Cron] ¡Publicado en Redes con éxito!`);
     } catch(err) {

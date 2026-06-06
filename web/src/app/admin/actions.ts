@@ -303,8 +303,11 @@ export async function publishRecipeAction(recipeId: string) {
         if (!recipe.imagen) throw new Error("La receta no tiene imagen generada");
         if (!recipe.socialCopy) throw new Error("La receta no tiene texto para redes (socialCopy)");
 
-        console.log(`[Social Recipe] Publicando receta en Ayrshare: ${recipe.nombre}`);
-        const result = await publishRecipeToSocial(recipe.imagen, recipe.socialCopy);
+        const DOMAIN = process.env.NEXT_PUBLIC_APP_URL || "https://veganfood.es";
+        const publicImageUrl = `${DOMAIN}/api/image/${recipe.id}.jpg`;
+
+        console.log(`[Social Recipe] Publicando receta en Ayrshare: ${recipe.nombre} con URL ${publicImageUrl}`);
+        const result = await publishRecipeToSocial(publicImageUrl, recipe.socialCopy);
         
         if (result.errors && result.errors.length > 0) {
             return { success: false, error: JSON.stringify(result.errors) };
