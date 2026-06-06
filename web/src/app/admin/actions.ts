@@ -364,8 +364,12 @@ export async function backgroundRecipeRenderTask(recipeId: string, voiceScript: 
         const voicePath = await generateSocialVoice(voiceScript, `recipe-voice-${recipeId}.mp3`);
 
         console.log(`[Recipe Worker] 2. FFmpeg Render Activo...`);
-        const DOMAIN = process.env.NEXT_PUBLIC_APP_URL || "https://veganfood.es";
-        const publicImageUrl = `${DOMAIN}/api/image/${recipeId}.jpg`;
+        const tempDir = path.join(/*turbopackIgnore: true*/ process.cwd(), "tmp");
+        if (!fs.existsSync(tempDir)) fs.mkdirSync(tempDir, { recursive: true });
+        
+        const localImagePath = path.join(tempDir, `recipe-img-${recipeId}.jpg`);
+        const base64Data = recipe.imagen.split(',')[1] || recipe.imagen;
+        fs.writeFileSync(localImagePath, Buffer.from(base64Data, "base64"));
         
         const overlays = [
             { text: recipe.nombre, time: 0 },
@@ -375,7 +379,7 @@ export async function backgroundRecipeRenderTask(recipeId: string, voiceScript: 
         ];
 
         const videoPath = await renderSocialVideo({
-            productImage: publicImageUrl,
+            productImage: localImagePath,
             voiceAudio: voicePath,
             overlays: overlays,
             outputName: `recipe-${recipeId}-${Date.now()}.mp4`
