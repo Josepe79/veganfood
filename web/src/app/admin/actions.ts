@@ -357,11 +357,6 @@ export async function backgroundRecipeRenderTask(recipeId: string, voiceScript: 
     console.log(`[Recipe Worker] --- FASE 2: Iniciando Renderizado de Vídeo de Receta (${recipeId}) ---`);
 
     try {
-        await prisma.recipe.update({
-            where: { id: recipeId },
-            data: { videoUrl: "STATUS:RENDERING" }
-        });
-
         const recipe = await prisma.recipe.findUnique({ where: { id: recipeId }});
         if(!recipe) throw new Error("Receta no encontrada");
 
@@ -417,11 +412,19 @@ export async function startRecipeVideoRender(recipeId: string) {
         const recipe = await prisma.recipe.findUnique({ where: { id: recipeId } });
         if (!recipe) throw new Error("Receta no encontrada");
         
+        // Marcamos como renderizando ANTES de devolver la respuesta al cliente
+        await prisma.recipe.update({
+            where: { id: recipeId },
+            data: { videoUrl: "STATUS:RENDERING" }
+        });
+
         // Script dinámico super llamativo (no usamos Gemini para ganar velocidad, lo montamos nosotros)
         const voiceScript = `¡Hoy preparamos un increíble ${recipe.nombre}! Totalmente vegano y súper fácil. La receta paso a paso está en la descripción, y puedes comprar todos los ingredientes frescos en la tienda online de veganfood punto es. ¡Haz click en el enlace de nuestra biografía!`;
 
-        // Disparo "Fire and Forget" (no hacemos await)
-        backgroundRecipeRenderTask(recipeId, voiceScript, false).catch(console.error);
+        // Disparo "Fire and Forget" protegido del Garbage Collector de Next.js
+        setTimeout(() => {
+            backgroundRecipeRenderTask(recipeId, voiceScript, false).catch(console.error);
+        }, 50);
 
         return { success: true };
     } catch (e: any) {
