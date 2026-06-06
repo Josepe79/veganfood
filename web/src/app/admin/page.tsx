@@ -214,7 +214,7 @@ export default async function AdminDashboard(props: { searchParams: Promise<{ br
     const latestRecipes = await prisma.recipe.findMany({
         orderBy: { createdAt: 'desc' },
         take: 5,
-        select: { id: true, nombre: true, imagen: true, socialCopy: true, createdAt: true }
+        select: { id: true, nombre: true, imagen: true, socialCopy: true, createdAt: true, videoUrl: true }
     });
 
     return (
