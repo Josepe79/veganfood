@@ -2,8 +2,10 @@
 import { useState } from "react";
 import { Sparkles, Loader2, CheckCircle, ChefHat, Send } from "lucide-react";
 import { publishRecipeAction } from "./actions";
+import { useRouter } from "next/navigation";
 
 export function ChefConsoleClient({ initialRecipes = [] }: { initialRecipes?: any[] }) {
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [publishingId, setPublishingId] = useState<string | null>(null);
   const [result, setResult] = useState<null | { count: number }>(null);
@@ -16,6 +18,7 @@ export function ChefConsoleClient({ initialRecipes = [] }: { initialRecipes?: an
       const data = await res.json();
       if (data.success) {
         setResult(data);
+        router.refresh();
       } else {
         alert("Error: " + data.error);
       }
@@ -88,8 +91,12 @@ export function ChefConsoleClient({ initialRecipes = [] }: { initialRecipes?: an
                   onClick={async () => {
                     setPublishingId(recipe.id);
                     const res = await publishRecipeAction(recipe.id);
-                    if(res.success) alert("¡Publicado en Ayrshare!");
-                    else alert("Error: " + res.error);
+                    console.log("Respuesta Ayrshare:", res);
+                    if(res.success) {
+                        alert("¡Publicado en Ayrshare! Revisa la consola o tu cuenta de Ayrshare para confirmar. IDs: " + JSON.stringify(res.result?.postIds || []));
+                    } else {
+                        alert("Error de Ayrshare: " + res.error);
+                    }
                     setPublishingId(null);
                   }}
                   disabled={publishingId === recipe.id || !recipe.socialCopy}

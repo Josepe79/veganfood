@@ -306,6 +306,13 @@ export async function publishRecipeAction(recipeId: string) {
         console.log(`[Social Recipe] Publicando receta en Ayrshare: ${recipe.nombre}`);
         const result = await publishRecipeToSocial(recipe.imagen, recipe.socialCopy);
         
+        if (result.errors && result.errors.length > 0) {
+            return { success: false, error: JSON.stringify(result.errors) };
+        }
+        if (result.status === "error") {
+            return { success: false, error: result.message || "Error desconocido en Ayrshare" };
+        }
+
         // Opcional: Marcar como publicado en redes
         return { success: true, result };
     } catch (e: any) {
