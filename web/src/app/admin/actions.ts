@@ -358,7 +358,7 @@ export async function backgroundRecipeRenderTask(recipeId: string, voiceScript: 
 
     try {
         const recipe = await prisma.recipe.findUnique({ where: { id: recipeId }});
-        if(!recipe) throw new Error("Receta no encontrada");
+        if(!recipe || !recipe.imagen) throw new Error("Receta no encontrada o sin imagen generada");
 
         console.log(`[Recipe Worker] 1. Generando locución OpenAI...`);
         const voicePath = await generateSocialVoice(voiceScript, `recipe-voice-${recipeId}.mp3`);
