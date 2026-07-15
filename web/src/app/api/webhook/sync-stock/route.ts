@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
+// Allow large payloads (the full Feliu Badaló catalog can be 2MB+)
+export const maxDuration = 60; // seconds
+
 export async function POST(req: Request) {
   try {
     // Basic auth check using a bearer token matching a local secret

@@ -37,11 +37,19 @@ jobs:
     - name: Send data to Webhook
       env:
         SYNC_SECRET: ${{ secrets.SYNC_SECRET }}
-        WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }} # e.g. https://veganfood.es/api/webhook/sync-stock
+        WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
       run: |
         cd scraper
-        echo "Enviando datos al webhook..."
-        curl -X POST -H "Content-Type: application/json" \
+        FILE_SIZE=$(stat --printf="%s" productos_veganos.json 2>/dev/null || stat -f%z productos_veganos.json 2>/dev/null || echo "unknown")
+        echo "Enviando datos al webhook... (File size: ${FILE_SIZE} bytes)"
+        curl -X POST \
+             -H "Content-Type: application/json" \
              -H "Authorization: Bearer $SYNC_SECRET" \
-             -d @productos_veganos.json \
-             $WEBHOOK_URL
+             --data-binary @productos_veganos.json \
+             --fail \
+             --show-error \
+             --max-time 120 \
+             --retry 2 \
+             --retry-delay 10 \
+             -w "\nHTTP Status: %{http_code}\n" \
+             "$WEBHOOK_URL"
