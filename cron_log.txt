@@ -152695,3 +152695,148 @@ C:\Users\JosepCorral\.gemini\antigravity\scratch\veganfood\web\package.json.
 
 The seed command has been executed.
 [SUCCESS] Ciclo Híbrido Finalizado Exitosamente a las 2026-07-15 05:20:12
+
+===========================================
+[INFO] Starting VeganFood JIT Sync at 2026-07-16 05:00:03
+[INFO] Fase 1: Extraer URLs y precios B2B (scraper.py)
+Iniciando navegador Playwright...
+python.exe : Traceback (most recent call last):
+En C:\Users\JosepCorral\.gemini\antigravity\scratch\veganfood\cron_sync.ps1: 12 Carácter: 5
++     & ".\venv\Scripts\python.exe" scraper.py 2>&1 | Out-File -Append  ...
++     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Traceback (most recent call last)::String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  File "C:\Users\JosepCorral\.gemini\antigravity\scratch\veganfood\scraper\scraper.py", line 131, in <module>
+    extraer_catalogo_vegano()
+    ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\JosepCorral\.gemini\antigravity\scratch\veganfood\scraper\scraper.py", line 15, in 
+extraer_catalogo_vegano
+    browser = p.chromium.launch(headless=True)
+  File "C:\Users\JosepCorral\.gemini\antigravity\scratch\veganfood\scraper\venv\Lib\site-packages\playwright\sync_api\_
+generated.py", line 14447, in launch
+    self._sync(
+    ~~~~~~~~~~^
+        self._impl_obj.launch(
+        ^^^^^^^^^^^^^^^^^^^^^^
+    ...<17 lines>...
+        )
+        ^
+    )
+    ^
+  File "C:\Users\JosepCorral\.gemini\antigravity\scratch\veganfood\scraper\venv\Lib\site-packages\playwright\_impl\_syn
+c_base.py", line 115, in _sync
+    return task.result()
+           ~~~~~~~~~~~^^
+  File "C:\Users\JosepCorral\.gemini\antigravity\scratch\veganfood\scraper\venv\Lib\site-packages\playwright\_impl\_bro
+wser_type.py", line 95, in launch
+    Browser, from_channel(await self._channel.send("launch", params))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\JosepCorral\.gemini\antigravity\scratch\veganfood\scraper\venv\Lib\site-packages\playwright\_impl\_con
+nection.py", line 61, in send
+    return await self._connection.wrap_api_call(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<2 lines>...
+    )
+    ^
+  File "C:\Users\JosepCorral\.gemini\antigravity\scratch\veganfood\scraper\venv\Lib\site-packages\playwright\_impl\_con
+nection.py", line 528, in wrap_api_call
+    raise rewrite_error(error, f"{parsed_st['apiName']}: {error}") from None
+playwright._impl._errors.Error: BrowserType.launch: Executable doesn't exist at 
+C:\Users\JosepCorral\AppData\Local\ms-playwright\chromium_headless_shell-1148\chrome-win\headless_shell.exe
+\u2554\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u255
+0\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u25
+50\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2
+550\u2550\u2557
+\u2551 Looks like Playwright was just installed or updated.       \u2551
+\u2551 Please run the following command to download new browsers: \u2551
+\u2551                                                            \u2551
+\u2551     playwright install                                     \u2551
+\u2551                                                            \u2551
+\u2551 <3 Playwright Team                                         \u2551
+\u255a\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u255
+0\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u25
+50\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2
+550\u2550\u255d
+[INFO] Fase 2: Extracción Lenta y Segura (scraper_deep.py)
+Iniciando extracci¾n profunda para 2846 productos detectados.
+python.exe : Traceback (most recent call last):
+En C:\Users\JosepCorral\.gemini\antigravity\scratch\veganfood\cron_sync.ps1: 16 Carácter: 5
++     & ".\venv\Scripts\python.exe" scraper_deep.py 2>&1 | Out-File -Ap ...
++     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Traceback (most recent call last)::String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  File "C:\Users\JosepCorral\.gemini\antigravity\scratch\veganfood\scraper\scraper_deep.py", line 126, in <module>
+    asyncio.run(main())
+    ~~~~~~~~~~~^^^^^^^^
+  File "C:\Users\JosepCorral\Phyton\Lib\asyncio\runners.py", line 195, in run
+    return runner.run(main)
+           ~~~~~~~~~~^^^^^^
+  File "C:\Users\JosepCorral\Phyton\Lib\asyncio\runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\JosepCorral\Phyton\Lib\asyncio\base_events.py", line 725, in run_until_complete
+    return future.result()
+           ~~~~~~~~~~~~~^^
+  File "C:\Users\JosepCorral\.gemini\antigravity\scratch\veganfood\scraper\scraper_deep.py", line 48, in main
+    browser = await p.chromium.launch(headless=True)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\JosepCorral\.gemini\antigravity\scratch\veganfood\scraper\venv\Lib\site-packages\playwright\async_api\
+_generated.py", line 14404, in launch
+    await self._impl_obj.launch(
+    ...<17 lines>...
+    )
+  File "C:\Users\JosepCorral\.gemini\antigravity\scratch\veganfood\scraper\venv\Lib\site-packages\playwright\_impl\_bro
+wser_type.py", line 95, in launch
+    Browser, from_channel(await self._channel.send("launch", params))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\JosepCorral\.gemini\antigravity\scratch\veganfood\scraper\venv\Lib\site-packages\playwright\_impl\_con
+nection.py", line 61, in send
+    return await self._connection.wrap_api_call(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<2 lines>...
+    )
+    ^
+  File "C:\Users\JosepCorral\.gemini\antigravity\scratch\veganfood\scraper\venv\Lib\site-packages\playwright\_impl\_con
+nection.py", line 528, in wrap_api_call
+    raise rewrite_error(error, f"{parsed_st['apiName']}: {error}") from None
+playwright._impl._errors.Error: BrowserType.launch: Executable doesn't exist at 
+C:\Users\JosepCorral\AppData\Local\ms-playwright\chromium_headless_shell-1148\chrome-win\headless_shell.exe
+\u2554\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u255
+0\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u25
+50\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2
+550\u2550\u2557
+\u2551 Looks like Playwright was just installed or updated.       \u2551
+\u2551 Please run the following command to download new browsers: \u2551
+\u2551                                                            \u2551
+\u2551     playwright install                                     \u2551
+\u2551                                                            \u2551
+\u2551 <3 Playwright Team                                         \u2551
+\u255a\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u255
+0\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u25
+50\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2
+550\u2550\u255d
+[INFO] Fase 3: Inyectar Fichas Completas a BBDD PostgreSQL de Railway
+Environment variables loaded from .env
+Running seed command `ts-node prisma/seed.ts` ...
+Iniciando seeder inteligente (Upsert)...
+cmd.exe : (node:9588) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of 
+file:///C:/Users/JosepCorral/.gemini/antigravity/scratch/veganfood/web/prisma/seed.ts is not specified and it doesn't 
+parse as CommonJS.
+En C:\Users\JosepCorral\.gemini\antigravity\scratch\veganfood\cron_sync.ps1: 23 Carácter: 5
++     & cmd.exe /c "npx prisma db seed" 2>&1 | Out-File -Append -Encodi ...
++     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ((node:9588) [MO...se as CommonJS.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to 
+C:\Users\JosepCorral\.gemini\antigravity\scratch\veganfood\web\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+┬íSincronizaci├│n Inteligente JIT completada!
+- Nuevos productos insertados al cat├ílogo: 0
+- Productos actualizados (Precios/Stock): 2846
+
+The seed command has been executed.
+[SUCCESS] Ciclo Híbrido Finalizado Exitosamente a las 2026-07-16 05:20:34
